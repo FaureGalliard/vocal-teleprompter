@@ -16,9 +16,11 @@
                 "width": 800,
                 "height": 600,
                 "transparent": true,
-                "decorations": false
+                "decorations": false,
+                "skipTaskbar": true
             }
         ],
+
         "security": {
             "csp": null
         }
