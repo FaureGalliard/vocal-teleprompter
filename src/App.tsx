@@ -1,51 +1,54 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
-
+import { useState } from 'react'
+import TitleBar from './components/TitleBar'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+const toggleDecorations = async () => {
+    const win = getCurrentWindow()
+    const decorated = await win.isDecorated()
+    await win.setDecorations(!decorated)
+}
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+    const [bgOpacity, setBgOpacity] = useState(1)
+    const [bgColor, setBgColor] = useState('#ffffff')
+    const [textColor, setTextColor] = useState('#1a1a1a')
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+    return (
+        <div className="flex flex-col min-h-screen">
+            <TitleBar />
+            <main
+                style={{
+                    backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
+                }}
+                className="min-h-screen p-8">
+                <h1 style={{ color: textColor }}>Bienvenido a vocal teleprompter</h1>
 
-  return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+                <div className="flex items-center gap-4">
+                    {/* Selector de color de fondo */}
+                    <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                    />
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+                    {/* Opacidad del fondo */}
+                    <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={bgOpacity}
+                        onChange={(e) => setBgOpacity(Number(e.target.value))}
+                    />
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
-  );
+                    {/* Color del texto */}
+                    <input
+                        type="color"
+                        value={textColor}
+                        onChange={(e) => setTextColor(e.target.value)}
+                    />
+                </div>
+            </main>
+        </div>
+    )
 }
 
-export default App;
+export default App
