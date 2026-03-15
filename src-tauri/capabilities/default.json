@@ -21,6 +21,8 @@
         "core:tray:allow-set-menu",
         "clipboard-manager:allow-read-text",
         "dialog:allow-open",
-        "fs:allow-read-text-file"
+        "fs:allow-read-text-file",
+        "core:window:allow-set-always-on-top",
+        "core:webview:allow-set-webview-background-color"
     ]
 }

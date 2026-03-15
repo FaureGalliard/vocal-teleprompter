@@ -1,8 +1,22 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import { readText } from '@tauri-apps/plugin-clipboard-manager'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readTextFile } from '@tauri-apps/plugin-fs'
+import { useSpeechRecognition } from './hooks/useSpeechRecognition'
+import { useScriptMatcher } from './hooks/useScriptMatcher'
+
+const LANGUAGES = [
+    { label: 'ES', value: 'es-ES' },
+    { label: 'EN', value: 'en-US' },
+    { label: 'FR', value: 'fr-FR' },
+    { label: 'DE', value: 'de-DE' },
+    { label: 'IT', value: 'it-IT' },
+    { label: 'PT', value: 'pt-BR' },
+    { label: 'JA', value: 'ja-JP' },
+    { label: 'ZH', value: 'zh-CN' },
+    { label: 'KO', value: 'ko-KR' },
+]
 
 function App() {
     const [bgOpacity, setBgOpacity] = useState(1)
@@ -14,7 +28,19 @@ function App() {
     const [titleBarHeight, setTitleBarHeight] = useState(0)
     const [content, setContent] = useState('')
     const [fontSize, setFontSize] = useState(24)
+    const [isListening, setIsListening] = useState(false)
+    const [language, setLanguage] = useState('es-ES')
+    const [langMenuOpen, setLangMenuOpen] = useState(false)
     const titleBarRef = useRef<HTMLDivElement>(null)
+    const activeWordRef = useRef<HTMLSpanElement>(null)
+
+    const scriptWords = content.split(/\s+/).filter(Boolean)
+    const { currentWordIndex, processTranscript, reset } = useScriptMatcher(scriptWords)
+    const { listening, error } = useSpeechRecognition({
+        language,
+        onTranscript: processTranscript,
+        enabled: isListening,
+    })
 
     useLayoutEffect(() => {
         if (titleBarRef.current) {
@@ -22,12 +48,24 @@ function App() {
         }
     }, [titleBarVisible, titleBarPosition])
 
+    useEffect(() => {
+        if (activeWordRef.current) {
+            activeWordRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            })
+        }
+    }, [currentWordIndex])
+
     const handlePasteText = async () => {
         try {
             const text = await readText()
-            if (text) setContent(text)
+            if (text) {
+                setContent(text)
+                reset()
+            }
         } catch (e) {
-            console.error('Error al leer clipboard:', e)
+            console.error(e)
         }
     }
 
@@ -40,18 +78,22 @@ function App() {
             if (selected) {
                 const text = await readTextFile(selected as string)
                 setContent(text)
+                reset()
             }
         } catch (e) {
-            console.error('Error al importar archivo:', e)
+            console.error(e)
         }
     }
 
-    const handleClear = () => setContent('')
+    const handleClear = () => {
+        setContent('')
+        reset()
+        setIsListening(false)
+    }
 
     const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = parseInt(e.target.value)
         if (!isNaN(val) && val >= 6 && val <= 200) setFontSize(val)
-        else if (e.target.value === '') setFontSize(6)
     }
 
     const canvasPaddingTop =
@@ -66,7 +108,6 @@ function App() {
                 height: '100vh',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
             }}>
-            {/* TitleBar fixed */}
             {titleBarVisible && (
                 <TitleBar
                     ref={titleBarRef}
@@ -75,7 +116,7 @@ function App() {
                 />
             )}
 
-            {/* Toolbar fixed — siempre encima del canvas, no afecta su layout */}
+            {/* Toolbar fixed */}
             {toolbarVisible && (
                 <div
                     className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-4 py-2 bg-[#1a1a1a] border-b border-white/10"
@@ -102,6 +143,55 @@ function App() {
                         className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-red-600 hover:border-red-600 transition-colors">
                         ✕ ELIMINAR
                     </button>
+
+                    <div className="w-px h-5 mx-1 bg-white/20" />
+
+                    {/* Start / Stop */}
+                    <button
+                        onClick={() => {
+                            setIsListening((v) => !v)
+                            if (isListening) reset()
+                        }}
+                        disabled={!content}
+                        className={`flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                            listening
+                                ? 'border-red-400 bg-red-500 text-white hover:bg-red-600'
+                                : 'border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a]'
+                        }`}>
+                        {listening ? '⏹ DETENER' : '🎙 INICIAR'}
+                    </button>
+
+                    {/* Selector de idioma colapsable */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setLangMenuOpen((v) => !v)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
+                            {LANGUAGES.find((l) => l.value === language)?.label ?? 'ES'}
+                            <span className="text-[9px] opacity-60">
+                                {langMenuOpen ? '▲' : '▼'}
+                            </span>
+                        </button>
+
+                        {langMenuOpen && (
+                            <div className="absolute top-full left-0 mt-1 z-50 bg-[#1a1a1a] border border-white/20 flex flex-col min-w-[48px]">
+                                {LANGUAGES.map((lang) => (
+                                    <button
+                                        key={lang.value}
+                                        onClick={() => {
+                                            setLanguage(lang.value)
+                                            setLangMenuOpen(false)
+                                        }}
+                                        className={`px-3 py-1 text-[11px] font-medium text-left transition-colors ${
+                                            language === lang.value
+                                                ? 'bg-white text-[#1a1a1a]'
+                                                : 'text-white hover:bg-white/10'
+                                        }`}>
+                                        {lang.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="w-px h-5 mx-1 bg-white/20" />
 
@@ -174,6 +264,8 @@ function App() {
                         }`}>
                         {titleBarVisible ? '▲ OCULTAR BARRA' : '▼ MOSTRAR BARRA'}
                     </button>
+
+                    {error && <span className="text-[10px] text-red-400">{error}</span>}
                 </div>
             )}
 
@@ -191,7 +283,7 @@ function App() {
                 ☰
             </button>
 
-            {/* Canvas — padding solo por titleBar, nunca cambia por toolbar */}
+            {/* Canvas */}
             <div
                 className="overflow-y-auto"
                 style={{
@@ -200,12 +292,43 @@ function App() {
                     paddingBottom: canvasPaddingBottom,
                     boxSizing: 'border-box',
                 }}>
-                <div className="min-h-full flex items-center justify-center p-12">
+                <div className="min-h-full flex items-start justify-center p-12">
                     {content ? (
                         <p
-                            className="text-center whitespace-pre-wrap leading-relaxed w-full"
-                            style={{ color: textColor, fontSize: `${fontSize}px` }}>
-                            {content}
+                            className="text-center leading-relaxed w-full"
+                            style={{ fontSize: `${fontSize}px` }}>
+                            {scriptWords.map((word, i) => {
+                                const isCurrentWord = i === currentWordIndex
+                                const isPast = i < currentWordIndex
+                                const isNearby =
+                                    i > currentWordIndex && i <= currentWordIndex + 8
+
+                                return (
+                                    <span
+                                        key={i}
+                                        ref={isCurrentWord ? activeWordRef : null}
+                                        style={{
+                                            color: isCurrentWord
+                                                ? '#1a1a1a'
+                                                : isPast
+                                                  ? `${textColor}50`
+                                                  : textColor,
+                                            backgroundColor: isCurrentWord
+                                                ? '#facc15'
+                                                : isNearby
+                                                  ? `${textColor}10`
+                                                  : 'transparent',
+                                            borderRadius: isCurrentWord
+                                                ? '2px'
+                                                : undefined,
+                                            padding: isCurrentWord ? '0 2px' : undefined,
+                                            transition:
+                                                'color 0.2s ease, background-color 0.2s ease',
+                                        }}>
+                                        {word}{' '}
+                                    </span>
+                                )
+                            })}
                         </p>
                     ) : (
                         <p
