@@ -1,54 +1,65 @@
-import { useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
 const win = getCurrentWindow()
 
-export default function TitleBar() {
-    const [position, setPosition] = useState<'top' | 'bottom'>('top')
-    const [visible, setVisible] = useState(true)
+interface TitleBarProps {
+    position: 'top' | 'bottom'
+    onPositionChange: (pos: 'top' | 'bottom') => void
+}
 
-    if (!visible) {
-        return (
-            <button
-                onClick={() => setVisible(true)}
-                className="fixed top-2 right-2 z-50 bg-gray-800 text-white px-2 py-1 rounded text-xs hover:bg-gray-600">
-                ☰
-            </button>
-        )
-    }
-
+export default function TitleBar({ position, onPositionChange }: TitleBarProps) {
     return (
         <div
             className={`fixed left-0 right-0 z-50 ${position === 'top' ? 'top-0' : 'bottom-0'}`}>
             <div
                 data-tauri-drag-region
-                className="flex items-center justify-between px-4 py-2 bg-gray-800 text-white select-none">
-                <span className="text-sm">Vocal Teleprompter</span>
+                className="flex items-center justify-between px-4 py-2 select-none"
+                style={{
+                    backgroundColor: '#1a1a1a',
+                    color: '#ffffff',
+                    fontFamily: "'Inter', sans-serif",
+                }}>
+                <span style={{ fontSize: '11px', letterSpacing: '0.08em', opacity: 0.6 }}>
+                    VOCAL TELEPROMPTER
+                </span>
 
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                     <button
                         onClick={() =>
-                            setPosition((p) => (p === 'top' ? 'bottom' : 'top'))
+                            onPositionChange(position === 'top' ? 'bottom' : 'top')
                         }
-                        className="hover:bg-gray-600 px-2 rounded text-xs">
+                        className="px-2 py-0.5 text-xs transition-all"
+                        style={{ fontSize: '11px' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.5')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
                         {position === 'top' ? '↓' : '↑'}
                     </button>
-
                     <button
                         onClick={() => win.minimize()}
-                        className="hover:bg-gray-600 px-2 rounded">
+                        className="px-2 py-0.5 text-xs transition-all"
+                        style={{ fontSize: '11px' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.5')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
                         −
                     </button>
-
                     <button
                         onClick={() => win.toggleMaximize()}
-                        className="hover:bg-gray-600 px-2 rounded">
+                        className="px-2 py-0.5 text-xs transition-all"
+                        style={{ fontSize: '11px' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.5')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}>
                         □
                     </button>
-
                     <button
                         onClick={() => win.close()}
-                        className="hover:bg-red-500 px-2 rounded">
+                        className="px-2 py-0.5 text-xs transition-all"
+                        style={{ fontSize: '11px' }}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor = '#cc0000')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor = 'transparent')
+                        }>
                         ✕
                     </button>
                 </div>
