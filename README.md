@@ -6,21 +6,50 @@ Instead of using a fixed scrolling speed, the application performs **real-time s
 
 This allows creators, presenters, and speakers to **talk naturally without worrying about manual scrolling or timing**.
 
+---
+
 ### Key Features
 
-- 🎤 **Active listening teleprompter** — detects spoken words and syncs with the script
-- 🧠 **AI speech recognition** powered by Whisper
-- 🔎 **Word-level alignment** between spoken audio and the script
-- ⚡ **Real-time scrolling** that adapts to the speaker’s pace
-- 🖥 **Cross-platform desktop app** (Windows, macOS, Linux)
-- 🔒 **Offline capable** using local speech models
+- 🎤 **Active listening teleprompter** — detects spoken words and syncs with the script in real time
+- 🔎 **Word-level alignment** with fuzzy matching between spoken audio and the script
+- ⚡ **Real-time scrolling** that adapts to the speaker's natural pace
+- 🌍 **Multilanguage support** — Spanish, English, French, German, Italian, Portuguese, Japanese, Chinese, Korean
+- 🎙 **Microphone selector** — choose your input device from the UI
+- 🖥 **Always-on-top window** — stays visible over other applications during presentations
+- 🎨 **Customizable display** — background color, opacity, text color, font size
+- 📋 **Paste or import text** — from clipboard or `.txt` file
+- 🪟 **Custom title bar** — moveable between top and bottom, hideable
+- 🖱 **System tray** — minimize to tray and restore with a click
+
+---
 
 ### Tech Stack
 
-- Rust — core engine and audio processing
-- whisper.cpp — local speech recognition
-- Next.js — user interface
-- Tauri — cross-platform desktop application framework
+- **React + TypeScript** — user interface
+- **Vite** — frontend build tool
+- **Tailwind CSS v4** — styling
+- **Tauri v2** — cross-platform desktop application framework
+- **Rust** — native backend and system integration
+- **Web Speech API** — real-time speech recognition (low latency, no cost, no internet required)
+- **Tauri Plugins** — clipboard, file dialog, file system, opener
+
+---
+
+### How It Works
+
+```
+Microphone → Web Speech API → Transcript
+                                  ↓
+                         Fuzzy word matcher
+                                  ↓
+                    Current position in script
+                                  ↓
+                    Smooth auto-scroll + highlight
+```
+
+The fuzzy matcher normalizes text (removes accents, lowercases, strips punctuation) and uses edit-distance matching so the system stays in sync even when the speaker mispronounces or skips words.
+
+---
 
 ### Use Cases
 
@@ -30,12 +59,4 @@ This allows creators, presenters, and speakers to **talk naturally without worry
 - Video recording
 - Live streaming
 
-The goal of this project is to create a **fast, lightweight, and fully offline voice-synchronized teleprompter** that feels natural to use.
-
-# Tauri + React + Typescript
-
-This template should help get you started developing with Tauri, React and Typescript in Vite.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+---
