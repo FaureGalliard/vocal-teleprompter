@@ -5,6 +5,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { readTextFile } from '@tauri-apps/plugin-fs'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
+import { useMicrophones } from './hooks/useMicrophones'
 
 const LANGUAGES = [
     { label: 'ES', value: 'es-ES' },
@@ -31,13 +32,17 @@ function App() {
     const [isListening, setIsListening] = useState(false)
     const [language, setLanguage] = useState('es-ES')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
+    const [micMenuOpen, setMicMenuOpen] = useState(false)
+    const [selectedMic, setSelectedMic] = useState('default')
     const titleBarRef = useRef<HTMLDivElement>(null)
     const activeWordRef = useRef<HTMLSpanElement>(null)
 
+    const { microphones } = useMicrophones()
     const scriptWords = content.split(/\s+/).filter(Boolean)
     const { currentWordIndex, processTranscript, reset } = useScriptMatcher(scriptWords)
     const { listening, error } = useSpeechRecognition({
         language,
+        deviceId: selectedMic,
         onTranscript: processTranscript,
         enabled: isListening,
     })
@@ -161,10 +166,13 @@ function App() {
                         {listening ? '⏹ DETENER' : '🎙 INICIAR'}
                     </button>
 
-                    {/* Selector de idioma colapsable */}
+                    {/* Selector de idioma */}
                     <div className="relative">
                         <button
-                            onClick={() => setLangMenuOpen((v) => !v)}
+                            onClick={() => {
+                                setLangMenuOpen((v) => !v)
+                                setMicMenuOpen(false)
+                            }}
                             className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
                             {LANGUAGES.find((l) => l.value === language)?.label ?? 'ES'}
                             <span className="text-[9px] opacity-60">
@@ -189,6 +197,47 @@ function App() {
                                         {lang.label}
                                     </button>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Selector de micrófono */}
+                    <div className="relative">
+                        <button
+                            onClick={() => {
+                                setMicMenuOpen((v) => !v)
+                                setLangMenuOpen(false)
+                            }}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
+                            🎙
+                            <span className="text-[9px] opacity-60">
+                                {micMenuOpen ? '▲' : '▼'}
+                            </span>
+                        </button>
+
+                        {micMenuOpen && (
+                            <div className="absolute top-full left-0 mt-1 z-50 bg-[#1a1a1a] border border-white/20 flex flex-col min-w-[180px] max-w-[260px]">
+                                {microphones.map((mic) => (
+                                    <button
+                                        key={mic.deviceId}
+                                        onClick={() => {
+                                            setSelectedMic(mic.deviceId)
+                                            setMicMenuOpen(false)
+                                        }}
+                                        className={`px-3 py-1.5 text-[11px] font-medium text-left transition-colors truncate ${
+                                            selectedMic === mic.deviceId
+                                                ? 'bg-white text-[#1a1a1a]'
+                                                : 'text-white hover:bg-white/10'
+                                        }`}
+                                        title={mic.label}>
+                                        {mic.label}
+                                    </button>
+                                ))}
+                                {microphones.length === 0 && (
+                                    <span className="px-3 py-1.5 text-[11px] text-white/40">
+                                        Sin micrófonos
+                                    </span>
+                                )}
                             </div>
                         )}
                     </div>
