@@ -18,6 +18,9 @@
         "core:tray:allow-set-icon",
         "core:tray:allow-set-tooltip",
         "core:tray:allow-set-visible",
-        "core:tray:allow-set-menu"
+        "core:tray:allow-set-menu",
+        "clipboard-manager:allow-read-text",
+        "dialog:allow-open",
+        "fs:allow-read-text-file"
     ]
 }
