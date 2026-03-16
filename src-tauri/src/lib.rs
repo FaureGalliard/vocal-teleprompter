@@ -24,7 +24,7 @@ pub fn run() {
             let quit = MenuItem::with_id(app, "quit", "Salir", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show, &hide, &quit])?;
 
-            TrayIconBuilder::new()
+           TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("Vocal Teleprompter")
                 .menu(&menu)

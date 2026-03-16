@@ -159,7 +159,7 @@ function App() {
 
             <button
                 onClick={() => setToolbarVisible((v) => !v)}
-                className="fixed z-50 w-8 h-8 flex items-center justify-center text-base bg-[#1a1a1a] text-white cursor-pointer hover:opacity-70 transition-opacity"
+                className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
                 style={{
                     top:
                         (titleBarVisible && titleBarPosition === 'top'

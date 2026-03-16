@@ -1,6 +1,6 @@
-import { useRef } from 'react'
 import { LANGUAGES } from '../constants/languages'
 import type { Microphone } from '../hooks/useMicrophones'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface ToolbarProps {
     visible: boolean
@@ -36,6 +36,10 @@ interface ToolbarProps {
     onMicMenuToggle: () => void
 }
 
+const btn = `flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-150`
+const primary = `bg-[#445ade] text-white hover:bg-[#3448c5]`
+const ghost = `bg-white/10 text-white hover:bg-white/20`
+
 export default function Toolbar({
     visible,
     topOffset,
@@ -69,192 +73,217 @@ export default function Toolbar({
     onLangMenuToggle,
     onMicMenuToggle,
 }: ToolbarProps) {
-    if (!visible) return null
-
     return (
-        <div
-            className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-4 py-2 bg-[#1a1a1a] border-b border-white/10"
-            style={{ top: topOffset }}>
-            <button
-                onClick={onPasteText}
-                className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-white bg-white text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white transition-colors">
-                + PEGAR TEXTO
-            </button>
+        <AnimatePresence>
+            {visible && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10"
+                    style={{ top: topOffset }}>
+                    <button
+                        onClick={onPasteText}
+                        className={`${btn} ${primary}`}>
+                        + PEGAR
+                    </button>
 
-            <button
-                onClick={onImport}
-                className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
-                ↑ IMPORTAR
-            </button>
+                    <button
+                        onClick={onImport}
+                        className={`${btn} ${ghost}`}>
+                        ↑ IMPORTAR
+                    </button>
 
-            <button
-                onClick={onClear}
-                className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-red-600 hover:border-red-600 transition-colors">
-                ✕ ELIMINAR
-            </button>
+                    <button
+                        onClick={onClear}
+                        className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
+                        ✕ ELIMINAR
+                    </button>
 
-            <div className="w-px h-5 mx-1 bg-white/20" />
+                    <div className="w-px h-5 mx-1 bg-white/15" />
 
-            <button
-                onClick={onToggleListen}
-                disabled={!content}
-                className={`flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
-                    listening
-                        ? 'border-red-400 bg-red-500 text-white hover:bg-red-600'
-                        : 'border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a]'
-                }`}>
-                {listening ? '⏹ DETENER' : '🎙 INICIAR'}
-            </button>
+                    <button
+                        onClick={onToggleListen}
+                        disabled={!content}
+                        className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
+                            listening ? 'bg-red-500 text-white hover:bg-red-600' : primary
+                        }`}>
+                        {listening ? '⏹ DETENER' : '🎙 INICIAR'}
+                    </button>
 
-            {isListening && (
-                <button
-                    onClick={onTogglePause}
-                    className={`flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border transition-colors ${
-                        isPaused
-                            ? 'border-white bg-white text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white'
-                            : 'border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a]'
-                    }`}>
-                    {isPaused ? '▶ REANUDAR' : '⏸ PAUSAR'}
-                </button>
-            )}
+                    {isListening && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.12 }}
+                            onClick={onTogglePause}
+                            className={`${btn} ${
+                                isPaused
+                                    ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
+                                    : ghost
+                            }`}>
+                            {isPaused ? '▶ REANUDAR' : '⏸ PAUSAR'}
+                        </motion.button>
+                    )}
 
-            {/* Selector de idioma */}
-            <div className="relative">
-                <button
-                    onClick={onLangMenuToggle}
-                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
-                    {LANGUAGES.find((l) => l.value === language)?.label ?? 'ES'}
-                    <span className="text-[9px] opacity-60">
-                        {langMenuOpen ? '▲' : '▼'}
-                    </span>
-                </button>
+                    <div className="w-px h-5 mx-1 bg-white/15" />
 
-                {langMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1 z-50 bg-[#1a1a1a] border border-white/20 flex flex-col min-w-[48px]">
-                        {LANGUAGES.map((lang) => (
-                            <button
-                                key={lang.value}
-                                onClick={() => onLanguageChange(lang.value)}
-                                className={`px-3 py-1 text-[11px] font-medium text-left transition-colors ${
-                                    language === lang.value
-                                        ? 'bg-white text-[#1a1a1a]'
-                                        : 'text-white hover:bg-white/10'
-                                }`}>
-                                {lang.label}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Selector de micrófono */}
-            <div className="relative">
-                <button
-                    onClick={onMicMenuToggle}
-                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-white bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a] transition-colors">
-                    🎙
-                    <span className="text-[9px] opacity-60">
-                        {micMenuOpen ? '▲' : '▼'}
-                    </span>
-                </button>
-
-                {micMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1 z-50 bg-[#1a1a1a] border border-white/20 flex flex-col min-w-[180px] max-w-[260px]">
-                        {microphones.map((mic) => (
-                            <button
-                                key={mic.deviceId}
-                                onClick={() => onMicChange(mic.deviceId)}
-                                className={`px-3 py-1.5 text-[11px] font-medium text-left transition-colors truncate ${
-                                    selectedMic === mic.deviceId
-                                        ? 'bg-white text-[#1a1a1a]'
-                                        : 'text-white hover:bg-white/10'
-                                }`}
-                                title={mic.label}>
-                                {mic.label}
-                            </button>
-                        ))}
-                        {microphones.length === 0 && (
-                            <span className="px-3 py-1.5 text-[11px] text-white/40">
-                                Sin micrófonos
+                    {/* Idioma */}
+                    <div className="relative">
+                        <button
+                            onClick={onLangMenuToggle}
+                            className={`${btn} ${ghost}`}>
+                            {LANGUAGES.find((l) => l.value === language)?.label ?? 'ES'}
+                            <span className="text-[9px] opacity-50">
+                                {langMenuOpen ? '▲' : '▼'}
                             </span>
-                        )}
+                        </button>
+
+                        <AnimatePresence>
+                            {langMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                    transition={{ duration: 0.14, ease: 'easeOut' }}
+                                    className="absolute top-full left-0 mt-2 z-50 bg-[#242424] border border-white/10 rounded-xl overflow-hidden shadow-xl flex flex-col min-w-[64px]">
+                                    {LANGUAGES.map((lang) => (
+                                        <button
+                                            key={lang.value}
+                                            onClick={() => onLanguageChange(lang.value)}
+                                            className={`px-4 py-1.5 text-[11px] font-medium text-left transition-colors ${
+                                                language === lang.value
+                                                    ? 'bg-[#445ade] text-white'
+                                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                            }`}>
+                                            {lang.label}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
-                )}
-            </div>
 
-            <div className="w-px h-5 mx-1 bg-white/20" />
+                    {/* Micrófono */}
+                    <div className="relative">
+                        <button
+                            onClick={onMicMenuToggle}
+                            className={`${btn} ${ghost}`}>
+                            🎙
+                            <span className="text-[9px] opacity-50">
+                                {micMenuOpen ? '▲' : '▼'}
+                            </span>
+                        </button>
 
-            <div className="flex items-center gap-1.5">
-                <span className="text-[9px] text-white/60">TAMAÑO</span>
-                <input
-                    type="number"
-                    min={6}
-                    max={200}
-                    value={fontSize}
-                    onChange={onFontSizeChange}
-                    className="w-12 px-1 py-0.5 text-[11px] text-white bg-transparent border border-white/40 text-center focus:outline-none focus:border-white"
-                />
-                <span className="text-[9px] text-white/40">px</span>
-            </div>
+                        <AnimatePresence>
+                            {micMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                                    transition={{ duration: 0.14, ease: 'easeOut' }}
+                                    className="absolute top-full left-0 mt-2 z-50 bg-[#242424] border border-white/10 rounded-xl overflow-hidden shadow-xl flex flex-col min-w-[180px] max-w-[260px]">
+                                    {microphones.map((mic) => (
+                                        <button
+                                            key={mic.deviceId}
+                                            onClick={() => onMicChange(mic.deviceId)}
+                                            className={`px-4 py-1.5 text-[11px] font-medium text-left transition-colors truncate ${
+                                                selectedMic === mic.deviceId
+                                                    ? 'bg-[#445ade] text-white'
+                                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                            title={mic.label}>
+                                            {mic.label}
+                                        </button>
+                                    ))}
+                                    {microphones.length === 0 && (
+                                        <span className="px-4 py-1.5 text-[11px] text-white/30">
+                                            Sin micrófonos
+                                        </span>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
-            <div className="w-px h-5 mx-1 bg-white/20" />
+                    <div className="w-px h-5 mx-1 bg-white/15" />
 
-            <div className="flex items-center gap-1.5">
-                <span className="text-[9px] text-white/60">FONDO</span>
-                <div className="relative w-5 h-5 border border-white/40">
-                    <input
-                        type="color"
-                        value={bgColor}
-                        onChange={(e) => onBgColorChange(e.target.value)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div
-                        className="w-full h-full"
-                        style={{ backgroundColor: bgColor }}
-                    />
-                </div>
-                <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={bgOpacity}
-                    onChange={(e) => onBgOpacityChange(Number(e.target.value))}
-                    className="w-16 accent-white"
-                />
-            </div>
+                    {/* Tamaño */}
+                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                        <span className="text-[9px] text-white/50 uppercase">Tamaño</span>
+                        <input
+                            type="number"
+                            min={6}
+                            max={200}
+                            value={fontSize}
+                            onChange={onFontSizeChange}
+                            className="w-10 text-[11px] text-white bg-transparent text-center focus:outline-none"
+                        />
+                        <span className="text-[9px] text-white/30">px</span>
+                    </div>
 
-            <div className="w-px h-5 mx-1 bg-white/20" />
+                    <div className="w-px h-5 mx-1 bg-white/15" />
 
-            <div className="flex items-center gap-1.5">
-                <span className="text-[9px] text-white/60">TEXTO</span>
-                <div className="relative w-5 h-5 border border-white/40">
-                    <input
-                        type="color"
-                        value={textColor}
-                        onChange={(e) => onTextColorChange(e.target.value)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div
-                        className="w-full h-full"
-                        style={{ backgroundColor: textColor }}
-                    />
-                </div>
-            </div>
+                    {/* Fondo */}
+                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                        <span className="text-[9px] text-white/50 uppercase">Fondo</span>
+                        <div className="relative w-4 h-4 rounded-full overflow-hidden border border-white/20">
+                            <input
+                                type="color"
+                                value={bgColor}
+                                onChange={(e) => onBgColorChange(e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <div
+                                className="w-full h-full rounded-full"
+                                style={{ backgroundColor: bgColor }}
+                            />
+                        </div>
+                        <input
+                            type="range"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={bgOpacity}
+                            onChange={(e) => onBgOpacityChange(Number(e.target.value))}
+                            className="w-14 accent-[#445ade]"
+                        />
+                    </div>
 
-            <div className="w-px h-5 mx-1 bg-white/20" />
+                    <div className="w-px h-5 mx-1 bg-white/15" />
 
-            <button
-                onClick={onToggleTitleBar}
-                className={`flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-white transition-colors ${
-                    titleBarVisible
-                        ? 'bg-white text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white'
-                        : 'bg-[#1a1a1a] text-white hover:bg-white hover:text-[#1a1a1a]'
-                }`}>
-                {titleBarVisible ? '▲ OCULTAR BARRA' : '▼ MOSTRAR BARRA'}
-            </button>
+                    {/* Texto */}
+                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                        <span className="text-[9px] text-white/50 uppercase">Texto</span>
+                        <div className="relative w-4 h-4 rounded-full overflow-hidden border border-white/20">
+                            <input
+                                type="color"
+                                value={textColor}
+                                onChange={(e) => onTextColorChange(e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <div
+                                className="w-full h-full rounded-full"
+                                style={{ backgroundColor: textColor }}
+                            />
+                        </div>
+                    </div>
 
-            {error && <span className="text-[10px] text-red-400">{error}</span>}
-        </div>
+                    <div className="w-px h-5 mx-1 bg-white/15" />
+
+                    <button
+                        onClick={onToggleTitleBar}
+                        className={`${btn} ${ghost}`}>
+                        {titleBarVisible ? '▲ BARRA' : '▼ BARRA'}
+                    </button>
+
+                    {error && (
+                        <span className="text-[10px] text-red-400 ml-1">{error}</span>
+                    )}
+                </motion.div>
+            )}
+        </AnimatePresence>
     )
 }
