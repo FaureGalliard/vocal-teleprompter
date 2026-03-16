@@ -77,12 +77,12 @@ export default function Toolbar({
         <AnimatePresence>
             {visible && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10"
-                    style={{ top: topOffset }}>
+                    initial={{ opacity: 0, x: '100%', scaleX: 0.8 }}
+                    animate={{ opacity: 1, x: 0, scaleX: 1 }}
+                    exit={{ opacity: 0, x: '100%', scaleX: 0.8 }}
+                    transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+                    style={{ top: topOffset, transformOrigin: 'right center' }}
+                    className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10">
                     <button
                         onClick={onPasteText}
                         className={`${btn} ${primary}`}>

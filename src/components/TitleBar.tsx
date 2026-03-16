@@ -16,30 +16,93 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                 <div
                     ref={ref}
                     data-tauri-drag-region
-                    className="flex items-center justify-between px-4 py-2 bg-[#1a1a1a] text-white select-none font-sans">
-                    <span className="text-xs opacity-60">Vocal Teleprompter</span>
-                    <div className="flex gap-1">
+                    className="flex items-center justify-between pl-3 bg-[#1a1a1a] text-white select-none font-sans"
+                    style={{ height: '32px' }}>
+                    {/* Izquierda — título */}
+                    <div className="flex items-center gap-2 pointer-events-none">
+                        <span className="text-[11px] text-white/40 font-medium">
+                            Vocal Teleprompter
+                        </span>
+                    </div>
+
+                    {/* Derecha — controles */}
+                    <div className="flex items-center h-full">
+                        {/* Mover posición */}
                         <button
                             onClick={() =>
                                 onPositionChange(position === 'top' ? 'bottom' : 'top')
                             }
-                            className="px-2 py-0.5 text-xs hover:opacity-50 transition-opacity">
+                            className="h-full px-3 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all text-xs"
+                            title={position === 'top' ? 'Mover abajo' : 'Mover arriba'}>
                             {position === 'top' ? '↓' : '↑'}
                         </button>
+
+                        <div className="w-px h-3.5 bg-white/10" />
+
+                        {/* Minimizar */}
                         <button
                             onClick={() => win.minimize()}
-                            className="px-2 py-0.5 text-xs hover:opacity-50 transition-opacity">
-                            −
+                            className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                            title="Minimizar">
+                            <svg
+                                width="10"
+                                height="1"
+                                viewBox="0 0 10 1"
+                                fill="currentColor">
+                                <rect
+                                    width="10"
+                                    height="1"
+                                />
+                            </svg>
                         </button>
+
+                        {/* Maximizar */}
                         <button
                             onClick={() => win.toggleMaximize()}
-                            className="px-2 py-0.5 text-xs hover:opacity-50 transition-opacity">
-                            □
+                            className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                            title="Maximizar">
+                            <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 10 10"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1">
+                                <rect
+                                    x="0.5"
+                                    y="0.5"
+                                    width="9"
+                                    height="9"
+                                />
+                            </svg>
                         </button>
+
+                        {/* Cerrar */}
                         <button
                             onClick={() => win.close()}
-                            className="px-2 py-0.5 text-xs hover:bg-red-600 transition-colors">
-                            ✕
+                            className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500 transition-all"
+                            title="Cerrar">
+                            <svg
+                                width="10"
+                                height="10"
+                                viewBox="0 0 10 10"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.2"
+                                strokeLinecap="round">
+                                <line
+                                    x1="0"
+                                    y1="0"
+                                    x2="10"
+                                    y2="10"
+                                />
+                                <line
+                                    x1="10"
+                                    y1="0"
+                                    x2="0"
+                                    y2="10"
+                                />
+                            </svg>
                         </button>
                     </div>
                 </div>

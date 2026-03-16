@@ -10,15 +10,17 @@ import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 
 function App() {
-    const [bgOpacity, setBgOpacity] = useState(1)
-    const [bgColor, setBgColor] = useState('#ffffff')
-    const [textColor, setTextColor] = useState('#1a1a1a')
+    const [bgOpacity, setBgOpacity] = useState(0.9)
+    const [bgColor, setBgColor] = useState('#0a0000')
+    const [textColor, setTextColor] = useState('#7698fe')
     const [titleBarPosition, setTitleBarPosition] = useState<'top' | 'bottom'>('top')
     const [titleBarVisible, setTitleBarVisible] = useState(true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
-    const [content, setContent] = useState('')
-    const [fontSize, setFontSize] = useState(24)
+    const [content, setContent] = useState(
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    )
+    const [fontSize, setFontSize] = useState(16)
     const [isListening, setIsListening] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [language, setLanguage] = useState('es-ES')
