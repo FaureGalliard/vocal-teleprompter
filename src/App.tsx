@@ -8,6 +8,7 @@ import { readTextFile } from '@tauri-apps/plugin-fs'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
 function App() {
     const [bgOpacity, setBgOpacity] = useState(0.9)
@@ -28,6 +29,8 @@ function App() {
     const [micMenuOpen, setMicMenuOpen] = useState(false)
     const [selectedMic, setSelectedMic] = useState('default')
     const titleBarRef = useRef<HTMLDivElement>(null)
+    const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const isDraggingRef = useRef(false)
 
     const { microphones } = useMicrophones()
     const scriptWords = content.split(/\s+/).filter(Boolean)
@@ -44,6 +47,28 @@ function App() {
             setTitleBarHeight(titleBarRef.current.offsetHeight)
         }
     }, [titleBarVisible, titleBarPosition])
+
+    const handleMouseDown = async () => {
+        isDraggingRef.current = false
+        dragTimeoutRef.current = setTimeout(async () => {
+            isDraggingRef.current = true
+            const win = getCurrentWindow()
+            await win.startDragging()
+        }, 150)
+    }
+
+    const handleMouseUp = () => {
+        if (dragTimeoutRef.current) {
+            clearTimeout(dragTimeoutRef.current)
+            dragTimeoutRef.current = null
+        }
+    }
+
+    const handleClick = () => {
+        if (!isDraggingRef.current) {
+            setToolbarVisible((v) => !v)
+        }
+    }
 
     const handlePasteText = async () => {
         try {
@@ -103,7 +128,11 @@ function App() {
             className="font-sans"
             style={{
                 height: '100vh',
+                overflow: 'hidden',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
+                outline: '1px solid rgba(255, 255, 255, 0.25)',
+                outlineOffset: '-1px',
+                boxSizing: 'border-box',
             }}>
             {titleBarVisible && (
                 <TitleBar
@@ -160,7 +189,9 @@ function App() {
             />
 
             <button
-                onClick={() => setToolbarVisible((v) => !v)}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onClick={handleClick}
                 className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
                 style={{
                     top:

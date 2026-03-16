@@ -31,12 +31,16 @@ export default function Canvas({
     return (
         <div
             className="overflow-y-auto"
-            style={{
-                height: '100vh',
-                paddingTop,
-                paddingBottom,
-                boxSizing: 'border-box',
-            }}>
+            style={
+                {
+                    height: '100vh',
+                    paddingTop,
+                    paddingBottom,
+                    boxSizing: 'border-box',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                } as React.CSSProperties
+            }>
             <div className="min-h-full flex items-start justify-center p-12">
                 {scriptWords.length > 0 ? (
                     <p
