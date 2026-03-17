@@ -16,16 +16,13 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                     data-tauri-drag-region
                     className="flex items-center justify-between pl-3 bg-[#1a1a1a] text-white select-none font-sans"
                     style={{ height: '32px' }}>
-                    {/* Izquierda — título */}
                     <div className="flex items-center gap-2 pointer-events-none">
                         <span className="text-[11px] text-white/40 font-medium">
                             Vocal Teleprompter
                         </span>
                     </div>
 
-                    {/* Derecha — controles */}
                     <div className="flex items-center h-full">
-                        {/* Mover posición */}
                         <button
                             onClick={() =>
                                 onPositionChange(position === 'top' ? 'bottom' : 'top')
@@ -37,7 +34,6 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
 
                         <div className="w-px h-3.5 bg-white/10" />
 
-                        {/* Minimizar */}
                         <button
                             onClick={() => getCurrentWindow().minimize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
@@ -54,7 +50,6 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                             </svg>
                         </button>
 
-                        {/* Maximizar */}
                         <button
                             onClick={() => getCurrentWindow().toggleMaximize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
@@ -75,7 +70,6 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                             </svg>
                         </button>
 
-                        {/* Cerrar */}
                         <button
                             onClick={() => getCurrentWindow().close()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500 transition-all"
