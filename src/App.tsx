@@ -36,6 +36,9 @@ function App() {
         window.addEventListener('mouseup', onUp)
         window.addEventListener('touchend', onUp)
     }
+
+    const handleColorPickerOpen = () => setIsAdjusting(true)
+    const handleColorPickerClose = () => setIsAdjusting(false)
     const [language, setLanguage] = useState('es-ES')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
@@ -180,6 +183,8 @@ function App() {
                 onTextColorChange={setTextColor}
                 onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
                 onAdjustStart={() => handleAdjustStart()}
+                onColorPickerOpen={() => handleColorPickerOpen()}
+                onColorPickerClose={() => handleColorPickerClose()}
                 onLanguageChange={(val) => {
                     setLanguage(val)
                     setLangMenuOpen(false)
