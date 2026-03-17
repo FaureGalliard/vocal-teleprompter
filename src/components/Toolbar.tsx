@@ -167,7 +167,6 @@ export default function Toolbar({
                         style={{
                             top: topOffset,
                             transformOrigin: 'right center',
-                            pointerEvents: isAdjusting ? 'none' : 'auto',
                         }}
                         className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10">
                         <button
@@ -337,8 +336,20 @@ export default function Toolbar({
                                 max={1}
                                 step={0.01}
                                 value={bgOpacity}
-                                onMouseDown={onAdjustStart}
-                                onTouchStart={onAdjustStart}
+                                onMouseDown={() => {
+                                    if (colorPickerOpen) {
+                                        setColorPickerOpen(false)
+                                        onColorPickerClose()
+                                    }
+                                    onAdjustStart()
+                                }}
+                                onTouchStart={() => {
+                                    if (colorPickerOpen) {
+                                        setColorPickerOpen(false)
+                                        onColorPickerClose()
+                                    }
+                                    onAdjustStart()
+                                }}
                                 onChange={(e) =>
                                     onBgOpacityChange(Number(e.target.value))
                                 }

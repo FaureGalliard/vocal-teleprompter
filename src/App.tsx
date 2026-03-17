@@ -157,8 +157,8 @@ function App() {
                 visible={toolbarVisible}
                 isAdjusting={isAdjusting}
                 topOffset={toolbarTopOffset}
-                listening={isRecognizing}
-                isListening={isSpeechActive}
+                isRecognizing={isRecognizing}
+                isSpeechActive={isSpeechActive}
                 isPaused={isPaused}
                 error={error}
                 content={content}
