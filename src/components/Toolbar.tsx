@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface ToolbarProps {
     visible: boolean
     topOffset: number
-    listening: boolean
-    isListening: boolean
+    isRecognizing: boolean
+    isSpeechActive: boolean
     isPaused: boolean
     error: string | null
     content: string
@@ -43,8 +43,8 @@ const ghost = `bg-white/10 text-white hover:bg-white/20`
 export default function Toolbar({
     visible,
     topOffset,
-    listening,
-    isListening,
+    isRecognizing,
+    isSpeechActive,
     isPaused,
     error,
     content,
@@ -107,12 +107,14 @@ export default function Toolbar({
                         onClick={onToggleListen}
                         disabled={!content}
                         className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
-                            listening ? 'bg-red-500 text-white hover:bg-red-600' : primary
+                            isRecognizing
+                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                : primary
                         }`}>
-                        {listening ? '⏹ DETENER' : '🎙 INICIAR'}
+                        {isRecognizing ? '⏹ DETENER' : '🎙 INICIAR'}
                     </button>
 
-                    {isListening && (
+                    {isSpeechActive && (
                         <motion.button
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}

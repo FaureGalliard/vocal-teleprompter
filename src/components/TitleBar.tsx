@@ -1,8 +1,6 @@
 import { forwardRef } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
-const win = getCurrentWindow()
-
 interface TitleBarProps {
     position: 'top' | 'bottom'
     onPositionChange: (pos: 'top' | 'bottom') => void
@@ -41,7 +39,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
 
                         {/* Minimizar */}
                         <button
-                            onClick={() => win.minimize()}
+                            onClick={() => getCurrentWindow().minimize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
                             title="Minimizar">
                             <svg
@@ -58,7 +56,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
 
                         {/* Maximizar */}
                         <button
-                            onClick={() => win.toggleMaximize()}
+                            onClick={() => getCurrentWindow().toggleMaximize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
                             title="Maximizar">
                             <svg
@@ -79,7 +77,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
 
                         {/* Cerrar */}
                         <button
-                            onClick={() => win.close()}
+                            onClick={() => getCurrentWindow().close()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500 transition-all"
                             title="Cerrar">
                             <svg

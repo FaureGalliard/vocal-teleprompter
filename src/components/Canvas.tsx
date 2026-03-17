@@ -5,6 +5,8 @@ interface CanvasProps {
     currentWordIndex: number
     fontSize: number
     textColor: string
+    titleBarHeight: number
+    titleBarPosition: 'top' | 'bottom'
 }
 
 export default function Canvas({
@@ -12,7 +14,8 @@ export default function Canvas({
     currentWordIndex,
     fontSize,
     textColor,
-    paddingBottom,
+    titleBarHeight,
+    titleBarPosition,
 }: CanvasProps) {
     const activeWordRef = useRef<HTMLSpanElement>(null)
 
@@ -25,21 +28,28 @@ export default function Canvas({
         }
     }, [currentWordIndex])
 
+    const top = titleBarPosition === 'top' ? titleBarHeight + 15 : 20
+    const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 20 : 30
+
     return (
         <div
-            className="overflow-y-auto"
             style={
                 {
-                    height: '100vh',
-                    boxSizing: 'border-box',
+                    position: 'fixed',
+                    top,
+                    bottom,
+                    left: 20,
+                    right: 20,
+                    overflowY: 'scroll',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                 } as React.CSSProperties
-            }>
-            <div className="min-h-full flex items-start justify-center p-12">
+            }
+            className="[&::-webkit-scrollbar]:hidden">
+            <div>
                 {scriptWords.length > 0 ? (
                     <p
-                        className="text-center leading-relaxed w-full"
+                        className="text-center leading-relaxed"
                         style={{ fontSize: `${fontSize}px` }}>
                         {scriptWords.map((word, i) => {
                             const isCurrentWord = i === currentWordIndex
@@ -74,7 +84,7 @@ export default function Canvas({
                     </p>
                 ) : (
                     <p
-                        className="text-5xl text-center opacity-15"
+                        className="text-5xl text-center opacity-65"
                         style={{ color: textColor }}>
                         Tu texto aparecerá aquí
                     </p>

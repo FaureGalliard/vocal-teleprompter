@@ -22,7 +22,7 @@ function App() {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     )
     const [fontSize, setFontSize] = useState(16)
-    const [isListening, setIsListening] = useState(false)
+    const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [language, setLanguage] = useState('es-ES')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
@@ -35,11 +35,11 @@ function App() {
     const { microphones } = useMicrophones()
     const scriptWords = content.split(/\s+/).filter(Boolean)
     const { currentWordIndex, processTranscript, reset } = useScriptMatcher(scriptWords)
-    const { listening, error } = useSpeechRecognition({
+    const { listening: isRecognizing, error } = useSpeechRecognition({
         language,
         deviceId: selectedMic,
         onTranscript: processTranscript,
-        enabled: isListening && !isPaused,
+        enabled: isSpeechActive && !isPaused,
     })
 
     useLayoutEffect(() => {
@@ -54,7 +54,7 @@ function App() {
             isDraggingRef.current = true
             const win = getCurrentWindow()
             await win.startDragging()
-        }, 100)
+        }, 120)
     }
 
     const handleMouseUp = () => {
@@ -101,7 +101,7 @@ function App() {
     const handleClear = () => {
         setContent('')
         reset()
-        setIsListening(false)
+        setIsSpeechActive(false)
         setIsPaused(false)
     }
 
@@ -111,17 +111,13 @@ function App() {
     }
 
     const handleToggleListen = () => {
-        setIsListening((v) => !v)
+        setIsSpeechActive((v) => !v)
         setIsPaused(false)
-        if (isListening) reset()
+        if (isSpeechActive) reset()
     }
 
     const toolbarTopOffset =
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
-    const canvasPaddingTop =
-        titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
-    const canvasPaddingBottom =
-        titleBarVisible && titleBarPosition === 'bottom' ? titleBarHeight : 0
 
     return (
         <div
@@ -130,7 +126,7 @@ function App() {
                 height: '100vh',
                 overflow: 'hidden',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                outline: '1px solid rgba(255, 255, 255, 0.25)',
+                outline: `1px solid ${textColor}80`,
                 outlineOffset: '-1px',
                 boxSizing: 'border-box',
             }}>
@@ -145,8 +141,8 @@ function App() {
             <Toolbar
                 visible={toolbarVisible}
                 topOffset={toolbarTopOffset}
-                listening={listening}
-                isListening={isListening}
+                listening={isRecognizing}
+                isListening={isSpeechActive}
                 isPaused={isPaused}
                 error={error}
                 content={content}
@@ -208,8 +204,8 @@ function App() {
                 currentWordIndex={currentWordIndex}
                 fontSize={fontSize}
                 textColor={textColor}
-                paddingTop={canvasPaddingTop}
-                paddingBottom={canvasPaddingBottom}
+                titleBarHeight={titleBarVisible ? titleBarHeight : 0}
+                titleBarPosition={titleBarPosition}
             />
         </div>
     )
