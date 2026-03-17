@@ -24,6 +24,18 @@ function App() {
     const [fontSize, setFontSize] = useState(16)
     const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
+    const [isAdjusting, setIsAdjusting] = useState(false)
+
+    const handleAdjustStart = () => {
+        setIsAdjusting(true)
+        const onUp = () => {
+            setIsAdjusting(false)
+            window.removeEventListener('mouseup', onUp)
+            window.removeEventListener('touchend', onUp)
+        }
+        window.addEventListener('mouseup', onUp)
+        window.addEventListener('touchend', onUp)
+    }
     const [language, setLanguage] = useState('es-ES')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
@@ -126,7 +138,7 @@ function App() {
                 height: '100vh',
                 overflow: 'hidden',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                outline: `1px solid ${textColor}80`,
+                outline: '1px solid rgba(255, 255, 255, 0.25)',
                 outlineOffset: '-1px',
                 boxSizing: 'border-box',
             }}>
@@ -140,6 +152,7 @@ function App() {
 
             <Toolbar
                 visible={toolbarVisible}
+                isAdjusting={isAdjusting}
                 topOffset={toolbarTopOffset}
                 listening={isRecognizing}
                 isListening={isSpeechActive}
@@ -166,6 +179,7 @@ function App() {
                 onBgOpacityChange={setBgOpacity}
                 onTextColorChange={setTextColor}
                 onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                onAdjustStart={() => handleAdjustStart()}
                 onLanguageChange={(val) => {
                     setLanguage(val)
                     setLangMenuOpen(false)

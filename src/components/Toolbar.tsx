@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 interface ToolbarProps {
     visible: boolean
+    isAdjusting: boolean
     topOffset: number
     isRecognizing: boolean
     isSpeechActive: boolean
@@ -34,6 +35,7 @@ interface ToolbarProps {
     onMicChange: (val: string) => void
     onLangMenuToggle: () => void
     onMicMenuToggle: () => void
+    onAdjustStart: () => void
 }
 
 const btn = `flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-full transition-all duration-150`
@@ -42,6 +44,7 @@ const ghost = `bg-white/10 text-white hover:bg-white/20`
 
 export default function Toolbar({
     visible,
+    isAdjusting,
     topOffset,
     isRecognizing,
     isSpeechActive,
@@ -72,16 +75,21 @@ export default function Toolbar({
     onMicChange,
     onLangMenuToggle,
     onMicMenuToggle,
+    onAdjustStart,
 }: ToolbarProps) {
     return (
         <AnimatePresence>
             {visible && (
                 <motion.div
                     initial={{ opacity: 0, x: '100%', scaleX: 0.8 }}
-                    animate={{ opacity: 1, x: 0, scaleX: 1 }}
+                    animate={{ opacity: isAdjusting ? 0 : 1, x: 0, scaleX: 1 }}
                     exit={{ opacity: 0, x: '100%', scaleX: 0.8 }}
                     transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
-                    style={{ top: topOffset, transformOrigin: 'right center' }}
+                    style={{
+                        top: topOffset,
+                        transformOrigin: 'right center',
+                        pointerEvents: isAdjusting ? 'none' : 'auto',
+                    }}
                     className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10">
                     <button
                         onClick={onPasteText}
@@ -249,6 +257,8 @@ export default function Toolbar({
                             max={1}
                             step={0.01}
                             value={bgOpacity}
+                            onMouseDown={onAdjustStart}
+                            onTouchStart={onAdjustStart}
                             onChange={(e) => onBgOpacityChange(Number(e.target.value))}
                             className="w-14 accent-[#445ade]"
                         />
@@ -263,6 +273,7 @@ export default function Toolbar({
                             <input
                                 type="color"
                                 value={textColor}
+                                onMouseDown={onAdjustStart}
                                 onChange={(e) => onTextColorChange(e.target.value)}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
