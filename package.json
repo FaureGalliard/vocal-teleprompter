@@ -1,33 +1,33 @@
 {
-  "name": "vocal-teleprompter",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.2.1",
-    "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-fs": "^2.4.5",
-    "@tauri-apps/plugin-opener": "^2",
-    "framer-motion": "^12.37.0",
-    "react": "^19.1.0",
-    "react-colorful": "^5.6.1",
-    "react-dom": "^19.1.0",
-    "tailwindcss": "^4.2.1"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
-  }
+    "name": "vocal-teleprompter",
+    "private": true,
+    "version": "1.1.2",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "tauri": "tauri"
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "^4.2.1",
+        "@tauri-apps/api": "^2.10.1",
+        "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
+        "@tauri-apps/plugin-dialog": "^2.6.0",
+        "@tauri-apps/plugin-fs": "^2.4.5",
+        "@tauri-apps/plugin-opener": "^2",
+        "framer-motion": "^12.37.0",
+        "react": "^19.1.0",
+        "react-colorful": "^5.6.1",
+        "react-dom": "^19.1.0",
+        "tailwindcss": "^4.2.1"
+    },
+    "devDependencies": {
+        "@tauri-apps/cli": "^2",
+        "@types/react": "^19.1.8",
+        "@types/react-dom": "^19.1.6",
+        "@vitejs/plugin-react": "^4.6.0",
+        "typescript": "~5.8.3",
+        "vite": "^7.0.4"
+    }
 }

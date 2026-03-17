@@ -141,7 +141,7 @@ function App() {
                 height: '100vh',
                 overflow: 'hidden',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                outline: '1px solid rgba(255, 255, 255, 0.25)',
+                outline: `1px solid ${textColor}`,
                 outlineOffset: '-1px',
                 boxSizing: 'border-box',
             }}>
