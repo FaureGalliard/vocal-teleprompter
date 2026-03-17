@@ -54,7 +54,7 @@ function App() {
             isDraggingRef.current = true
             const win = getCurrentWindow()
             await win.startDragging()
-        }, 150)
+        }, 100)
     }
 
     const handleMouseUp = () => {

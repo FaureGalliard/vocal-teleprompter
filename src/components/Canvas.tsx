@@ -5,8 +5,6 @@ interface CanvasProps {
     currentWordIndex: number
     fontSize: number
     textColor: string
-    paddingTop: number
-    paddingBottom: number
 }
 
 export default function Canvas({
@@ -14,7 +12,6 @@ export default function Canvas({
     currentWordIndex,
     fontSize,
     textColor,
-    paddingTop,
     paddingBottom,
 }: CanvasProps) {
     const activeWordRef = useRef<HTMLSpanElement>(null)
@@ -34,8 +31,6 @@ export default function Canvas({
             style={
                 {
                     height: '100vh',
-                    paddingTop,
-                    paddingBottom,
                     boxSizing: 'border-box',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
