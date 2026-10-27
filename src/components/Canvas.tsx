@@ -35,15 +35,21 @@ export default function Canvas({
     titleBarPosition,
 }: CanvasProps) {
     const t = useT()
+    const containerRef = useRef<HTMLDivElement>(null)
     const activeWordRef = useRef<HTMLSpanElement>(null)
 
+    // Scroll the canvas itself, vertically only. scrollIntoView also moves
+    // every ancestor on both axes, which could push the script sideways out
+    // of view.
     useEffect(() => {
-        if (activeWordRef.current) {
-            activeWordRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-            })
-        }
+        const container = containerRef.current
+        const word = activeWordRef.current
+        if (!container || !word) return
+        container.scrollTo({
+            top: word.offsetTop - (container.clientHeight - word.offsetHeight) / 2,
+            left: 0,
+            behavior: 'smooth',
+        })
     }, [currentWordIndex])
 
     let prevWord = -1
@@ -55,6 +61,7 @@ export default function Canvas({
 
     return (
         <div
+            ref={containerRef}
             style={
                 {
                     position: 'fixed',
@@ -63,6 +70,7 @@ export default function Canvas({
                     left: 20,
                     right: 20,
                     overflowY: 'scroll',
+                    overflowX: 'hidden',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                 } as React.CSSProperties
@@ -97,6 +105,8 @@ export default function Canvas({
                         style={{
                             fontSize: `${fontSize}px`,
                             whiteSpace: 'pre-wrap',
+                            // Long unbroken strings (URLs) wrap instead of widening the line
+                            overflowWrap: 'anywhere',
                             textShadow,
                         }}>
                         {segments.map((segment, s) => {
