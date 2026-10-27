@@ -332,13 +332,13 @@ function App() {
                     language={language}
                     uiLanguage={uiLanguage}
                     onUiLanguageChange={(val) => {
-                    // Swap the welcome script along with the language, unless it was edited
-                    if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
-                        setContent(getMessages(val).sampleScript)
-                        reset()
-                    }
-                    setUiLanguage(val)
-                }}
+                        // Swap the welcome script along with the language, unless it was edited
+                        if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
+                            setContent(getMessages(val).sampleScript)
+                            reset()
+                        }
+                        setUiLanguage(val)
+                    }}
                     langMenuOpen={langMenuOpen}
                     micMenuOpen={micMenuOpen}
                     selectedMic={activeMic}
@@ -357,11 +357,11 @@ function App() {
                     onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
                     autoContrast={autoContrast}
                     onToggleAutoContrast={() => setAutoContrast((v) => !v)}
-                onShowTutorial={showTutorial}
-                onReset={() => {
-                    clearPersistentState()
-                    window.location.reload()
-                }}
+                    onShowTutorial={showTutorial}
+                    onReset={() => {
+                        clearPersistentState()
+                        window.location.reload()
+                    }}
                     onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
                     onAdjustStart={() => handleAdjustStart()}
                     onColorPickerOpen={() => handleColorPickerOpen()}
