@@ -8,6 +8,7 @@ import {
     PanelTop,
     RotateCcw,
     Settings,
+    Timer,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
 
@@ -24,6 +25,8 @@ interface SettingsPanelProps {
     onToggleTitleBar: () => void
     onReset: () => void
     onShowTutorial: () => void
+    targetMinutes: number
+    onTargetMinutesChange: (val: number) => void
 }
 
 function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -78,6 +81,8 @@ export default function SettingsPanel({
     onToggleTitleBar,
     onReset,
     onShowTutorial,
+    targetMinutes,
+    onTargetMinutesChange,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -177,6 +182,28 @@ export default function SettingsPanel({
                                 on={autoContrast}
                                 onToggle={onToggleAutoContrast}
                             />
+                        </Row>
+
+                        <Row
+                            icon={<Timer size={14} />}
+                            label={t.settings.targetDuration}
+                            hint={t.settings.targetDurationHint}>
+                            <div className="flex items-center gap-1 bg-white/10 rounded-md px-2 py-1">
+                                <input
+                                    type="number"
+                                    min={0}
+                                    max={180}
+                                    value={targetMinutes}
+                                    onChange={(e) => {
+                                        const val = parseInt(e.target.value)
+                                        onTargetMinutesChange(
+                                            isNaN(val) ? 0 : Math.max(0, Math.min(180, val)),
+                                        )
+                                    }}
+                                    className="w-8 text-[11px] text-white bg-transparent text-right focus:outline-none"
+                                />
+                                <span className="text-[10px] text-white/40">min</span>
+                            </div>
                         </Row>
 
                         <Row

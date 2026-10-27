@@ -35,6 +35,8 @@ export const fr: Messages = {
         reset: 'Réinitialiser tous les paramètres',
         resetConfirm: 'Cliquez à nouveau pour réinitialiser',
         tutorial: 'Voir le tutoriel',
+        targetDuration: 'Durée visée',
+        targetDurationHint: "Vous indique d'accélérer ou de ralentir. 0 = désactivé",
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const fr: Messages = {
         previous: 'Diapo précédente',
         next: 'Diapo suivante',
         hint: 'Astuce : une ligne avec --- commence une nouvelle carte de diapo',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} mots/min`,
+        left: (time: string) => `reste ${time}`,
+        estimate: (time: string) => `≈ ${time} de lecture`,
+        target: (time: string) => `objectif ${time}`,
+        'on-pace': 'Bon rythme',
+        'speed-up': 'Accélérez',
+        'slow-down': 'Ralentissez',
     },
 
     titleBar: {

@@ -1,5 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Timer } from 'lucide-react'
 import { useT } from '../i18n'
+import { formatDuration, type PaceStatus } from '../hooks/usePace'
 
 interface StatusBarProps {
     bottom: number
@@ -7,6 +8,19 @@ interface StatusBarProps {
     currentCard: number
     onPreviousCard: () => void
     onNextCard: () => void
+    sessionActive: boolean
+    elapsedMs: number
+    wpm: number | null
+    remainingMs: number
+    estimatedMs: number
+    targetMinutes: number
+    status: PaceStatus | null
+}
+
+const STATUS_COLOR: Record<PaceStatus, string> = {
+    'on-pace': '#4ade80',
+    'speed-up': '#facc15',
+    'slow-down': '#f87171',
 }
 
 const pill = 'flex items-center gap-1 h-6 px-1 rounded-full bg-[#1a1a1a]/80 text-white/70 text-[10px]'
@@ -20,8 +34,16 @@ export default function StatusBar({
     currentCard,
     onPreviousCard,
     onNextCard,
+    sessionActive,
+    elapsedMs,
+    wpm,
+    remainingMs,
+    estimatedMs,
+    targetMinutes,
+    status,
 }: StatusBarProps) {
     const t = useT()
+    const target = targetMinutes > 0 ? formatDuration(targetMinutes * 60000) : null
 
     return (
         <div
@@ -49,6 +71,35 @@ export default function StatusBar({
                 </div>
             ) : (
                 <span />
+            )}
+
+            {estimatedMs > 0 && (
+                <div className={`${pill} px-2.5 gap-1.5 tabular-nums`}>
+                    <Timer size={11} />
+                    {sessionActive ? (
+                        <>
+                            <span className="text-white">
+                                {formatDuration(elapsedMs)}
+                                {target && ` / ${target}`}
+                            </span>
+                            {wpm !== null && <span>· {t.pace.wpm(Math.round(wpm))}</span>}
+                            <span>· {t.pace.left(formatDuration(remainingMs))}</span>
+                            {status && (
+                                <span
+                                    className="flex items-center gap-1"
+                                    style={{ color: STATUS_COLOR[status] }}>
+                                    · <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                    {t.pace[status]}
+                                </span>
+                            )}
+                        </>
+                    ) : (
+                        <span>
+                            {t.pace.estimate(formatDuration(estimatedMs))}
+                            {target && ` · ${t.pace.target(target)}`}
+                        </span>
+                    )}
+                </div>
             )}
         </div>
     )

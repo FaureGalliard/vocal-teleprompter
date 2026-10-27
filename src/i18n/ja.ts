@@ -35,6 +35,8 @@ export const ja: Messages = {
         reset: 'すべての設定をリセット',
         resetConfirm: 'もう一度クリックでリセット',
         tutorial: 'チュートリアルを見る',
+        targetDuration: '目標時間',
+        targetDurationHint: '速めるか遅くするかを知らせます。0 でオフ',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const ja: Messages = {
         previous: '前のスライド',
         next: '次のスライド',
         hint: 'ヒント：--- だけの行で新しいスライドカードになります',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} 語/分`,
+        left: (time: string) => `残り ${time}`,
+        estimate: (time: string) => `読了まで約 ${time}`,
+        target: (time: string) => `目標 ${time}`,
+        'on-pace': '良いペース',
+        'speed-up': '速めて',
+        'slow-down': 'ゆっくり',
     },
 
     titleBar: {

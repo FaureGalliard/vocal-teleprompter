@@ -35,6 +35,8 @@ export const zh: Messages = {
         reset: '重置所有设置',
         resetConfirm: '再次点击以重置',
         tutorial: '查看教程',
+        targetDuration: '目标时长',
+        targetDurationHint: '提示你加快或放慢语速。0 = 关闭',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const zh: Messages = {
         previous: '上一张幻灯片',
         next: '下一张幻灯片',
         hint: '提示：单独一行 --- 会开始一张新的幻灯片卡片',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} 词/分`,
+        left: (time: string) => `剩余 ${time}`,
+        estimate: (time: string) => `约 ${time} 读完`,
+        target: (time: string) => `目标 ${time}`,
+        'on-pace': '节奏正好',
+        'speed-up': '加快',
+        'slow-down': '放慢',
     },
 
     titleBar: {

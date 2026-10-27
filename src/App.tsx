@@ -14,6 +14,7 @@ import { Menu, X } from 'lucide-react'
 import { startTour } from './lib/tour'
 import { splitCards, currentCardIndex } from './lib/cards'
 import StatusBar from './components/StatusBar'
+import { usePace } from './hooks/usePace'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -51,6 +52,8 @@ function App() {
     const [isEditing, setIsEditing] = useState(false)
     const [tourActive, setTourActive] = useState(false)
     const [tourSeen, setTourSeen] = usePersistentState('tourSeen', false)
+    // Minutes the speaker wants the presentation to last; 0 means no target
+    const [targetMinutes, setTargetMinutes] = usePersistentState('targetMinutes', 0)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -95,6 +98,13 @@ function App() {
     })
 
     const currentCard = currentCardIndex(cards, currentWordIndex)
+    const pace = usePace({
+        running: isSpeechActive && !isPaused,
+        sessionActive: isSpeechActive,
+        spokenWords: currentWordIndex + 1,
+        totalWords: scriptWords.length,
+        targetMinutes,
+    })
     // Land just before the card's first word so that word is the next one to read
     const goToCard = (index: number) => {
         const card = cards[Math.max(0, Math.min(index, cards.length - 1))]
@@ -379,6 +389,8 @@ function App() {
                     autoContrast={autoContrast}
                     onToggleAutoContrast={() => setAutoContrast((v) => !v)}
                     onShowTutorial={showTutorial}
+                    targetMinutes={targetMinutes}
+                    onTargetMinutesChange={setTargetMinutes}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -449,6 +461,9 @@ function App() {
                         currentCard={currentCard}
                         onPreviousCard={() => goToCard(currentCard - 1)}
                         onNextCard={() => goToCard(currentCard + 1)}
+                        sessionActive={isSpeechActive}
+                        targetMinutes={targetMinutes}
+                        {...pace}
                     />
                 )}
             </div>

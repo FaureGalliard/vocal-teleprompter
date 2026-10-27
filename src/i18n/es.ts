@@ -35,6 +35,8 @@ export const es: Messages = {
         reset: 'Restablecer todos los ajustes',
         resetConfirm: 'Haz click otra vez para restablecer',
         tutorial: 'Ver tutorial',
+        targetDuration: 'Duración objetivo',
+        targetDurationHint: 'Te avisa si debes ir más rápido o más lento. 0 = apagado',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const es: Messages = {
         previous: 'Diapositiva anterior',
         next: 'Diapositiva siguiente',
         hint: 'Consejo: una línea con --- empieza una nueva tarjeta de diapositiva',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} ppm`,
+        left: (time: string) => `quedan ${time}`,
+        estimate: (time: string) => `≈ ${time} de lectura`,
+        target: (time: string) => `objetivo ${time}`,
+        'on-pace': 'Buen ritmo',
+        'speed-up': 'Acelera',
+        'slow-down': 'Más despacio',
     },
 
     titleBar: {

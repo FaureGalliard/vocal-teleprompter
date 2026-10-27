@@ -35,6 +35,8 @@ export const pt: Messages = {
         reset: 'Redefinir todas as configurações',
         resetConfirm: 'Clique de novo para redefinir',
         tutorial: 'Ver tutorial',
+        targetDuration: 'Duração desejada',
+        targetDurationHint: 'Avisa se você deve acelerar ou desacelerar. 0 = desligado',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const pt: Messages = {
         previous: 'Slide anterior',
         next: 'Próximo slide',
         hint: 'Dica: uma linha com --- começa um novo cartão de slide',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} ppm`,
+        left: (time: string) => `faltam ${time}`,
+        estimate: (time: string) => `≈ ${time} de leitura`,
+        target: (time: string) => `meta ${time}`,
+        'on-pace': 'No ritmo',
+        'speed-up': 'Acelere',
+        'slow-down': 'Mais devagar',
     },
 
     titleBar: {

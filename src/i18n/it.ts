@@ -35,6 +35,8 @@ export const it: Messages = {
         reset: 'Ripristina tutte le impostazioni',
         resetConfirm: 'Fai clic di nuovo per ripristinare',
         tutorial: 'Mostra il tutorial',
+        targetDuration: 'Durata obiettivo',
+        targetDurationHint: 'Ti dice se accelerare o rallentare. 0 = disattivato',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const it: Messages = {
         previous: 'Slide precedente',
         next: 'Slide successiva',
         hint: 'Suggerimento: una riga con --- inizia una nuova scheda slide',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} parole/min`,
+        left: (time: string) => `mancano ${time}`,
+        estimate: (time: string) => `≈ ${time} di lettura`,
+        target: (time: string) => `obiettivo ${time}`,
+        'on-pace': 'Ritmo giusto',
+        'speed-up': 'Accelera',
+        'slow-down': 'Rallenta',
     },
 
     titleBar: {

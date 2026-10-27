@@ -33,6 +33,8 @@ export const en = {
         reset: 'Reset all settings',
         resetConfirm: 'Click again to reset',
         tutorial: 'Show tutorial',
+        targetDuration: 'Target duration',
+        targetDurationHint: 'Tells you to speed up or slow down. 0 = off',
     },
 
     tour: {
@@ -65,6 +67,16 @@ export const en = {
         previous: 'Previous slide',
         next: 'Next slide',
         hint: 'Tip: a line with --- starts a new slide card',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} wpm`,
+        left: (time: string) => `${time} left`,
+        estimate: (time: string) => `≈ ${time} to read`,
+        target: (time: string) => `target ${time}`,
+        'on-pace': 'On pace',
+        'speed-up': 'Speed up',
+        'slow-down': 'Slow down',
     },
 
     titleBar: {

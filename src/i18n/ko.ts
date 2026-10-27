@@ -35,6 +35,8 @@ export const ko: Messages = {
         reset: '모든 설정 초기화',
         resetConfirm: '한 번 더 클릭하면 초기화됩니다',
         tutorial: '튜토리얼 보기',
+        targetDuration: '목표 시간',
+        targetDurationHint: '빠르게 또는 천천히 말하라고 알려 줍니다. 0 = 끄기',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const ko: Messages = {
         previous: '이전 슬라이드',
         next: '다음 슬라이드',
         hint: '팁: --- 만 있는 줄에서 새 슬라이드 카드가 시작됩니다',
+    },
+
+    pace: {
+        wpm: (n: number) => `분당 ${n}단어`,
+        left: (time: string) => `${time} 남음`,
+        estimate: (time: string) => `약 ${time} 소요`,
+        target: (time: string) => `목표 ${time}`,
+        'on-pace': '적당한 속도',
+        'speed-up': '더 빠르게',
+        'slow-down': '더 천천히',
     },
 
     titleBar: {

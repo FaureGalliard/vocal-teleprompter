@@ -61,6 +61,8 @@ interface ToolbarProps {
     onToggleAutoContrast: () => void
     onReset: () => void
     onShowTutorial: () => void
+    targetMinutes: number
+    onTargetMinutesChange: (val: number) => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -113,6 +115,8 @@ export default function Toolbar({
     onToggleAutoContrast,
     onReset,
     onShowTutorial,
+    targetMinutes,
+    onTargetMinutesChange,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -502,6 +506,8 @@ export default function Toolbar({
                             onToggleTitleBar={onToggleTitleBar}
                             onReset={onReset}
                             onShowTutorial={onShowTutorial}
+                            targetMinutes={targetMinutes}
+                            onTargetMinutesChange={onTargetMinutesChange}
                         />
 
                         {error && (

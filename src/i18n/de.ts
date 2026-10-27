@@ -35,6 +35,8 @@ export const de: Messages = {
         reset: 'Alle Einstellungen zurücksetzen',
         resetConfirm: 'Zum Zurücksetzen erneut klicken',
         tutorial: 'Tutorial anzeigen',
+        targetDuration: 'Zieldauer',
+        targetDurationHint: 'Sagt dir, ob du schneller oder langsamer sprechen sollst. 0 = aus',
     },
 
     tour: {
@@ -67,6 +69,16 @@ export const de: Messages = {
         previous: 'Vorherige Folie',
         next: 'Nächste Folie',
         hint: 'Tipp: Eine Zeile mit --- beginnt eine neue Folienkarte',
+    },
+
+    pace: {
+        wpm: (n: number) => `${n} W/min`,
+        left: (time: string) => `noch ${time}`,
+        estimate: (time: string) => `≈ ${time} Lesezeit`,
+        target: (time: string) => `Ziel ${time}`,
+        'on-pace': 'Gutes Tempo',
+        'speed-up': 'Schneller',
+        'slow-down': 'Langsamer',
     },
 
     titleBar: {
