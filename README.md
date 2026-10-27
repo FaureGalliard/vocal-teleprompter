@@ -45,7 +45,10 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - 🎙️ **Microphone picker** that picks up devices you plug in while the app is open.
 - 💾 **Remembers everything**: script, colors, opacity, size, language and microphone.
 - 🎨 **Customizable look**: background color and opacity, text color and font size.
+- ✍️ **Write right in the prompter**: press **EDIT** to type or fix the script in place,
+  then **DONE** (or `Esc`) to go back to prompting.
 - 📋 **Paste or import** your script from the clipboard or a `.txt` file. Line breaks are kept.
+- 🌐 **Interface in English or Spanish** (English by default), tray menu included.
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
 - 🖥️ **System tray**: show, hide or quit from the tray icon.
 
@@ -90,7 +93,7 @@ Get the latest installer (`.exe` or `.msi`) from the
   It is free and needs no account, but it **needs an internet connection**.
 - Hiding from screen capture needs **Windows 10 version 2004 or newer**. On older builds the
   window shows up black instead of disappearing. You can turn it off with the
-  **🕶 OCULTO / 👁 VISIBLE** button if you want to record the app itself.
+  **🕶 HIDDEN / 👁 VISIBLE** button if you want to record the app itself.
 
 ---
 
