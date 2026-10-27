@@ -10,6 +10,7 @@ import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
+import { Menu, X } from 'lucide-react'
 import { segmentText } from './lib/segment'
 import { usePersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, getMessages } from './i18n'
@@ -343,7 +344,7 @@ function App() {
                                 : 0) + 8,
                         right: 12,
                     }}>
-                    ☰
+                    {toolbarVisible ? <X size={16} /> : <Menu size={16} />}
                 </button>
 
                 <Canvas

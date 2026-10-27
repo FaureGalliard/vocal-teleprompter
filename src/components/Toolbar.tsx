@@ -5,6 +5,27 @@ import { LANGUAGES } from '../constants/languages'
 import type { Microphone } from '../hooks/useMicrophones'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useT, UI_LANGUAGES } from '../i18n'
+import {
+    AudioLines,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    ClipboardPaste,
+    Contrast,
+    Eye,
+    EyeOff,
+    FileUp,
+    Globe,
+    Mic,
+    PanelTop,
+    Pause,
+    Pencil,
+    Play,
+    Square,
+    Trash2,
+} from 'lucide-react'
+
+const ICON = 13
 
 interface ToolbarProps {
     visible: boolean
@@ -205,24 +226,28 @@ export default function Toolbar({
                         <button
                             onClick={onPasteText}
                             className={`${btn} ${primary}`}>
+                            <ClipboardPaste size={ICON} />
                             {t.toolbar.paste}
                         </button>
 
                         <button
                             onClick={onImport}
                             className={`${btn} ${ghost}`}>
+                            <FileUp size={ICON} />
                             {t.toolbar.import}
                         </button>
 
                         <button
                             onClick={onClear}
                             className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
+                            <Trash2 size={ICON} />
                             {t.toolbar.clear}
                         </button>
 
                         <button
                             onClick={onToggleEdit}
                             className={`${btn} ${isEditing ? primary : ghost}`}>
+                            {isEditing ? <Check size={ICON} /> : <Pencil size={ICON} />}
                             {isEditing ? t.toolbar.done : t.toolbar.edit}
                         </button>
 
@@ -241,6 +266,7 @@ export default function Toolbar({
                                     ? 'animate-pulse'
                                     : ''
                             }`}>
+                            {isSpeechActive ? <Square size={ICON} /> : <Mic size={ICON} />}
                             {isSpeechActive ? t.toolbar.stop : t.toolbar.start}
                         </button>
 
@@ -252,6 +278,7 @@ export default function Toolbar({
                                 transition={{ duration: 0.12 }}
                                 onClick={onTogglePause}
                                 className={`${btn} ${isPaused ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : ghost}`}>
+                                {isPaused ? <Play size={ICON} /> : <Pause size={ICON} />}
                                 {isPaused ? t.toolbar.resume : t.toolbar.pause}
                             </motion.button>
                         )}
@@ -267,9 +294,17 @@ export default function Toolbar({
                                 className={`${btn} ${ghost}`}>
                                 {LANGUAGES.find((l) => l.value === language)?.label ??
                                     language}
-                                <span className="text-[9px] opacity-50">
-                                    {langMenuOpen ? '▲' : '▼'}
-                                </span>
+                                {langMenuOpen ? (
+                                    <ChevronUp
+                                        size={12}
+                                        className="opacity-50"
+                                    />
+                                ) : (
+                                    <ChevronDown
+                                        size={12}
+                                        className="opacity-50"
+                                    />
+                                )}
                             </button>
                             <AnimatePresence>
                                 {langMenuOpen && (
@@ -305,10 +340,18 @@ export default function Toolbar({
                             <button
                                 onClick={onMicMenuToggle}
                                 className={`${btn} ${ghost}`}>
-                                🎙
-                                <span className="text-[9px] opacity-50">
-                                    {micMenuOpen ? '▲' : '▼'}
-                                </span>
+                                <AudioLines size={ICON} />
+                                {micMenuOpen ? (
+                                    <ChevronUp
+                                        size={12}
+                                        className="opacity-50"
+                                    />
+                                ) : (
+                                    <ChevronDown
+                                        size={12}
+                                        className="opacity-50"
+                                    />
+                                )}
                             </button>
                             <AnimatePresence>
                                 {micMenuOpen && (
@@ -425,9 +468,10 @@ export default function Toolbar({
                                         ? t.toolbar.autoContrastOn
                                         : t.toolbar.autoContrastOff
                                 }
-                                className={`text-[10px] leading-none transition-colors ${
+                                className={`flex items-center gap-1 text-[10px] leading-none transition-colors ${
                                     autoContrast ? 'text-white' : 'text-white/30'
                                 }`}>
+                                <Contrast size={12} />
                                 {t.toolbar.autoContrast}
                             </button>
                         </div>
@@ -437,7 +481,11 @@ export default function Toolbar({
                         <button
                             onClick={onToggleTitleBar}
                             className={`${btn} ${ghost}`}>
-                            {titleBarVisible ? '▲' : '▼'} {t.toolbar.bar}
+                            <PanelTop
+                                size={ICON}
+                                className={titleBarVisible ? '' : 'opacity-40'}
+                            />
+                            {t.toolbar.bar}
                         </button>
 
                         <button
@@ -448,6 +496,7 @@ export default function Toolbar({
                                     : t.toolbar.visibleTitle
                             }
                             className={`${btn} ${hiddenFromCapture ? primary : ghost}`}>
+                            {hiddenFromCapture ? <EyeOff size={ICON} /> : <Eye size={ICON} />}
                             {hiddenFromCapture ? t.toolbar.hidden : t.toolbar.visible}
                         </button>
 
@@ -460,7 +509,8 @@ export default function Toolbar({
                             }}
                             title={t.toolbar.uiLanguage}
                             className={`${btn} ${ghost}`}>
-                            🌐 {UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label ?? 'EN'}
+                            <Globe size={ICON} />
+                            {UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label ?? 'EN'}
                         </button>
 
                         {error && (

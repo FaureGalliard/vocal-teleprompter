@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useT } from '../i18n'
+import { ArrowDownToLine, ArrowUpToLine, Minus, Square, X } from 'lucide-react'
 
 interface TitleBarProps {
     position: 'top' | 'bottom'
@@ -31,7 +32,11 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                             }
                             className="h-full px-3 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all text-xs"
                             title={position === 'top' ? t.titleBar.moveDown : t.titleBar.moveUp}>
-                            {position === 'top' ? '↓' : '↑'}
+                            {position === 'top' ? (
+                                <ArrowDownToLine size={13} />
+                            ) : (
+                                <ArrowUpToLine size={13} />
+                            )}
                         </button>
 
                         <div className="w-px h-3.5 bg-white/10" />
@@ -40,63 +45,21 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                             onClick={() => getCurrentWindow().minimize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
                             title={t.titleBar.minimize}>
-                            <svg
-                                width="10"
-                                height="1"
-                                viewBox="0 0 10 1"
-                                fill="currentColor">
-                                <rect
-                                    width="10"
-                                    height="1"
-                                />
-                            </svg>
+                            <Minus size={14} />
                         </button>
 
                         <button
                             onClick={() => getCurrentWindow().toggleMaximize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
                             title={t.titleBar.maximize}>
-                            <svg
-                                width="10"
-                                height="10"
-                                viewBox="0 0 10 10"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1">
-                                <rect
-                                    x="0.5"
-                                    y="0.5"
-                                    width="9"
-                                    height="9"
-                                />
-                            </svg>
+                            <Square size={11} />
                         </button>
 
                         <button
                             onClick={() => getCurrentWindow().close()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500 transition-all"
                             title={t.titleBar.close}>
-                            <svg
-                                width="10"
-                                height="10"
-                                viewBox="0 0 10 10"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.2"
-                                strokeLinecap="round">
-                                <line
-                                    x1="0"
-                                    y1="0"
-                                    x2="10"
-                                    y2="10"
-                                />
-                                <line
-                                    x1="10"
-                                    y1="0"
-                                    x2="0"
-                                    y2="10"
-                                />
-                            </svg>
+                            <X size={14} />
                         </button>
                     </div>
                 </div>
