@@ -1,8 +1,10 @@
 [package]
 name = "vocal-teleprompter"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Voice-synced teleprompter that scrolls your script as you speak"
+authors = ["FaureGalliard"]
+license = "MIT"
+repository = "https://github.com/FaureGalliard/vocal-teleprompter"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
