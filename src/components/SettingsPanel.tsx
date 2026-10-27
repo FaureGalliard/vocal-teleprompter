@@ -120,6 +120,9 @@ export default function SettingsPanel({
     const [confirmReset, setConfirmReset] = useState(false)
     // Open toward whichever side has room; the gear may wrap to the left
     const [alignLeft, setAlignLeft] = useState(false)
+    // Fit the panel between the button and the bottom of the window; it
+    // scrolls when the window is shorter than the panel
+    const [maxHeight, setMaxHeight] = useState<number>()
     const ref = useRef<HTMLDivElement>(null)
 
     // Close on outside click or Esc
@@ -154,7 +157,10 @@ export default function SettingsPanel({
             <button
                 onClick={() => {
                     const rect = ref.current?.getBoundingClientRect()
-                    if (rect) setAlignLeft(rect.right < PANEL_WIDTH + 8)
+                    if (rect) {
+                        setAlignLeft(rect.right < PANEL_WIDTH + 8)
+                        setMaxHeight(Math.max(160, window.innerHeight - rect.bottom - 16))
+                    }
                     setOpen((v) => !v)
                 }}
                 title={t.settings.title}
@@ -171,8 +177,8 @@ export default function SettingsPanel({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.97 }}
                         transition={{ duration: 0.14, ease: 'easeOut' }}
-                        style={{ width: PANEL_WIDTH }}
-                        className={`absolute top-full mt-2 z-50 ${alignLeft ? 'left-0' : 'right-0'} bg-[#242424] border border-white/10 rounded-xl shadow-xl overflow-hidden`}>
+                        style={{ width: PANEL_WIDTH, maxHeight }}
+                        className={`absolute top-full mt-2 z-50 ${alignLeft ? 'left-0' : 'right-0'} bg-[#242424] border border-white/10 rounded-xl shadow-xl overflow-y-auto`}>
                         <div className="px-4 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
                             {t.settings.title}
                         </div>
