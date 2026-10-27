@@ -4,20 +4,16 @@ import { HexColorPicker } from 'react-colorful'
 import { LANGUAGES } from '../constants/languages'
 import type { Microphone } from '../hooks/useMicrophones'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useT, UI_LANGUAGES } from '../i18n'
+import { useT } from '../i18n'
+import SettingsPanel from './SettingsPanel'
 import {
     AudioLines,
     Check,
     ChevronDown,
     ChevronUp,
     ClipboardPaste,
-    Contrast,
-    Eye,
-    EyeOff,
     FileUp,
-    Globe,
     Mic,
-    PanelTop,
     Pause,
     Pencil,
     Play,
@@ -63,6 +59,7 @@ interface ToolbarProps {
     onToggleTitleBar: () => void
     onToggleHiddenFromCapture: () => void
     onToggleAutoContrast: () => void
+    onReset: () => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -113,6 +110,7 @@ export default function Toolbar({
     onToggleTitleBar,
     onToggleHiddenFromCapture,
     onToggleAutoContrast,
+    onReset,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -461,57 +459,21 @@ export default function Toolbar({
                                 className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
                                 style={{ backgroundColor: textColor }}
                             />
-                            <button
-                                onClick={onToggleAutoContrast}
-                                title={
-                                    autoContrast
-                                        ? t.toolbar.autoContrastOn
-                                        : t.toolbar.autoContrastOff
-                                }
-                                className={`flex items-center gap-1 text-[10px] leading-none transition-colors ${
-                                    autoContrast ? 'text-white' : 'text-white/30'
-                                }`}>
-                                <Contrast size={12} />
-                                {t.toolbar.autoContrast}
-                            </button>
                         </div>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
 
-                        <button
-                            onClick={onToggleTitleBar}
-                            className={`${btn} ${ghost}`}>
-                            <PanelTop
-                                size={ICON}
-                                className={titleBarVisible ? '' : 'opacity-40'}
-                            />
-                            {t.toolbar.bar}
-                        </button>
-
-                        <button
-                            onClick={onToggleHiddenFromCapture}
-                            title={
-                                hiddenFromCapture
-                                    ? t.toolbar.hiddenTitle
-                                    : t.toolbar.visibleTitle
-                            }
-                            className={`${btn} ${hiddenFromCapture ? primary : ghost}`}>
-                            {hiddenFromCapture ? <EyeOff size={ICON} /> : <Eye size={ICON} />}
-                            {hiddenFromCapture ? t.toolbar.hidden : t.toolbar.visible}
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                const i = UI_LANGUAGES.findIndex((l) => l.value === uiLanguage)
-                                onUiLanguageChange(
-                                    UI_LANGUAGES[(i + 1) % UI_LANGUAGES.length].value,
-                                )
-                            }}
-                            title={t.toolbar.uiLanguage}
-                            className={`${btn} ${ghost}`}>
-                            <Globe size={ICON} />
-                            {UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label ?? 'EN'}
-                        </button>
+                        <SettingsPanel
+                            uiLanguage={uiLanguage}
+                            hiddenFromCapture={hiddenFromCapture}
+                            autoContrast={autoContrast}
+                            titleBarVisible={titleBarVisible}
+                            onUiLanguageChange={onUiLanguageChange}
+                            onToggleHiddenFromCapture={onToggleHiddenFromCapture}
+                            onToggleAutoContrast={onToggleAutoContrast}
+                            onToggleTitleBar={onToggleTitleBar}
+                            onReset={onReset}
+                        />
 
                         {error && (
                             <span className="text-[10px] text-red-400 ml-1">

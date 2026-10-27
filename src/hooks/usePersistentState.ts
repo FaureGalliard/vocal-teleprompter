@@ -11,6 +11,17 @@ function load<T>(key: string, fallback: T): T {
     }
 }
 
+// Forget every saved setting (the caller reloads to apply the defaults)
+export function clearPersistentState() {
+    try {
+        Object.keys(localStorage)
+            .filter((k) => k.startsWith(PREFIX))
+            .forEach((k) => localStorage.removeItem(k))
+    } catch {
+        // Nothing saved to clear
+    }
+}
+
 // useState that survives restarts by mirroring the value into localStorage
 export function usePersistentState<T>(key: string, fallback: T) {
     const [value, setValue] = useState<T>(() => load(key, fallback))

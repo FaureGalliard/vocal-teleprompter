@@ -19,16 +19,19 @@ export const es: Messages = {
         size: 'Tamaño',
         background: 'Fondo',
         text: 'Texto',
-        bar: 'BARRA',
-        autoContrast: 'AUTO',
-        autoContrastOn: 'Contraste automático activado',
-        autoContrastOff: 'Contraste automático desactivado',
-        hidden: 'OCULTO',
-        visible: 'VISIBLE',
-        hiddenTitle: 'Invisible al compartir pantalla o grabar',
-        visibleTitle: 'Visible al compartir pantalla o grabar',
-        uiLanguage: 'Idioma de la interfaz',
         ok: 'OK',
+    },
+
+    settings: {
+        title: 'Ajustes',
+        interfaceLanguage: 'Idioma de la interfaz',
+        hideFromCapture: 'Ocultar al compartir pantalla',
+        hideFromCaptureHint: 'Zoom, Meet, OBS y las capturas no verán esta ventana',
+        autoContrast: 'Contraste automático',
+        autoContrastHint: 'Ajusta el color del texto para que siempre se lea',
+        titleBar: 'Mostrar barra de título',
+        reset: 'Restablecer todos los ajustes',
+        resetConfirm: 'Haz click otra vez para restablecer',
     },
 
     titleBar: {

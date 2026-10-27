@@ -12,7 +12,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { Menu, X } from 'lucide-react'
 import { segmentText } from './lib/segment'
-import { usePersistentState } from './hooks/usePersistentState'
+import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
 
@@ -186,7 +186,9 @@ function App() {
     // Keyboard shortcuts, ignored while typing in a field
     useEffect(() => {
         const isTyping = (target: EventTarget | null) =>
-            target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target instanceof HTMLSelectElement
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || isEditing)
@@ -310,6 +312,10 @@ function App() {
                     onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
                     autoContrast={autoContrast}
                     onToggleAutoContrast={() => setAutoContrast((v) => !v)}
+                onReset={() => {
+                    clearPersistentState()
+                    window.location.reload()
+                }}
                     onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
                     onAdjustStart={() => handleAdjustStart()}
                     onColorPickerOpen={() => handleColorPickerOpen()}

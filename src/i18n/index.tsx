@@ -2,10 +2,10 @@ import { createContext, useContext, type ReactNode } from 'react'
 import { en, type Messages } from './en'
 import { es } from './es'
 
-// Interface languages, in the order the toolbar cycles through them
+// Interface languages, listed by their own name in the settings
 export const UI_LANGUAGES = [
-    { label: 'EN', value: 'en', messages: en },
-    { label: 'ES', value: 'es', messages: es },
+    { name: 'English', value: 'en', messages: en },
+    { name: 'Español', value: 'es', messages: es },
 ] as const
 
 export type UiLanguage = (typeof UI_LANGUAGES)[number]['value']

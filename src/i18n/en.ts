@@ -17,16 +17,19 @@ export const en = {
         size: 'Size',
         background: 'Background',
         text: 'Text',
-        bar: 'BAR',
-        autoContrast: 'AUTO',
-        autoContrastOn: 'Automatic contrast on',
-        autoContrastOff: 'Automatic contrast off',
-        hidden: 'HIDDEN',
-        visible: 'VISIBLE',
-        hiddenTitle: 'Invisible when sharing your screen or recording',
-        visibleTitle: 'Visible when sharing your screen or recording',
-        uiLanguage: 'Interface language',
         ok: 'OK',
+    },
+
+    settings: {
+        title: 'Settings',
+        interfaceLanguage: 'Interface language',
+        hideFromCapture: 'Hide from screen sharing',
+        hideFromCaptureHint: "Zoom, Meet, OBS and screenshots won't see this window",
+        autoContrast: 'Automatic contrast',
+        autoContrastHint: 'Adjusts the text color so it is always readable',
+        titleBar: 'Show title bar',
+        reset: 'Reset all settings',
+        resetConfirm: 'Click again to reset',
     },
 
     titleBar: {
