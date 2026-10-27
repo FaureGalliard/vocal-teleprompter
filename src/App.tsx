@@ -11,11 +11,16 @@ import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { segmentText } from './lib/segment'
 import { usePersistentState } from './hooks/usePersistentState'
+import { bestOutline, ensureContrast } from './lib/contrast'
+
+// Below this background opacity the backdrop shows through enough to need a halo
+const HALO_BELOW_OPACITY = 0.85
 
 function App() {
     const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0.9)
     const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
     const [textColor, setTextColor] = usePersistentState('textColor', '#7698fe')
+    const [autoContrast, setAutoContrast] = usePersistentState('autoContrast', true)
     const [titleBarPosition, setTitleBarPosition] = usePersistentState<'top' | 'bottom'>(
         'titleBarPosition',
         'top',
@@ -217,6 +222,15 @@ function App() {
         }
     }, [content, isSpeechActive, currentWordIndex, jumpTo, setFontSize])
 
+    // With auto contrast the chosen color is nudged until it reads well on the
+    // background, and once the background turns see-through (so whatever is
+    // behind the window shows) the text gets a halo to stay legible on it
+    const displayTextColor = autoContrast ? ensureContrast(textColor, bgColor) : textColor
+    const textHalo =
+        autoContrast && bgOpacity < HALO_BELOW_OPACITY
+            ? bestOutline(displayTextColor)
+            : undefined
+
     const toolbarTopOffset =
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
 
@@ -227,7 +241,7 @@ function App() {
                 height: '100vh',
                 overflow: 'hidden',
                 backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                outline: `1px solid ${textColor}`,
+                outline: `1px solid ${displayTextColor}`,
                 outlineOffset: '-1px',
                 boxSizing: 'border-box',
             }}>
@@ -269,6 +283,8 @@ function App() {
                 onBgOpacityChange={setBgOpacity}
                 onTextColorChange={setTextColor}
                 onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                autoContrast={autoContrast}
+                onToggleAutoContrast={() => setAutoContrast((v) => !v)}
                 onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
                 onAdjustStart={() => handleAdjustStart()}
                 onColorPickerOpen={() => handleColorPickerOpen()}
@@ -311,7 +327,8 @@ function App() {
                 currentWordIndex={currentWordIndex}
                 onWordClick={jumpTo}
                 fontSize={fontSize}
-                textColor={textColor}
+                textColor={displayTextColor}
+                textHalo={textHalo}
                 titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                 titleBarPosition={titleBarPosition}
             />

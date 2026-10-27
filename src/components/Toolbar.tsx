@@ -20,6 +20,7 @@ interface ToolbarProps {
     textColor: string
     titleBarVisible: boolean
     hiddenFromCapture: boolean
+    autoContrast: boolean
     language: string
     langMenuOpen: boolean
     micMenuOpen: boolean
@@ -36,6 +37,7 @@ interface ToolbarProps {
     onTextColorChange: (val: string) => void
     onToggleTitleBar: () => void
     onToggleHiddenFromCapture: () => void
+    onToggleAutoContrast: () => void
     onLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
     onLangMenuToggle: () => void
@@ -64,6 +66,7 @@ export default function Toolbar({
     textColor,
     titleBarVisible,
     hiddenFromCapture,
+    autoContrast,
     language,
     langMenuOpen,
     micMenuOpen,
@@ -80,6 +83,7 @@ export default function Toolbar({
     onTextColorChange,
     onToggleTitleBar,
     onToggleHiddenFromCapture,
+    onToggleAutoContrast,
     onLanguageChange,
     onMicChange,
     onLangMenuToggle,
@@ -397,6 +401,18 @@ export default function Toolbar({
                                 className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
                                 style={{ backgroundColor: textColor }}
                             />
+                            <button
+                                onClick={onToggleAutoContrast}
+                                title={
+                                    autoContrast
+                                        ? 'Contraste automático activado'
+                                        : 'Contraste automático desactivado'
+                                }
+                                className={`text-[10px] leading-none transition-colors ${
+                                    autoContrast ? 'text-white' : 'text-white/30'
+                                }`}>
+                                ◐ AUTO
+                            </button>
                         </div>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />

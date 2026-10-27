@@ -7,6 +7,8 @@ interface CanvasProps {
     onWordClick: (index: number) => void
     fontSize: number
     textColor: string
+    // Outline color that keeps text readable over an unknown backdrop
+    textHalo?: string
     titleBarHeight: number
     titleBarPosition: 'top' | 'bottom'
 }
@@ -17,6 +19,7 @@ export default function Canvas({
     onWordClick,
     fontSize,
     textColor,
+    textHalo,
     titleBarHeight,
     titleBarPosition,
 }: CanvasProps) {
@@ -32,6 +35,9 @@ export default function Canvas({
     }, [currentWordIndex])
 
     let prevWord = -1
+    const textShadow = textHalo
+        ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
+        : undefined
     const top = titleBarPosition === 'top' ? titleBarHeight + 15 : 20
     const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 20 : 30
 
@@ -54,7 +60,11 @@ export default function Canvas({
                 {segments.length > 0 ? (
                     <p
                         className="text-center leading-relaxed"
-                        style={{ fontSize: `${fontSize}px`, whiteSpace: 'pre-wrap' }}>
+                        style={{
+                            fontSize: `${fontSize}px`,
+                            whiteSpace: 'pre-wrap',
+                            textShadow,
+                        }}>
                         {segments.map((segment, s) => {
                             const i = segment.word
                             if (i === -1) {
@@ -101,6 +111,8 @@ export default function Canvas({
                                               ? `${textColor}10`
                                               : 'transparent',
                                         borderRadius: isCurrentWord ? '2px' : undefined,
+                                        // The highlight already has its own background
+                                        textShadow: isCurrentWord ? 'none' : undefined,
                                         padding: isCurrentWord ? '0 2px' : undefined,
                                         transition:
                                             'color 0.2s ease, background-color 0.2s ease',
@@ -113,7 +125,7 @@ export default function Canvas({
                 ) : (
                     <p
                         className="text-5xl text-center opacity-65"
-                        style={{ color: textColor }}>
+                        style={{ color: textColor, textShadow }}>
                         Tu texto aparecerá aquí
                     </p>
                 )}
