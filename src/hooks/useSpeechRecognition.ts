@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 
+// Errors the recognizer cannot recover from by restarting
+const FATAL_ERRORS = new Set([
+    'not-allowed',
+    'service-not-allowed',
+    'audio-capture',
+    'language-not-supported',
+])
+// Errors that only mean "nothing heard yet" and are not worth showing
+const SILENT_ERRORS = new Set(['aborted', 'no-speech'])
+const RESTART_DELAY_MS = 1000
+
 interface UseSpeechRecognitionProps {
     language: string
     deviceId: string
@@ -18,12 +29,19 @@ export function useSpeechRecognition({
     const recognitionRef = useRef<SpeechRecognition | null>(null)
     const streamRef = useRef<MediaStream | null>(null)
     const enabledRef = useRef(enabled)
+    const sessionRef = useRef(0)
+    const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
         enabledRef.current = enabled
     }, [enabled])
 
     const stop = useCallback(() => {
+        sessionRef.current++
+        if (restartTimerRef.current) {
+            clearTimeout(restartTimerRef.current)
+            restartTimerRef.current = null
+        }
         if (recognitionRef.current) {
             recognitionRef.current.onend = null
             recognitionRef.current.stop()
@@ -42,12 +60,19 @@ export function useSpeechRecognition({
             setError('Speech Recognition no disponible')
             return
         }
+        const session = ++sessionRef.current
+        setError(null)
 
         let track: MediaStreamTrack | undefined
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: deviceId ? { deviceId: { exact: deviceId } } : true,
             })
+            // stop() ran while we waited for the device
+            if (session !== sessionRef.current) {
+                stream.getTracks().forEach((t) => t.stop())
+                return
+            }
             streamRef.current = stream
             track = stream.getAudioTracks()[0]
         } catch (e) {
@@ -61,15 +86,29 @@ export function useSpeechRecognition({
         recognition.lang = language
         recognition.maxAlternatives = 1
 
+        let fatal = false
+        let failed = false
+
         recognition.onstart = () => setListening(true)
         recognition.onerror = (e) => {
-            if (e.error !== 'aborted') setError(e.error)
+            if (SILENT_ERRORS.has(e.error)) return
+            setError(e.error)
+            if (FATAL_ERRORS.has(e.error)) fatal = true
+            else failed = true
         }
         recognition.onend = () => {
-            if (enabledRef.current) recognition.start(track)
-            else setListening(false)
+            setListening(false)
+            if (!enabledRef.current || fatal || session !== sessionRef.current) return
+            // Back off after a real failure (e.g. network) instead of spinning
+            const delay = failed ? RESTART_DELAY_MS : 0
+            failed = false
+            restartTimerRef.current = setTimeout(() => {
+                restartTimerRef.current = null
+                if (session === sessionRef.current) recognition.start(track)
+            }, delay)
         }
         recognition.onresult = (event) => {
+            setError(null)
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript.trim()
                 if (transcript) onTranscript(transcript)
