@@ -193,11 +193,16 @@ export default function Toolbar({
                             onClick={onToggleListen}
                             disabled={!content}
                             className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
-                                isRecognizing
+                                isSpeechActive
                                     ? 'bg-red-500 text-white hover:bg-red-600'
                                     : primary
+                            } ${
+                                // Session on but the recognizer is (re)connecting
+                                isSpeechActive && !isPaused && !isRecognizing
+                                    ? 'animate-pulse'
+                                    : ''
                             }`}>
-                            {isRecognizing ? '⏹ DETENER' : '🎙 INICIAR'}
+                            {isSpeechActive ? '⏹ DETENER' : '🎙 INICIAR'}
                         </button>
 
                         {isSpeechActive && (
