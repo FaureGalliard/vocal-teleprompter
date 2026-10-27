@@ -65,7 +65,7 @@ export function useSpeechRecognition({
     const start = useCallback(async () => {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition
         if (!SR) {
-            setError('Speech Recognition no disponible')
+            setError('unsupported')
             return
         }
         const session = ++sessionRef.current
@@ -84,7 +84,7 @@ export function useSpeechRecognition({
             streamRef.current = stream
             track = stream.getAudioTracks()[0]
         } catch (e) {
-            setError('No se pudo acceder al micrófono')
+            setError('microphone')
             return
         }
 

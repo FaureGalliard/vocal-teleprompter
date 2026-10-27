@@ -11,12 +11,18 @@ import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { segmentText } from './lib/segment'
 import { usePersistentState } from './hooks/usePersistentState'
+import { DEFAULT_UI_LANGUAGE, I18nProvider, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
 
 // Below this background opacity the backdrop shows through enough to need a halo
 const HALO_BELOW_OPACITY = 0.85
 
 function App() {
+    const [uiLanguage, setUiLanguage] = usePersistentState<string>(
+        'uiLanguage',
+        DEFAULT_UI_LANGUAGE,
+    )
+    const t = getMessages(uiLanguage)
     const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0.9)
     const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
     const [textColor, setTextColor] = usePersistentState('textColor', '#7698fe')
@@ -28,10 +34,7 @@ function App() {
     const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
-    const [content, setContent] = usePersistentState(
-        'content',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    )
+    const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
     // Keep the window out of screen shares and recordings (Zoom, Meet, OBS...)
     const [hiddenFromCapture, setHiddenFromCapture] = usePersistentState(
@@ -55,7 +58,7 @@ function App() {
 
     const handleColorPickerOpen = () => setIsAdjusting(true)
     const handleColorPickerClose = () => setIsAdjusting(false)
-    const [language, setLanguage] = usePersistentState('language', 'es-ES')
+    const [language, setLanguage] = usePersistentState('language', 'en-US')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
     const [selectedMic, setSelectedMic] = usePersistentState('microphone', 'default')
@@ -128,7 +131,7 @@ function App() {
         try {
             const selected = await open({
                 multiple: false,
-                filters: [{ name: 'Texto', extensions: ['txt'] }],
+                filters: [{ name: t.textFiles, extensions: ['txt'] }],
             })
             if (selected) {
                 const text = await readTextFile(selected as string)
@@ -157,6 +160,10 @@ function App() {
         setIsPaused(false)
         if (isSpeechActive) reset()
     }
+
+    useEffect(() => {
+        document.documentElement.lang = uiLanguage
+    }, [uiLanguage])
 
     useEffect(() => {
         getCurrentWindow()
@@ -235,104 +242,108 @@ function App() {
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
 
     return (
-        <div
-            className="font-sans"
-            style={{
-                height: '100vh',
-                overflow: 'hidden',
-                backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                outline: `1px solid ${displayTextColor}`,
-                outlineOffset: '-1px',
-                boxSizing: 'border-box',
-            }}>
-            {titleBarVisible && (
-                <TitleBar
-                    ref={titleBarRef}
-                    position={titleBarPosition}
-                    onPositionChange={setTitleBarPosition}
-                />
-            )}
-
-            <Toolbar
-                visible={toolbarVisible}
-                isAdjusting={isAdjusting}
-                topOffset={toolbarTopOffset}
-                isRecognizing={isRecognizing}
-                isSpeechActive={isSpeechActive}
-                isPaused={isPaused}
-                error={error}
-                content={content}
-                fontSize={fontSize}
-                bgColor={bgColor}
-                bgOpacity={bgOpacity}
-                textColor={textColor}
-                titleBarVisible={titleBarVisible}
-                hiddenFromCapture={hiddenFromCapture}
-                language={language}
-                langMenuOpen={langMenuOpen}
-                micMenuOpen={micMenuOpen}
-                selectedMic={activeMic}
-                microphones={microphones}
-                onPasteText={handlePasteText}
-                onImport={handleImport}
-                onClear={handleClear}
-                onToggleListen={handleToggleListen}
-                onTogglePause={() => setIsPaused((v) => !v)}
-                onFontSizeChange={handleFontSizeChange}
-                onBgColorChange={setBgColor}
-                onBgOpacityChange={setBgOpacity}
-                onTextColorChange={setTextColor}
-                onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
-                autoContrast={autoContrast}
-                onToggleAutoContrast={() => setAutoContrast((v) => !v)}
-                onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
-                onAdjustStart={() => handleAdjustStart()}
-                onColorPickerOpen={() => handleColorPickerOpen()}
-                onColorPickerClose={() => handleColorPickerClose()}
-                onLanguageChange={(val) => {
-                    setLanguage(val)
-                    setLangMenuOpen(false)
-                }}
-                onMicChange={(val) => {
-                    setSelectedMic(val)
-                    setMicMenuOpen(false)
-                }}
-                onLangMenuToggle={() => {
-                    setLangMenuOpen((v) => !v)
-                    setMicMenuOpen(false)
-                }}
-                onMicMenuToggle={() => {
-                    setMicMenuOpen((v) => !v)
-                    setLangMenuOpen(false)
-                }}
-            />
-
-            <button
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
-                onClick={handleClick}
-                className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
+        <I18nProvider language={uiLanguage}>
+            <div
+                className="font-sans"
                 style={{
-                    top:
-                        (titleBarVisible && titleBarPosition === 'top'
-                            ? titleBarHeight
-                            : 0) + 8,
-                    right: 12,
+                    height: '100vh',
+                    overflow: 'hidden',
+                    backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
+                    outline: `1px solid ${displayTextColor}`,
+                    outlineOffset: '-1px',
+                    boxSizing: 'border-box',
                 }}>
-                ☰
-            </button>
+                {titleBarVisible && (
+                    <TitleBar
+                        ref={titleBarRef}
+                        position={titleBarPosition}
+                        onPositionChange={setTitleBarPosition}
+                    />
+                )}
 
-            <Canvas
-                segments={segments}
-                currentWordIndex={currentWordIndex}
-                onWordClick={jumpTo}
-                fontSize={fontSize}
-                textColor={displayTextColor}
-                textHalo={textHalo}
-                titleBarHeight={titleBarVisible ? titleBarHeight : 0}
-                titleBarPosition={titleBarPosition}
-            />
-        </div>
+                <Toolbar
+                    visible={toolbarVisible}
+                    isAdjusting={isAdjusting}
+                    topOffset={toolbarTopOffset}
+                    isRecognizing={isRecognizing}
+                    isSpeechActive={isSpeechActive}
+                    isPaused={isPaused}
+                    error={error}
+                    content={content}
+                    fontSize={fontSize}
+                    bgColor={bgColor}
+                    bgOpacity={bgOpacity}
+                    textColor={textColor}
+                    titleBarVisible={titleBarVisible}
+                    hiddenFromCapture={hiddenFromCapture}
+                    language={language}
+                    uiLanguage={uiLanguage}
+                    onUiLanguageChange={setUiLanguage}
+                    langMenuOpen={langMenuOpen}
+                    micMenuOpen={micMenuOpen}
+                    selectedMic={activeMic}
+                    microphones={microphones}
+                    onPasteText={handlePasteText}
+                    onImport={handleImport}
+                    onClear={handleClear}
+                    onToggleListen={handleToggleListen}
+                    onTogglePause={() => setIsPaused((v) => !v)}
+                    onFontSizeChange={handleFontSizeChange}
+                    onBgColorChange={setBgColor}
+                    onBgOpacityChange={setBgOpacity}
+                    onTextColorChange={setTextColor}
+                    onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                    autoContrast={autoContrast}
+                    onToggleAutoContrast={() => setAutoContrast((v) => !v)}
+                    onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
+                    onAdjustStart={() => handleAdjustStart()}
+                    onColorPickerOpen={() => handleColorPickerOpen()}
+                    onColorPickerClose={() => handleColorPickerClose()}
+                    onLanguageChange={(val) => {
+                        setLanguage(val)
+                        setLangMenuOpen(false)
+                    }}
+                    onMicChange={(val) => {
+                        setSelectedMic(val)
+                        setMicMenuOpen(false)
+                    }}
+                    onLangMenuToggle={() => {
+                        setLangMenuOpen((v) => !v)
+                        setMicMenuOpen(false)
+                    }}
+                    onMicMenuToggle={() => {
+                        setMicMenuOpen((v) => !v)
+                        setLangMenuOpen(false)
+                    }}
+                />
+
+                <button
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onClick={handleClick}
+                    className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
+                    style={{
+                        top:
+                            (titleBarVisible && titleBarPosition === 'top'
+                                ? titleBarHeight
+                                : 0) + 8,
+                        right: 12,
+                    }}>
+                    ☰
+                </button>
+
+                <Canvas
+                    segments={segments}
+                    currentWordIndex={currentWordIndex}
+                    onWordClick={jumpTo}
+                    fontSize={fontSize}
+                    textColor={displayTextColor}
+                    textHalo={textHalo}
+                    titleBarHeight={titleBarVisible ? titleBarHeight : 0}
+                    titleBarPosition={titleBarPosition}
+                />
+            </div>
+        </I18nProvider>
     )
 }
 

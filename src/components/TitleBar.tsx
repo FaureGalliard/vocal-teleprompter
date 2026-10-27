@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { useT } from '../i18n'
 
 interface TitleBarProps {
     position: 'top' | 'bottom'
@@ -8,6 +9,7 @@ interface TitleBarProps {
 
 const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
     ({ position, onPositionChange }, ref) => {
+        const t = useT()
         return (
             <div
                 className={`fixed left-0 right-0 z-50 ${position === 'top' ? 'top-0' : 'bottom-0'}`}>
@@ -18,7 +20,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                     style={{ height: '32px' }}>
                     <div className="flex items-center gap-2 pointer-events-none">
                         <span className="text-[11px] text-white/40 font-medium">
-                            Vocal Teleprompter
+                            {t.appName}
                         </span>
                     </div>
 
@@ -28,7 +30,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                                 onPositionChange(position === 'top' ? 'bottom' : 'top')
                             }
                             className="h-full px-3 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all text-xs"
-                            title={position === 'top' ? 'Mover abajo' : 'Mover arriba'}>
+                            title={position === 'top' ? t.titleBar.moveDown : t.titleBar.moveUp}>
                             {position === 'top' ? '↓' : '↑'}
                         </button>
 
@@ -37,7 +39,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                         <button
                             onClick={() => getCurrentWindow().minimize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
-                            title="Minimizar">
+                            title={t.titleBar.minimize}>
                             <svg
                                 width="10"
                                 height="1"
@@ -53,7 +55,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                         <button
                             onClick={() => getCurrentWindow().toggleMaximize()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all"
-                            title="Maximizar">
+                            title={t.titleBar.maximize}>
                             <svg
                                 width="10"
                                 height="10"
@@ -73,7 +75,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                         <button
                             onClick={() => getCurrentWindow().close()}
                             className="h-full px-3.5 flex items-center justify-center text-white/50 hover:text-white hover:bg-red-500 transition-all"
-                            title="Cerrar">
+                            title={t.titleBar.close}>
                             <svg
                                 width="10"
                                 height="10"

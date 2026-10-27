@@ -16,7 +16,8 @@ export function useMicrophones() {
                     .filter((d) => d.kind === 'audioinput')
                     .map((d) => ({
                         deviceId: d.deviceId,
-                        label: d.label || `Micrófono ${d.deviceId.slice(0, 6)}`,
+                        // Empty until access is granted; the UI shows a fallback
+                        label: d.label,
                     }))
                 setMicrophones(mics)
             } catch (e) {

@@ -4,6 +4,7 @@ import { HexColorPicker } from 'react-colorful'
 import { LANGUAGES } from '../constants/languages'
 import type { Microphone } from '../hooks/useMicrophones'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useT, UI_LANGUAGES } from '../i18n'
 
 interface ToolbarProps {
     visible: boolean
@@ -22,6 +23,7 @@ interface ToolbarProps {
     hiddenFromCapture: boolean
     autoContrast: boolean
     language: string
+    uiLanguage: string
     langMenuOpen: boolean
     micMenuOpen: boolean
     selectedMic: string
@@ -39,6 +41,7 @@ interface ToolbarProps {
     onToggleHiddenFromCapture: () => void
     onToggleAutoContrast: () => void
     onLanguageChange: (val: string) => void
+    onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
     onLangMenuToggle: () => void
     onMicMenuToggle: () => void
@@ -68,6 +71,7 @@ export default function Toolbar({
     hiddenFromCapture,
     autoContrast,
     language,
+    uiLanguage,
     langMenuOpen,
     micMenuOpen,
     selectedMic,
@@ -85,6 +89,7 @@ export default function Toolbar({
     onToggleHiddenFromCapture,
     onToggleAutoContrast,
     onLanguageChange,
+    onUiLanguageChange,
     onMicChange,
     onLangMenuToggle,
     onMicMenuToggle,
@@ -92,10 +97,12 @@ export default function Toolbar({
     onColorPickerOpen,
     onColorPickerClose,
 }: ToolbarProps) {
+    const t = useT()
     const [colorPickerOpen, setColorPickerOpen] = useState(false)
     const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 })
     const colorPickerRef = useRef<HTMLDivElement>(null)
     const colorButtonRef = useRef<HTMLButtonElement>(null)
+    const micLabel = (mic: Microphone) => mic.label || t.microphone(mic.deviceId.slice(0, 6))
     const langMenuRef = useRef<HTMLDivElement>(null)
     const micMenuRef = useRef<HTMLDivElement>(null)
 
@@ -194,19 +201,19 @@ export default function Toolbar({
                         <button
                             onClick={onPasteText}
                             className={`${btn} ${primary}`}>
-                            + PEGAR
+                            {t.toolbar.paste}
                         </button>
 
                         <button
                             onClick={onImport}
                             className={`${btn} ${ghost}`}>
-                            ↑ IMPORTAR
+                            {t.toolbar.import}
                         </button>
 
                         <button
                             onClick={onClear}
                             className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
-                            ✕ ELIMINAR
+                            {t.toolbar.clear}
                         </button>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
@@ -224,7 +231,7 @@ export default function Toolbar({
                                     ? 'animate-pulse'
                                     : ''
                             }`}>
-                            {isSpeechActive ? '⏹ DETENER' : '🎙 INICIAR'}
+                            {isSpeechActive ? t.toolbar.stop : t.toolbar.start}
                         </button>
 
                         {isSpeechActive && (
@@ -235,7 +242,7 @@ export default function Toolbar({
                                 transition={{ duration: 0.12 }}
                                 onClick={onTogglePause}
                                 className={`${btn} ${isPaused ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : ghost}`}>
-                                {isPaused ? '▶ REANUDAR' : '⏸ PAUSAR'}
+                                {isPaused ? t.toolbar.resume : t.toolbar.pause}
                             </motion.button>
                         )}
 
@@ -249,7 +256,7 @@ export default function Toolbar({
                                 onClick={onLangMenuToggle}
                                 className={`${btn} ${ghost}`}>
                                 {LANGUAGES.find((l) => l.value === language)?.label ??
-                                    'ES'}
+                                    language}
                                 <span className="text-[9px] opacity-50">
                                     {langMenuOpen ? '▲' : '▼'}
                                 </span>
@@ -310,13 +317,13 @@ export default function Toolbar({
                                                         ? 'bg-[#445ade] text-white'
                                                         : 'text-white/70 hover:bg-white/10 hover:text-white'
                                                 }`}
-                                                title={mic.label}>
-                                                {mic.label}
+                                                title={micLabel(mic)}>
+                                                {micLabel(mic)}
                                             </button>
                                         ))}
                                         {microphones.length === 0 && (
                                             <span className="px-4 py-1.5 text-[11px] text-white/30">
-                                                Sin micrófonos
+                                                {t.toolbar.noMicrophones}
                                             </span>
                                         )}
                                     </motion.div>
@@ -329,7 +336,7 @@ export default function Toolbar({
                         {/* Tamaño */}
                         <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                             <span className="text-[9px] text-white/50 uppercase">
-                                Tamaño
+                                {t.toolbar.size}
                             </span>
                             <input
                                 type="number"
@@ -347,7 +354,7 @@ export default function Toolbar({
                         {/* Fondo */}
                         <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                             <span className="text-[9px] text-white/50 uppercase">
-                                Fondo
+                                {t.toolbar.background}
                             </span>
                             <div className="relative w-4 h-4 rounded-full overflow-hidden border border-white/20">
                                 <input
@@ -393,7 +400,7 @@ export default function Toolbar({
                         {/* Texto */}
                         <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                             <span className="text-[9px] text-white/50 uppercase">
-                                Texto
+                                {t.toolbar.text}
                             </span>
                             <button
                                 ref={colorButtonRef}
@@ -405,13 +412,13 @@ export default function Toolbar({
                                 onClick={onToggleAutoContrast}
                                 title={
                                     autoContrast
-                                        ? 'Contraste automático activado'
-                                        : 'Contraste automático desactivado'
+                                        ? t.toolbar.autoContrastOn
+                                        : t.toolbar.autoContrastOff
                                 }
                                 className={`text-[10px] leading-none transition-colors ${
                                     autoContrast ? 'text-white' : 'text-white/30'
                                 }`}>
-                                ◐ AUTO
+                                {t.toolbar.autoContrast}
                             </button>
                         </div>
 
@@ -420,22 +427,36 @@ export default function Toolbar({
                         <button
                             onClick={onToggleTitleBar}
                             className={`${btn} ${ghost}`}>
-                            {titleBarVisible ? '▲ BARRA' : '▼ BARRA'}
+                            {titleBarVisible ? '▲' : '▼'} {t.toolbar.bar}
                         </button>
 
                         <button
                             onClick={onToggleHiddenFromCapture}
                             title={
                                 hiddenFromCapture
-                                    ? 'Invisible al compartir pantalla o grabar'
-                                    : 'Visible al compartir pantalla o grabar'
+                                    ? t.toolbar.hiddenTitle
+                                    : t.toolbar.visibleTitle
                             }
                             className={`${btn} ${hiddenFromCapture ? primary : ghost}`}>
-                            {hiddenFromCapture ? '🕶 OCULTO' : '👁 VISIBLE'}
+                            {hiddenFromCapture ? t.toolbar.hidden : t.toolbar.visible}
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                const i = UI_LANGUAGES.findIndex((l) => l.value === uiLanguage)
+                                onUiLanguageChange(
+                                    UI_LANGUAGES[(i + 1) % UI_LANGUAGES.length].value,
+                                )
+                            }}
+                            title={t.toolbar.uiLanguage}
+                            className={`${btn} ${ghost}`}>
+                            🌐 {UI_LANGUAGES.find((l) => l.value === uiLanguage)?.label ?? 'EN'}
                         </button>
 
                         {error && (
-                            <span className="text-[10px] text-red-400 ml-1">{error}</span>
+                            <span className="text-[10px] text-red-400 ml-1">
+                                {t.errors[error] ?? error}
+                            </span>
                         )}
                     </motion.div>
                 )}
@@ -469,7 +490,7 @@ export default function Toolbar({
                                 <button
                                     onClick={handleCloseColorPicker}
                                     className="text-[10px] text-white/60 hover:text-white px-2 py-0.5 bg-white/10 rounded-full transition-colors">
-                                    OK
+                                    {t.toolbar.ok}
                                 </button>
                             </div>
                         </motion.div>

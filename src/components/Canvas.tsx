@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import type { Segment } from '../lib/segment'
+import { useT } from '../i18n'
 
 interface CanvasProps {
     segments: Segment[]
@@ -23,6 +24,7 @@ export default function Canvas({
     titleBarHeight,
     titleBarPosition,
 }: CanvasProps) {
+    const t = useT()
     const activeWordRef = useRef<HTMLSpanElement>(null)
 
     useEffect(() => {
@@ -126,7 +128,7 @@ export default function Canvas({
                     <p
                         className="text-5xl text-center opacity-65"
                         style={{ color: textColor, textShadow }}>
-                        Tu texto aparecerá aquí
+                        {t.canvas.placeholder}
                     </p>
                 )}
             </div>
