@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect, useMemo } from 'react'
+import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import Canvas from './components/Canvas'
@@ -147,6 +147,64 @@ function App() {
         setIsPaused(false)
         if (isSpeechActive) reset()
     }
+
+    // Keyboard shortcuts, ignored while typing in a field
+    useEffect(() => {
+        const isTyping = (target: EventTarget | null) =>
+            target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return
+            switch (e.key) {
+                case ' ':
+                    if (!content) return
+                    if (isSpeechActive) setIsPaused((v) => !v)
+                    else setIsSpeechActive(true)
+                    break
+                case 'Escape':
+                    if (!isSpeechActive) return
+                    setIsSpeechActive(false)
+                    setIsPaused(false)
+                    break
+                case 'ArrowRight':
+                case 'ArrowDown':
+                    jumpTo(currentWordIndex + 1)
+                    break
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                    jumpTo(currentWordIndex - 1)
+                    break
+                case 'PageDown':
+                    jumpTo(currentWordIndex + 10)
+                    break
+                case 'PageUp':
+                    jumpTo(currentWordIndex - 10)
+                    break
+                case '+':
+                case '=':
+                    setFontSize((v) => Math.min(200, v + 2))
+                    break
+                case '-':
+                    setFontSize((v) => Math.max(6, v - 2))
+                    break
+                default:
+                    return
+            }
+            e.preventDefault()
+        }
+
+        // Keep Space from also clicking whatever button has focus
+        const onKeyUp = (e: KeyboardEvent) => {
+            if (e.key === ' ' && !isTyping(e.target)) e.preventDefault()
+        }
+
+        window.addEventListener('keydown', onKeyDown)
+        window.addEventListener('keyup', onKeyUp)
+        return () => {
+            window.removeEventListener('keydown', onKeyDown)
+            window.removeEventListener('keyup', onKeyUp)
+        }
+    }, [content, isSpeechActive, currentWordIndex, jumpTo, setFontSize])
 
     const toolbarTopOffset =
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
