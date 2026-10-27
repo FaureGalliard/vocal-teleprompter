@@ -201,7 +201,7 @@ export default function Toolbar({
                             top: topOffset,
                             transformOrigin: 'right center',
                         }}
-                        className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 px-5 py-3 bg-[#1a1a1a] border-b border-white/10">
+                        className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 pl-5 pr-16 py-3 bg-[#1a1a1a] border-b border-white/10">
                         <button
                             onClick={onPasteText}
                             className={`${btn} ${primary}`}>
