@@ -10,6 +10,7 @@ import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import { Menu, X } from 'lucide-react'
 import { startTour } from './lib/tour'
 import { splitCards, currentCardIndex } from './lib/cards'
@@ -56,6 +57,9 @@ function App() {
     // Minutes the speaker wants the presentation to last; 0 means no target
     const [targetMinutes, setTargetMinutes] = usePersistentState('targetMinutes', 0)
     const [readingLine, setReadingLine] = usePersistentState('readingLine', false)
+    // Clicks go to whatever is behind the window. Not saved, so a restart
+    // always brings the window back to normal
+    const [clickThrough, setClickThrough] = useState(false)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -123,6 +127,7 @@ function App() {
             cards.length > 1 ? goToCard(currentCard + 1) : jumpTo(currentWordIndex + 10),
         previousCard: () =>
             cards.length > 1 ? goToCard(currentCard - 1) : jumpTo(currentWordIndex - 10),
+        toggleClickThrough: () => setClickThrough((v) => !v),
         toggleWindow: async () => {
             const win = getCurrentWindow()
             if (await win.isVisible()) await win.hide()
@@ -219,6 +224,21 @@ function App() {
         document.documentElement.lang = uiLanguage
         invoke('set_tray_labels', { ...t.tray }).catch((e) => console.error(e))
     }, [uiLanguage, t])
+
+    useEffect(() => {
+        getCurrentWindow()
+            .setIgnoreCursorEvents(clickThrough)
+            .catch((e) => console.error(e))
+        // Nothing in the toolbar can be clicked anyway
+        if (clickThrough) setToolbarVisible(false)
+    }, [clickThrough])
+
+    useEffect(() => {
+        const unlisten = listen('toggle-click-through', () => setClickThrough((v) => !v))
+        return () => {
+            unlisten.then((off) => off())
+        }
+    }, [])
 
     useEffect(() => {
         getCurrentWindow()
@@ -415,6 +435,8 @@ function App() {
                     onTargetMinutesChange={setTargetMinutes}
                     readingLine={readingLine}
                     onToggleReadingLine={() => setReadingLine((v) => !v)}
+                    clickThrough={clickThrough}
+                    onToggleClickThrough={() => setClickThrough((v) => !v)}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -489,6 +511,7 @@ function App() {
                         sessionActive={isSpeechActive}
                         targetMinutes={targetMinutes}
                         {...pace}
+                        clickThrough={clickThrough}
                     />
                 )}
             </div>

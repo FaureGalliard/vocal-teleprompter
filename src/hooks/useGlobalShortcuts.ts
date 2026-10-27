@@ -8,6 +8,7 @@ export const GLOBAL_SHORTCUTS = {
     nextCard: 'CommandOrControl+Alt+Right',
     previousCard: 'CommandOrControl+Alt+Left',
     toggleWindow: 'CommandOrControl+Alt+H',
+    toggleClickThrough: 'CommandOrControl+Alt+K',
 } as const
 
 export type GlobalAction = keyof typeof GLOBAL_SHORTCUTS

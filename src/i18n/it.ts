@@ -39,6 +39,8 @@ export const it: Messages = {
         targetDurationHint: 'Ti dice se accelerare o rallentare. 0 = disattivato',
         readingLine: 'Linea di lettura',
         readingLineHint: 'Tiene la riga corrente in alto, vicino alla videocamera',
+        clickThrough: 'Clic passanti',
+        clickThroughHint: (keys: string) => `I clic vanno all'app dietro. Disattiva con ${keys} o dall'icona nella barra`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const it: Messages = {
         nextCard: 'Slide successiva',
         previousCard: 'Slide precedente',
         toggleWindow: 'Mostra / nascondi finestra',
+        toggleClickThrough: 'Clic passanti sì / no',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Clic passanti',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const it: Messages = {
         show: 'Mostra',
         hide: 'Nascondi',
         quit: 'Esci',
+        clickThrough: 'Attiva/disattiva clic passanti',
     },
 
     canvas: {

@@ -65,6 +65,8 @@ interface ToolbarProps {
     onTargetMinutesChange: (val: number) => void
     readingLine: boolean
     onToggleReadingLine: () => void
+    clickThrough: boolean
+    onToggleClickThrough: () => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -121,6 +123,8 @@ export default function Toolbar({
     onTargetMinutesChange,
     readingLine,
     onToggleReadingLine,
+    clickThrough,
+    onToggleClickThrough,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -514,6 +518,8 @@ export default function Toolbar({
                             onTargetMinutesChange={onTargetMinutesChange}
                             readingLine={readingLine}
                             onToggleReadingLine={onToggleReadingLine}
+                            clickThrough={clickThrough}
+                            onToggleClickThrough={onToggleClickThrough}
                         />
 
                         {error && (

@@ -39,6 +39,8 @@ export const fr: Messages = {
         targetDurationHint: "Vous indique d'accélérer ou de ralentir. 0 = désactivé",
         readingLine: 'Ligne de lecture',
         readingLineHint: 'Garde la ligne en cours en haut, près de votre caméra',
+        clickThrough: 'Clics traversants',
+        clickThroughHint: (keys: string) => `Les clics vont à l'application derrière. Désactivez avec ${keys} ou l'icône de la barre`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const fr: Messages = {
         nextCard: 'Diapo suivante',
         previousCard: 'Diapo précédente',
         toggleWindow: 'Afficher / masquer la fenêtre',
+        toggleClickThrough: 'Clics traversants oui / non',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Clics traversants',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const fr: Messages = {
         show: 'Afficher',
         hide: 'Masquer',
         quit: 'Quitter',
+        clickThrough: 'Activer/désactiver les clics traversants',
     },
 
     canvas: {

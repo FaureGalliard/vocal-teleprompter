@@ -39,6 +39,8 @@ export const pt: Messages = {
         targetDurationHint: 'Avisa se você deve acelerar ou desacelerar. 0 = desligado',
         readingLine: 'Linha de leitura',
         readingLineHint: 'Mantém a linha atual no alto, perto da sua câmera',
+        clickThrough: 'Cliques atravessam',
+        clickThroughHint: (keys: string) => `Os cliques vão para o app de trás. Desative com ${keys} ou pelo ícone da bandeja`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const pt: Messages = {
         nextCard: 'Próximo slide',
         previousCard: 'Slide anterior',
         toggleWindow: 'Mostrar / ocultar janela',
+        toggleClickThrough: 'Cliques atravessam sim / não',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Cliques atravessam',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const pt: Messages = {
         show: 'Mostrar',
         hide: 'Ocultar',
         quit: 'Sair',
+        clickThrough: 'Ativar/desativar cliques atravessam',
     },
 
     canvas: {

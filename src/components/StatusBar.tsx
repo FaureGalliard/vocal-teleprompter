@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Timer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, MousePointerClick, Timer } from 'lucide-react'
 import { useT } from '../i18n'
 import { formatDuration, type PaceStatus } from '../hooks/usePace'
 
@@ -15,6 +15,7 @@ interface StatusBarProps {
     estimatedMs: number
     targetMinutes: number
     status: PaceStatus | null
+    clickThrough: boolean
 }
 
 const STATUS_COLOR: Record<PaceStatus, string> = {
@@ -41,6 +42,7 @@ export default function StatusBar({
     estimatedMs,
     targetMinutes,
     status,
+    clickThrough,
 }: StatusBarProps) {
     const t = useT()
     const target = targetMinutes > 0 ? formatDuration(targetMinutes * 60000) : null
@@ -49,29 +51,39 @@ export default function StatusBar({
         <div
             className="fixed left-3 right-3 z-30 flex items-center justify-between pointer-events-none opacity-70 hover:opacity-100 transition-opacity"
             style={{ bottom }}>
-            {cardCount > 1 ? (
-                <div className={`${pill} pointer-events-auto`}>
-                    <button
-                        onClick={onPreviousCard}
-                        disabled={currentCard === 0}
-                        title={t.cards.previous}
-                        className={arrow}>
-                        <ChevronLeft size={12} />
-                    </button>
-                    <span className="px-1 tabular-nums">
-                        {t.cards.position(currentCard + 1, cardCount)}
-                    </span>
-                    <button
-                        onClick={onNextCard}
-                        disabled={currentCard === cardCount - 1}
-                        title={t.cards.next}
-                        className={arrow}>
-                        <ChevronRight size={12} />
-                    </button>
-                </div>
-            ) : (
-                <span />
-            )}
+            <div className="flex items-center gap-2">
+                {clickThrough && (
+                    <div
+                        className={`${pill} px-2.5 gap-1.5 text-[#facc15]`}
+                        title={t.settings.clickThrough}>
+                        <MousePointerClick size={11} />
+                        {t.statusBar.clickThroughOn}
+                    </div>
+                )}
+                {cardCount > 1 ? (
+                    <div className={`${pill} pointer-events-auto`}>
+                        <button
+                            onClick={onPreviousCard}
+                            disabled={currentCard === 0}
+                            title={t.cards.previous}
+                            className={arrow}>
+                            <ChevronLeft size={12} />
+                        </button>
+                        <span className="px-1 tabular-nums">
+                            {t.cards.position(currentCard + 1, cardCount)}
+                        </span>
+                        <button
+                            onClick={onNextCard}
+                            disabled={currentCard === cardCount - 1}
+                            title={t.cards.next}
+                            className={arrow}>
+                            <ChevronRight size={12} />
+                        </button>
+                    </div>
+                ) : (
+                    <span />
+                )}
+            </div>
 
             {estimatedMs > 0 && (
                 <div className={`${pill} px-2.5 gap-1.5 tabular-nums`}>

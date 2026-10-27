@@ -39,6 +39,8 @@ export const zh: Messages = {
         targetDurationHint: '提示你加快或放慢语速。0 = 关闭',
         readingLine: '阅读线',
         readingLineHint: '让当前行保持在上方，靠近摄像头',
+        clickThrough: '点击穿透',
+        clickThroughHint: (keys: string) => `点击会传到后面的应用。按 ${keys} 或通过托盘图标关闭`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const zh: Messages = {
         nextCard: '下一张幻灯片',
         previousCard: '上一张幻灯片',
         toggleWindow: '显示 / 隐藏窗口',
+        toggleClickThrough: '点击穿透 开 / 关',
+    },
+
+    statusBar: {
+        clickThroughOn: '点击穿透中',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const zh: Messages = {
         show: '显示',
         hide: '隐藏',
         quit: '退出',
+        clickThrough: '切换点击穿透',
     },
 
     canvas: {

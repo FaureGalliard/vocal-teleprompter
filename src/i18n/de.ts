@@ -39,6 +39,8 @@ export const de: Messages = {
         targetDurationHint: 'Sagt dir, ob du schneller oder langsamer sprechen sollst. 0 = aus',
         readingLine: 'Leselinie',
         readingLineHint: 'Hält die aktuelle Zeile oben, nah an deiner Kamera',
+        clickThrough: 'Klicks durchlassen',
+        clickThroughHint: (keys: string) => `Klicks gehen an die App dahinter. Ausschalten mit ${keys} oder über das Tray-Symbol`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const de: Messages = {
         nextCard: 'Nächste Folie',
         previousCard: 'Vorherige Folie',
         toggleWindow: 'Fenster ein- / ausblenden',
+        toggleClickThrough: 'Klicks durchlassen ein / aus',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Klicks durchlassen',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const de: Messages = {
         show: 'Anzeigen',
         hide: 'Ausblenden',
         quit: 'Beenden',
+        clickThrough: 'Klicks durchlassen ein/aus',
     },
 
     canvas: {

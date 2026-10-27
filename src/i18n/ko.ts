@@ -39,6 +39,8 @@ export const ko: Messages = {
         targetDurationHint: '빠르게 또는 천천히 말하라고 알려 줍니다. 0 = 끄기',
         readingLine: '읽기 라인',
         readingLineHint: '현재 줄을 카메라 가까운 위쪽에 유지합니다',
+        clickThrough: '클릭 통과',
+        clickThroughHint: (keys: string) => `클릭이 뒤에 있는 앱으로 전달됩니다. ${keys} 또는 트레이 아이콘으로 끄기`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const ko: Messages = {
         nextCard: '다음 슬라이드',
         previousCard: '이전 슬라이드',
         toggleWindow: '창 표시 / 숨기기',
+        toggleClickThrough: '클릭 통과 켜기 / 끄기',
+    },
+
+    statusBar: {
+        clickThroughOn: '클릭 통과 중',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const ko: Messages = {
         show: '표시',
         hide: '숨기기',
         quit: '종료',
+        clickThrough: '클릭 통과 전환',
     },
 
     canvas: {

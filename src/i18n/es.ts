@@ -39,6 +39,8 @@ export const es: Messages = {
         targetDurationHint: 'Te avisa si debes ir más rápido o más lento. 0 = apagado',
         readingLine: 'Línea de lectura',
         readingLineHint: 'Mantiene la línea actual arriba, cerca de tu cámara',
+        clickThrough: 'Clicks a través',
+        clickThroughHint: (keys: string) => `Los clicks llegan a la app de atrás. Se apaga con ${keys} o desde el icono de la bandeja`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const es: Messages = {
         nextCard: 'Diapositiva siguiente',
         previousCard: 'Diapositiva anterior',
         toggleWindow: 'Mostrar / ocultar ventana',
+        toggleClickThrough: 'Clicks a través sí / no',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Clicks a través',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const es: Messages = {
         show: 'Mostrar',
         hide: 'Ocultar',
         quit: 'Salir',
+        clickThrough: 'Activar/desactivar clicks a través',
     },
 
     canvas: {

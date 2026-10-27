@@ -39,6 +39,8 @@ export const ja: Messages = {
         targetDurationHint: '速めるか遅くするかを知らせます。0 でオフ',
         readingLine: '読み上げライン',
         readingLineHint: '現在の行をカメラに近い上部に保ちます',
+        clickThrough: 'クリックを透過',
+        clickThroughHint: (keys: string) => `クリックが背後のアプリに届きます。${keys} かトレイアイコンで解除`,
     },
 
     tour: {
@@ -89,6 +91,11 @@ export const ja: Messages = {
         nextCard: '次のスライド',
         previousCard: '前のスライド',
         toggleWindow: 'ウィンドウの表示 / 非表示',
+        toggleClickThrough: 'クリック透過 オン / オフ',
+    },
+
+    statusBar: {
+        clickThroughOn: 'クリック透過中',
     },
 
     titleBar: {
@@ -103,6 +110,7 @@ export const ja: Messages = {
         show: '表示',
         hide: '隠す',
         quit: '終了',
+        clickThrough: 'クリック透過の切り替え',
     },
 
     canvas: {

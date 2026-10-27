@@ -37,6 +37,8 @@ export const en = {
         targetDurationHint: 'Tells you to speed up or slow down. 0 = off',
         readingLine: 'Reading line',
         readingLineHint: 'Keeps the current line near the top, close to your camera',
+        clickThrough: 'Click-through',
+        clickThroughHint: (keys: string) => `Clicks go to the app behind. Turn off with ${keys} or the tray icon`,
     },
 
     tour: {
@@ -87,6 +89,11 @@ export const en = {
         nextCard: 'Next slide',
         previousCard: 'Previous slide',
         toggleWindow: 'Show / hide window',
+        toggleClickThrough: 'Click-through on / off',
+    },
+
+    statusBar: {
+        clickThroughOn: 'Click-through',
     },
 
     titleBar: {
@@ -101,6 +108,7 @@ export const en = {
         show: 'Show',
         hide: 'Hide',
         quit: 'Quit',
+        clickThrough: 'Toggle click-through',
     },
 
     canvas: {

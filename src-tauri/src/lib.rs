@@ -1,13 +1,14 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    Manager, Wry,
+    Emitter, Manager, Wry,
 };
 
 // Tray menu entries, kept so the frontend can relabel them in its language
 struct TrayItems {
     show: MenuItem<Wry>,
     hide: MenuItem<Wry>,
+    click_through: MenuItem<Wry>,
     quit: MenuItem<Wry>,
 }
 
@@ -16,10 +17,15 @@ fn set_tray_labels(
     items: tauri::State<'_, TrayItems>,
     show: String,
     hide: String,
+    click_through: String,
     quit: String,
 ) -> Result<(), String> {
     items.show.set_text(show).map_err(|e| e.to_string())?;
     items.hide.set_text(hide).map_err(|e| e.to_string())?;
+    items
+        .click_through
+        .set_text(click_through)
+        .map_err(|e| e.to_string())?;
     items.quit.set_text(quit).map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -35,11 +41,20 @@ pub fn run() {
         .setup(|app| {
             let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
             let hide = MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?;
+            // Way back out of click-through mode, since the window takes no clicks then
+            let click_through = MenuItem::with_id(
+                app,
+                "click_through",
+                "Click-through",
+                true,
+                None::<&str>,
+            )?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show, &hide, &quit])?;
+            let menu = Menu::with_items(app, &[&show, &hide, &click_through, &quit])?;
             app.manage(TrayItems {
                 show: show.clone(),
                 hide: hide.clone(),
+                click_through: click_through.clone(),
                 quit: quit.clone(),
             });
 
@@ -61,6 +76,9 @@ pub fn run() {
                             if let Some(win) = app.get_webview_window("main") {
                                 let _ = win.hide();
                             }
+                        }
+                        "click_through" => {
+                            let _ = app.emit("toggle-click-through", ());
                         }
                         "quit" => app.exit(0),
                         _ => {}

@@ -6,6 +6,7 @@ import {
     Globe,
     GraduationCap,
     Keyboard,
+    MousePointerClick,
     PanelTop,
     RotateCcw,
     Settings,
@@ -43,6 +44,8 @@ interface SettingsPanelProps {
     onTargetMinutesChange: (val: number) => void
     readingLine: boolean
     onToggleReadingLine: () => void
+    clickThrough: boolean
+    onToggleClickThrough: () => void
 }
 
 function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -101,6 +104,8 @@ export default function SettingsPanel({
     onTargetMinutesChange,
     readingLine,
     onToggleReadingLine,
+    clickThrough,
+    onToggleClickThrough,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -199,6 +204,21 @@ export default function SettingsPanel({
                             <Switch
                                 on={autoContrast}
                                 onToggle={onToggleAutoContrast}
+                            />
+                        </Row>
+
+                        <Row
+                            icon={<MousePointerClick size={14} />}
+                            label={t.settings.clickThrough}
+                            hint={t.settings.clickThroughHint(
+                                displayShortcut(GLOBAL_SHORTCUTS.toggleClickThrough),
+                            )}>
+                            <Switch
+                                on={clickThrough}
+                                onToggle={() => {
+                                    setOpen(false)
+                                    onToggleClickThrough()
+                                }}
                             />
                         </Row>
 
