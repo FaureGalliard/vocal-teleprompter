@@ -17,6 +17,8 @@ import { splitCards, currentCardIndex } from './lib/cards'
 import StatusBar from './components/StatusBar'
 import { usePace } from './hooks/usePace'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { useUpdater } from './hooks/useUpdater'
+import UpdateBanner from './components/UpdateBanner'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -60,6 +62,8 @@ function App() {
     // Clicks go to whatever is behind the window. Not saved, so a restart
     // always brings the window back to normal
     const [clickThrough, setClickThrough] = useState(false)
+    const [autoUpdate, setAutoUpdate] = usePersistentState('autoUpdate', true)
+    const updater = useUpdater(autoUpdate)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -437,6 +441,9 @@ function App() {
                     onToggleReadingLine={() => setReadingLine((v) => !v)}
                     clickThrough={clickThrough}
                     onToggleClickThrough={() => setClickThrough((v) => !v)}
+                    autoUpdate={autoUpdate}
+                    onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
+                    updater={updater}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -497,6 +504,17 @@ function App() {
                     readingLine={readingLine}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     titleBarPosition={titleBarPosition}
+                />
+
+                <UpdateBanner
+                    // Out of the way while the toolbar is open; Settings can install too
+                    visible={updater.showBanner && !toolbarVisible}
+                    top={toolbarTopOffset + 8}
+                    version={updater.newVersion}
+                    downloading={updater.status === 'downloading'}
+                    progress={updater.progress}
+                    onInstall={updater.install}
+                    onDismiss={updater.dismiss}
                 />
 
                 {!isEditing && (

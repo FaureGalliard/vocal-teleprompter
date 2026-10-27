@@ -98,6 +98,20 @@ export const ko: Messages = {
         clickThroughOn: '클릭 통과 중',
     },
 
+    updates: {
+        available: (v: string) => `버전 ${v}을(를) 사용할 수 있습니다`,
+        install: '지금 업데이트',
+        installVersion: (v: string) => `${v} 설치`,
+        later: '나중에',
+        downloading: (p: number) => `업데이트 다운로드 중… ${p}%`,
+        check: '업데이트 확인',
+        checking: '확인 중…',
+        upToDate: '최신 버전입니다',
+        failed: '업데이트를 확인할 수 없습니다',
+        autoCheck: '자동으로 업데이트 확인',
+        version: (v: string) => `버전 ${v}`,
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

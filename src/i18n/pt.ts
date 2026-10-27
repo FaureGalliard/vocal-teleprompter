@@ -98,6 +98,20 @@ export const pt: Messages = {
         clickThroughOn: 'Cliques atravessam',
     },
 
+    updates: {
+        available: (v: string) => `A versão ${v} está disponível`,
+        install: 'Atualizar agora',
+        installVersion: (v: string) => `Instalar ${v}`,
+        later: 'Depois',
+        downloading: (p: number) => `Baixando atualização… ${p}%`,
+        check: 'Procurar atualizações',
+        checking: 'Procurando…',
+        upToDate: 'Você está na versão mais recente',
+        failed: 'Não foi possível procurar atualizações',
+        autoCheck: 'Procurar atualizações automaticamente',
+        version: (v: string) => `Versão ${v}`,
+    },
+
     titleBar: {
         moveDown: 'Mover para baixo',
         moveUp: 'Mover para cima',

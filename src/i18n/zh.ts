@@ -98,6 +98,20 @@ export const zh: Messages = {
         clickThroughOn: '点击穿透中',
     },
 
+    updates: {
+        available: (v: string) => `${v} 版本可用`,
+        install: '立即更新',
+        installVersion: (v: string) => `安装 ${v}`,
+        later: '稍后',
+        downloading: (p: number) => `正在下载更新… ${p}%`,
+        check: '检查更新',
+        checking: '正在检查…',
+        upToDate: '已是最新版本',
+        failed: '无法检查更新',
+        autoCheck: '自动检查更新',
+        version: (v: string) => `版本 ${v}`,
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

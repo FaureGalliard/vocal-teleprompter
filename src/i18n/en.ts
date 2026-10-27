@@ -96,6 +96,20 @@ export const en = {
         clickThroughOn: 'Click-through',
     },
 
+    updates: {
+        available: (v: string) => `Version ${v} is available`,
+        install: 'Update now',
+        installVersion: (v: string) => `Install ${v}`,
+        later: 'Later',
+        downloading: (p: number) => `Downloading update… ${p}%`,
+        check: 'Check for updates',
+        checking: 'Checking…',
+        upToDate: "You're up to date",
+        failed: "Couldn't check for updates",
+        autoCheck: 'Check for updates automatically',
+        version: (v: string) => `Version ${v}`,
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

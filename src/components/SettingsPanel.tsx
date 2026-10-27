@@ -7,6 +7,7 @@ import {
     GraduationCap,
     Keyboard,
     MousePointerClick,
+    RefreshCw,
     PanelTop,
     RotateCcw,
     Settings,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
 import { GLOBAL_SHORTCUTS, type GlobalAction } from '../hooks/useGlobalShortcuts'
+import type { useUpdater } from '../hooks/useUpdater'
 
 const PANEL_WIDTH = 288
 
@@ -46,6 +48,9 @@ interface SettingsPanelProps {
     onToggleReadingLine: () => void
     clickThrough: boolean
     onToggleClickThrough: () => void
+    autoUpdate: boolean
+    onToggleAutoUpdate: () => void
+    updater: ReturnType<typeof useUpdater>
 }
 
 function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -106,6 +111,9 @@ export default function SettingsPanel({
     onToggleReadingLine,
     clickThrough,
     onToggleClickThrough,
+    autoUpdate,
+    onToggleAutoUpdate,
+    updater,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -278,6 +286,48 @@ export default function SettingsPanel({
                                     </kbd>
                                 </div>
                             ))}
+                        </div>
+
+                        <div className="border-t border-white/10">
+                            <Row
+                                icon={<RefreshCw size={14} />}
+                                label={t.updates.autoCheck}
+                                hint={
+                                    updater.currentVersion
+                                        ? t.updates.version(updater.currentVersion)
+                                        : undefined
+                                }>
+                                <Switch
+                                    on={autoUpdate}
+                                    onToggle={onToggleAutoUpdate}
+                                />
+                            </Row>
+                            <div className="flex items-center gap-3 px-4 pb-2.5 -mt-1">
+                                {updater.status === 'available' ? (
+                                    <button
+                                        onClick={updater.install}
+                                        className="text-[11px] px-3 py-1 rounded-full bg-[#445ade] hover:bg-[#3448c5] text-white transition-colors">
+                                        {t.updates.installVersion(updater.newVersion ?? '')}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={updater.checkForUpdates}
+                                        disabled={
+                                            updater.status === 'checking' ||
+                                            updater.status === 'downloading'
+                                        }
+                                        className="text-[11px] px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white disabled:opacity-40 transition-colors">
+                                        {t.updates.check}
+                                    </button>
+                                )}
+                                <span className="text-[10px] text-white/40">
+                                    {updater.status === 'checking' && t.updates.checking}
+                                    {updater.status === 'up-to-date' && t.updates.upToDate}
+                                    {updater.status === 'failed' && t.updates.failed}
+                                    {updater.status === 'downloading' &&
+                                        t.updates.downloading(Math.round(updater.progress * 100))}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="border-t border-white/10 px-4 py-2.5 flex flex-col gap-2.5">

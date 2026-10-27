@@ -98,6 +98,20 @@ export const ja: Messages = {
         clickThroughOn: 'クリック透過中',
     },
 
+    updates: {
+        available: (v: string) => `バージョン ${v} が利用可能です`,
+        install: '今すぐ更新',
+        installVersion: (v: string) => `${v} をインストール`,
+        later: 'あとで',
+        downloading: (p: number) => `アップデートをダウンロード中… ${p}%`,
+        check: 'アップデートを確認',
+        checking: '確認中…',
+        upToDate: '最新の状態です',
+        failed: 'アップデートを確認できませんでした',
+        autoCheck: 'アップデートを自動で確認',
+        version: (v: string) => `バージョン ${v}`,
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

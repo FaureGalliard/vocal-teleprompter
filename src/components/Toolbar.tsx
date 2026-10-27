@@ -6,6 +6,7 @@ import type { Microphone } from '../hooks/useMicrophones'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useT } from '../i18n'
 import SettingsPanel from './SettingsPanel'
+import type { useUpdater } from '../hooks/useUpdater'
 import {
     Check,
     ChevronDown,
@@ -67,6 +68,9 @@ interface ToolbarProps {
     onToggleReadingLine: () => void
     clickThrough: boolean
     onToggleClickThrough: () => void
+    autoUpdate: boolean
+    onToggleAutoUpdate: () => void
+    updater: ReturnType<typeof useUpdater>
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -125,6 +129,9 @@ export default function Toolbar({
     onToggleReadingLine,
     clickThrough,
     onToggleClickThrough,
+    autoUpdate,
+    onToggleAutoUpdate,
+    updater,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -520,6 +527,9 @@ export default function Toolbar({
                             onToggleReadingLine={onToggleReadingLine}
                             clickThrough={clickThrough}
                             onToggleClickThrough={onToggleClickThrough}
+                            autoUpdate={autoUpdate}
+                            onToggleAutoUpdate={onToggleAutoUpdate}
+                            updater={updater}
                         />
 
                         {error && (
