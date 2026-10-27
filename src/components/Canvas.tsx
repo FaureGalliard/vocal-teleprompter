@@ -6,6 +6,11 @@ interface CanvasProps {
     segments: Segment[]
     currentWordIndex: number
     onWordClick: (index: number) => void
+    content: string
+    isEditing: boolean
+    onContentChange: (text: string) => void
+    onEditStart: () => void
+    onEditEnd: () => void
     fontSize: number
     textColor: string
     // Outline color that keeps text readable over an unknown backdrop
@@ -18,6 +23,11 @@ export default function Canvas({
     segments,
     currentWordIndex,
     onWordClick,
+    content,
+    isEditing,
+    onContentChange,
+    onEditStart,
+    onEditEnd,
     fontSize,
     textColor,
     textHalo,
@@ -58,8 +68,30 @@ export default function Canvas({
                 } as React.CSSProperties
             }
             className="[&::-webkit-scrollbar]:hidden">
-            <div>
-                {segments.length > 0 ? (
+            <div className="min-h-full">
+                {isEditing ? (
+                    <textarea
+                        autoFocus
+                        value={content}
+                        onChange={(e) => onContentChange(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') onEditEnd()
+                        }}
+                        placeholder={t.canvas.editPlaceholder}
+                        spellCheck={false}
+                        className="block w-full min-h-full text-center leading-relaxed bg-transparent resize-none outline-none placeholder:opacity-40"
+                        style={
+                            {
+                                fontSize: `${fontSize}px`,
+                                color: textColor,
+                                caretColor: textColor,
+                                textShadow,
+                                // Grow with the text so the canvas scrolls, not the field
+                                fieldSizing: 'content',
+                            } as React.CSSProperties
+                        }
+                    />
+                ) : segments.length > 0 ? (
                     <p
                         className="text-center leading-relaxed"
                         style={{
@@ -126,7 +158,8 @@ export default function Canvas({
                     </p>
                 ) : (
                     <p
-                        className="text-5xl text-center opacity-65"
+                        onClick={onEditStart}
+                        className="text-5xl text-center opacity-65 cursor-text"
                         style={{ color: textColor, textShadow }}>
                         {t.canvas.placeholder}
                     </p>

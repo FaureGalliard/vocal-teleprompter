@@ -45,6 +45,7 @@ function App() {
     const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -156,7 +157,15 @@ function App() {
         if (!isNaN(val) && val >= 6 && val <= 200) setFontSize(val)
     }
 
+    // Listening and editing exclude each other: the script must hold still
+    const handleToggleEdit = () => {
+        setIsEditing((v) => !v)
+        setIsSpeechActive(false)
+        setIsPaused(false)
+    }
+
     const handleToggleListen = () => {
+        setIsEditing(false)
         setIsSpeechActive((v) => !v)
         setIsPaused(false)
         if (isSpeechActive) reset()
@@ -179,7 +188,8 @@ function App() {
             target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
 
         const onKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return
+            if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || isEditing)
+                return
             switch (e.key) {
                 case ' ':
                     if (!content) return
@@ -229,7 +239,7 @@ function App() {
             window.removeEventListener('keydown', onKeyDown)
             window.removeEventListener('keyup', onKeyUp)
         }
-    }, [content, isSpeechActive, currentWordIndex, jumpTo, setFontSize])
+    }, [content, isSpeechActive, isEditing, currentWordIndex, jumpTo, setFontSize])
 
     // With auto contrast the chosen color is nudged until it reads well on the
     // background, and once the background turns see-through (so whatever is
@@ -288,6 +298,8 @@ function App() {
                     onPasteText={handlePasteText}
                     onImport={handleImport}
                     onClear={handleClear}
+                    isEditing={isEditing}
+                    onToggleEdit={handleToggleEdit}
                     onToggleListen={handleToggleListen}
                     onTogglePause={() => setIsPaused((v) => !v)}
                     onFontSizeChange={handleFontSizeChange}
@@ -338,6 +350,11 @@ function App() {
                     segments={segments}
                     currentWordIndex={currentWordIndex}
                     onWordClick={jumpTo}
+                    content={content}
+                    isEditing={isEditing}
+                    onContentChange={setContent}
+                    onEditStart={() => setIsEditing(true)}
+                    onEditEnd={() => setIsEditing(false)}
                     fontSize={fontSize}
                     textColor={displayTextColor}
                     textHalo={textHalo}

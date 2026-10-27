@@ -3,12 +3,14 @@ import type { Messages } from './en'
 export const es: Messages = {
     appName: 'Vocal Teleprompter',
     sampleScript:
-        'Bienvenido a Vocal Teleprompter. Pulsa Iniciar y lee este texto en voz alta: el teleprompter te escucha y sigue tu voz palabra por palabra. Haz pausas cuando quieras, acelera o ve más despacio, y te esperará. Haz click en cualquier palabra para continuar desde ahí. Cuando compartas pantalla en Zoom o Meet, esta ventana queda oculta para tu audiencia.',
+        'Bienvenido a Vocal Teleprompter. Pulsa Iniciar y lee este texto en voz alta: el teleprompter te escucha y sigue tu voz palabra por palabra. Haz pausas cuando quieras, acelera o ve más despacio, y te esperará. Haz click en cualquier palabra para continuar desde ahí, o pulsa Editar para escribir tu propio guion. Cuando compartas pantalla en Zoom o Meet, esta ventana queda oculta para tu audiencia.',
 
     toolbar: {
         paste: '+ PEGAR',
         import: '↑ IMPORTAR',
         clear: '✕ ELIMINAR',
+        edit: '✎ EDITAR',
+        done: '✓ LISTO',
         start: '🎙 INICIAR',
         stop: '⏹ DETENER',
         pause: '⏸ PAUSAR',
@@ -45,6 +47,7 @@ export const es: Messages = {
 
     canvas: {
         placeholder: 'Tu texto aparecerá aquí',
+        editPlaceholder: 'Escribe o pega tu guion aquí…',
     },
 
     textFiles: 'Texto',

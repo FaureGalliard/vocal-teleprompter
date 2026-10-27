@@ -31,6 +31,8 @@ interface ToolbarProps {
     onPasteText: () => void
     onImport: () => void
     onClear: () => void
+    isEditing: boolean
+    onToggleEdit: () => void
     onToggleListen: () => void
     onTogglePause: () => void
     onFontSizeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -79,6 +81,8 @@ export default function Toolbar({
     onPasteText,
     onImport,
     onClear,
+    isEditing,
+    onToggleEdit,
     onToggleListen,
     onTogglePause,
     onFontSizeChange,
@@ -214,6 +218,12 @@ export default function Toolbar({
                             onClick={onClear}
                             className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
                             {t.toolbar.clear}
+                        </button>
+
+                        <button
+                            onClick={onToggleEdit}
+                            className={`${btn} ${isEditing ? primary : ghost}`}>
+                            {isEditing ? t.toolbar.done : t.toolbar.edit}
                         </button>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />

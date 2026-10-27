@@ -1,12 +1,14 @@
 export const en = {
     appName: 'Vocal Teleprompter',
     sampleScript:
-        'Welcome to Vocal Teleprompter. Press Start and read this text out loud: the prompter listens to you and follows your voice word by word. Pause whenever you want, speed up or slow down, and it will wait for you. Click any word to continue from there. When you share your screen in Zoom or Meet, this window stays hidden from your audience.',
+        'Welcome to Vocal Teleprompter. Press Start and read this text out loud: the prompter listens to you and follows your voice word by word. Pause whenever you want, speed up or slow down, and it will wait for you. Click any word to continue from there, or press Edit to write your own script. When you share your screen in Zoom or Meet, this window stays hidden from your audience.',
 
     toolbar: {
         paste: '+ PASTE',
         import: '↑ IMPORT',
         clear: '✕ CLEAR',
+        edit: '✎ EDIT',
+        done: '✓ DONE',
         start: '🎙 START',
         stop: '⏹ STOP',
         pause: '⏸ PAUSE',
@@ -43,6 +45,7 @@ export const en = {
 
     canvas: {
         placeholder: 'Your text will appear here',
+        editPlaceholder: 'Write or paste your script here…',
     },
 
     textFiles: 'Text',
