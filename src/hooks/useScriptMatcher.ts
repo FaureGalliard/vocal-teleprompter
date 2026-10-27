@@ -1,7 +1,11 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import { splitWords } from '../lib/segment'
 
 const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u
+// How far ahead of the current word a match is looked for
+const LOOKAHEAD = 25
+// How many trailing spoken words are compared against the script
+const CONTEXT = 3
 
 function normalize(word: string): string {
     return word
@@ -19,67 +23,91 @@ function weight(normalized: string): number {
     return w
 }
 
-function fuzzyMatch(a: string, b: string): boolean {
-    const na = normalize(a)
-    const nb = normalize(b)
-    if (!na || !nb) return false
-    if (na === nb) return true
-    if (na.length < 4 || nb.length < 4) return na === nb
-    if (Math.abs(na.length - nb.length) > 2) return false
-    if (na.includes(nb) || nb.includes(na)) return true
-    let mismatches = 0
-    const len = Math.min(na.length, nb.length)
-    for (let i = 0; i < len; i++) {
-        if (na[i] !== nb[i]) mismatches++
-        if (mismatches > 1) return false
+function maxEdits(length: number): number {
+    if (length <= 3) return 0
+    if (length <= 6) return 1
+    return 2
+}
+
+// Levenshtein distance, giving up as soon as it exceeds limit
+function editDistance(a: string, b: string, limit: number): number {
+    if (Math.abs(a.length - b.length) > limit) return limit + 1
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j)
+    for (let i = 1; i <= a.length; i++) {
+        const row = [i]
+        let rowMin = i
+        for (let j = 1; j <= b.length; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1
+            row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost)
+            rowMin = Math.min(rowMin, row[j])
+        }
+        if (rowMin > limit) return limit + 1
+        prev = row
     }
-    return Math.abs(na.length - nb.length) <= 1
+    return prev[b.length]
+}
+
+function similar(a: string, b: string): boolean {
+    if (!a || !b) return false
+    if (a === b) return true
+    const shorter = Math.min(a.length, b.length)
+    // Interim results often end in a word that is still being spoken
+    if (shorter >= 4 && (a.startsWith(b) || b.startsWith(a))) return true
+    const limit = maxEdits(shorter)
+    return limit > 0 && editDistance(a, b, limit) <= limit
 }
 
 export function useScriptMatcher(scriptWords: string[], language: string) {
     const [currentWordIndex, setCurrentWordIndex] = useState(-1)
-    const searchStartRef = useRef(0)
+    const currentRef = useRef(-1)
+    const normalizedScript = useMemo(() => scriptWords.map(normalize), [scriptWords])
+
+    const moveTo = useCallback((index: number) => {
+        currentRef.current = index
+        setCurrentWordIndex(index)
+    }, [])
 
     const processTranscript = useCallback(
         (transcript: string) => {
-            const spokenWords = splitWords(transcript, language)
-            if (!spokenWords.length) return
+            const spoken = splitWords(transcript, language).map(normalize).filter(Boolean)
+            if (!spoken.length) return
 
-            const lastSpoken = spokenWords[spokenWords.length - 1]
-            const normalizedSpoken = normalize(lastSpoken)
+            const last = spoken[spoken.length - 1]
+            const current = currentRef.current
+            const from = Math.max(0, current)
+            const to = Math.min(from + LOOKAHEAD, normalizedScript.length)
 
-            if (weight(normalizedSpoken) < 3) return
+            let best = -1
+            let bestContext = 0
 
-            const searchEnd = Math.min(searchStartRef.current + 20, scriptWords.length)
+            for (let i = from; i < to; i++) {
+                if (!similar(normalizedScript[i], last)) continue
 
-            let bestMatch = -1
-            let bestScore = 0
+                // Count how many of the words said just before line up too
+                let context = 1
+                for (let j = 1; j < CONTEXT && j < spoken.length && i - j >= 0; j++) {
+                    if (similar(normalizedScript[i - j], spoken[spoken.length - 1 - j]))
+                        context++
+                }
 
-            for (let i = searchStartRef.current; i < searchEnd; i++) {
-                const normalizedScript = normalize(scriptWords[i])
-                if (weight(normalizedScript) < 3) continue
+                // A lone short word ("the", "は") is too common to jump on,
+                // unless it is right after where we already are
+                const reliable = context >= 2 || weight(last) >= 4 || i - current <= 2
+                if (!reliable) continue
 
-                if (fuzzyMatch(scriptWords[i], lastSpoken)) {
-                    const score = normalizedScript.length + normalizedSpoken.length
-                    if (score > bestScore) {
-                        bestScore = score
-                        bestMatch = i
-                    }
+                // Strictly greater keeps the nearest candidate on ties
+                if (context > bestContext) {
+                    best = i
+                    bestContext = context
                 }
             }
 
-            if (bestMatch !== -1) {
-                searchStartRef.current = Math.max(0, bestMatch - 1)
-                setCurrentWordIndex(bestMatch)
-            }
+            if (best !== -1 && best !== current) moveTo(best)
         },
-        [scriptWords, language],
+        [normalizedScript, language, moveTo],
     )
 
-    const reset = useCallback(() => {
-        setCurrentWordIndex(-1)
-        searchStartRef.current = 0
-    }, [])
+    const reset = useCallback(() => moveTo(-1), [moveTo])
 
     return { currentWordIndex, processTranscript, reset }
 }
