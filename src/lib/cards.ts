@@ -1,27 +1,49 @@
 import { segmentText, type Segment } from './segment'
 
+export interface CardSegment extends Segment {
+    // Where the segment starts in the full script text, to place the caret there
+    offset: number
+}
+
 export interface Card {
-    segments: Segment[]
+    segments: CardSegment[]
     // Index of the card's first word in the whole script
     firstWord: number
     wordCount: number
 }
 
 // A line holding only three or more dashes starts a new card (one per slide)
-const SEPARATOR = /^[ \t]*-{3,}[ \t]*$/m
+const SEPARATOR = /^[ \t]*-{3,}[ \t]*$/gm
 
 export function splitCards(text: string, language: string): Card[] {
+    // Slice the text into parts around the separator lines, keeping positions
+    const parts: { start: number; text: string }[] = []
+    let last = 0
+    for (const match of text.matchAll(SEPARATOR)) {
+        parts.push({ start: last, text: text.slice(last, match.index) })
+        last = match.index + match[0].length
+    }
+    parts.push({ start: last, text: text.slice(last) })
+
     const cards: Card[] = []
-    let offset = 0
-    for (const part of text.split(SEPARATOR)) {
-        const body = part.replace(/^\s*\n/, '').replace(/\n\s*$/, '')
+    let firstWord = 0
+    for (const part of parts) {
+        const leading = part.text.match(/^\s*\n/)?.[0].length ?? 0
+        const body = part.text.slice(leading).replace(/\n\s*$/, '')
         if (!body.trim() && cards.length > 0) continue
         let count = 0
-        const segments = segmentText(body, language).map((s) =>
-            s.word === -1 ? s : { ...s, word: offset + count++ },
-        )
-        cards.push({ segments, firstWord: offset, wordCount: count })
-        offset += count
+        let offset = part.start + leading
+        const segments = segmentText(body, language).map((s) => {
+            const segment = {
+                ...s,
+                word: s.word === -1 ? -1 : firstWord + count++,
+                offset,
+            }
+            offset += s.text.length
+            return segment
+        })
+        cards.push({ segments, firstWord, wordCount: count })
+        firstWord += count
     }
     return cards
 }

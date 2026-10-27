@@ -54,6 +54,7 @@ function App() {
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [editCaret, setEditCaret] = useState<number | null>(null)
     const [tourActive, setTourActive] = useState(false)
     const [tourSeen, setTourSeen] = usePersistentState('tourSeen', false)
     // Minutes the speaker wants the presentation to last; 0 means no target
@@ -212,6 +213,7 @@ function App() {
 
     // Listening and editing exclude each other: the script must hold still
     const handleToggleEdit = () => {
+        setEditCaret(null)
         setIsEditing((v) => !v)
         setIsSpeechActive(false)
         setIsPaused(false)
@@ -492,11 +494,20 @@ function App() {
                     currentWordIndex={currentWordIndex}
                     heard={heard}
                     // The clicked word becomes the next one to read
-                    onWordClick={(index) => jumpTo(index - 1)}
+                    onContinueFrom={(index) => jumpTo(index - 1)}
+                    onEditAt={(offset) => {
+                        setEditCaret(offset)
+                        setIsEditing(true)
+                    }}
+                    isListening={isSpeechActive}
+                    editCaret={editCaret}
                     content={content}
                     isEditing={isEditing}
                     onContentChange={setContent}
-                    onEditStart={() => setIsEditing(true)}
+                    onEditStart={() => {
+                        setEditCaret(null)
+                        setIsEditing(true)
+                    }}
                     onEditEnd={() => setIsEditing(false)}
                     fontSize={fontSize}
                     textColor={displayTextColor}

@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react'
-import type { Segment } from '../lib/segment'
-import type { Card } from '../lib/cards'
+import type { Card, CardSegment } from '../lib/cards'
 import { useT } from '../i18n'
 
 // Height of the reading line, as a share of the canvas
@@ -13,7 +12,13 @@ interface CanvasProps {
     // Current word reached by voice (highlighted) rather than placed by hand
     heard: boolean
     currentWordIndex: number
-    onWordClick: (index: number) => void
+    // Ctrl+click, or any click while listening: continue reading from that word
+    onContinueFrom: (index: number) => void
+    // Plain click while stopped: edit the script with the caret at that spot
+    onEditAt: (offset: number) => void
+    isListening: boolean
+    // Where to put the caret when editing starts
+    editCaret: number | null
     content: string
     isEditing: boolean
     onContentChange: (text: string) => void
@@ -34,7 +39,10 @@ export default function Canvas({
     currentCard,
     heard,
     currentWordIndex,
-    onWordClick,
+    onContinueFrom,
+    onEditAt,
+    isListening,
+    editCaret,
     content,
     isEditing,
     onContentChange,
@@ -49,7 +57,21 @@ export default function Canvas({
 }: CanvasProps) {
     const t = useT()
     const containerRef = useRef<HTMLDivElement>(null)
+    const editorRef = useRef<HTMLTextAreaElement>(null)
     const activeWordRef = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        const editor = editorRef.current
+        const container = containerRef.current
+        if (!isEditing || !editor || !container) return
+        const caret = editCaret ?? content.length
+        editor.focus({ preventScroll: true })
+        editor.setSelectionRange(caret, caret)
+        // Bring the caret's line into view, roughly by its share of the text
+        const share = content.length ? caret / content.length : 0
+        container.scrollTop = share * editor.scrollHeight - container.clientHeight / 2
+        // Only when editing starts, not on every keystroke
+    }, [isEditing])
 
     // Scroll the canvas itself, vertically only. scrollIntoView also moves
     // every ancestor on both axes, which could push the script sideways out
@@ -70,7 +92,7 @@ export default function Canvas({
     const textShadow = textHalo
         ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
         : undefined
-    const renderSegment = (segment: Segment, s: number) => {
+    const renderSegment = (segment: CardSegment, s: number) => {
         const i = segment.word
         if (i === -1) {
             // Gaps and punctuation follow the word before them
@@ -105,8 +127,12 @@ export default function Canvas({
             <span
                 key={s}
                 ref={isCurrentWord || isNextWord ? activeWordRef : null}
-                onClick={() => onWordClick(i)}
-                className="cursor-pointer"
+                onClick={(e) =>
+                    e.ctrlKey || e.metaKey || isListening
+                        ? onContinueFrom(i)
+                        : onEditAt(segment.offset)
+                }
+                className={isListening ? 'cursor-pointer' : 'cursor-text'}
                 style={{
                     color: isCurrentWord
                         ? '#1a1a1a'
@@ -180,7 +206,7 @@ export default function Canvas({
                                 {t.cards.hint}
                             </p>
                             <textarea
-                                autoFocus
+                                ref={editorRef}
                                 value={content}
                                 onChange={(e) => onContentChange(e.target.value)}
                                 onKeyDown={(e) => {
