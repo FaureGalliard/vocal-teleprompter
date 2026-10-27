@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useLayoutEffect, useMemo } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import Canvas from './components/Canvas'
@@ -9,6 +9,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { segmentText } from './lib/segment'
 
 function App() {
     const [bgOpacity, setBgOpacity] = useState(0.9)
@@ -48,8 +49,15 @@ function App() {
     const isDraggingRef = useRef(false)
 
     const { microphones } = useMicrophones()
-    const scriptWords = content.split(/\s+/).filter(Boolean)
-    const { currentWordIndex, processTranscript, reset } = useScriptMatcher(scriptWords)
+    const segments = useMemo(() => segmentText(content, language), [content, language])
+    const scriptWords = useMemo(
+        () => segments.filter((s) => s.word !== -1).map((s) => s.text),
+        [segments],
+    )
+    const { currentWordIndex, processTranscript, reset } = useScriptMatcher(
+        scriptWords,
+        language,
+    )
     const { listening: isRecognizing, error } = useSpeechRecognition({
         language,
         deviceId: selectedMic,
@@ -219,7 +227,7 @@ function App() {
             </button>
 
             <Canvas
-                scriptWords={scriptWords}
+                segments={segments}
                 currentWordIndex={currentWordIndex}
                 fontSize={fontSize}
                 textColor={textColor}

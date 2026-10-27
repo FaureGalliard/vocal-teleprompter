@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react'
+import type { Segment } from '../lib/segment'
 
 interface CanvasProps {
-    scriptWords: string[]
+    segments: Segment[]
     currentWordIndex: number
     fontSize: number
     textColor: string
@@ -10,7 +11,7 @@ interface CanvasProps {
 }
 
 export default function Canvas({
-    scriptWords,
+    segments,
     currentWordIndex,
     fontSize,
     textColor,
@@ -28,6 +29,7 @@ export default function Canvas({
         }
     }, [currentWordIndex])
 
+    let prevWord = -1
     const top = titleBarPosition === 'top' ? titleBarHeight + 15 : 20
     const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 20 : 30
 
@@ -47,11 +49,33 @@ export default function Canvas({
             }
             className="[&::-webkit-scrollbar]:hidden">
             <div>
-                {scriptWords.length > 0 ? (
+                {segments.length > 0 ? (
                     <p
                         className="text-center leading-relaxed"
-                        style={{ fontSize: `${fontSize}px` }}>
-                        {scriptWords.map((word, i) => {
+                        style={{ fontSize: `${fontSize}px`, whiteSpace: 'pre-wrap' }}>
+                        {segments.map((segment, s) => {
+                            const i = segment.word
+                            if (i === -1) {
+                                // Gaps and punctuation follow the word before them
+                                return (
+                                    <span
+                                        key={s}
+                                        style={{
+                                            color:
+                                                prevWord < currentWordIndex
+                                                    ? `${textColor}50`
+                                                    : textColor,
+                                            backgroundColor:
+                                                prevWord >= currentWordIndex &&
+                                                prevWord < currentWordIndex + 8
+                                                    ? `${textColor}10`
+                                                    : 'transparent',
+                                        }}>
+                                        {segment.text}
+                                    </span>
+                                )
+                            }
+                            prevWord = i
                             const isCurrentWord = i === currentWordIndex
                             const isPast = i < currentWordIndex
                             const isNearby =
@@ -59,7 +83,7 @@ export default function Canvas({
 
                             return (
                                 <span
-                                    key={i}
+                                    key={s}
                                     ref={isCurrentWord ? activeWordRef : null}
                                     style={{
                                         color: isCurrentWord
@@ -77,7 +101,7 @@ export default function Canvas({
                                         transition:
                                             'color 0.2s ease, background-color 0.2s ease',
                                     }}>
-                                    {word}{' '}
+                                    {segment.text}
                                 </span>
                             )
                         })}

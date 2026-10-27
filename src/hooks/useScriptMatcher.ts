@@ -1,11 +1,22 @@
 import { useState, useCallback, useRef } from 'react'
+import { splitWords } from '../lib/segment'
+
+const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u
 
 function normalize(word: string): string {
     return word
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '')
+        .replace(/\p{M}/gu, '')
+        .replace(/[^\p{L}\p{N}]/gu, '')
+}
+
+// How distinctive a word is: an ideograph or syllable block carries about as
+// much as three Latin letters, so short CJK words are not discarded as noise
+function weight(normalized: string): number {
+    let w = 0
+    for (const ch of normalized) w += CJK.test(ch) ? 3 : 1
+    return w
 }
 
 function fuzzyMatch(a: string, b: string): boolean {
@@ -25,19 +36,19 @@ function fuzzyMatch(a: string, b: string): boolean {
     return Math.abs(na.length - nb.length) <= 1
 }
 
-export function useScriptMatcher(scriptWords: string[]) {
+export function useScriptMatcher(scriptWords: string[], language: string) {
     const [currentWordIndex, setCurrentWordIndex] = useState(-1)
     const searchStartRef = useRef(0)
 
     const processTranscript = useCallback(
         (transcript: string) => {
-            const spokenWords = transcript.split(/\s+/).filter(Boolean)
+            const spokenWords = splitWords(transcript, language)
             if (!spokenWords.length) return
 
             const lastSpoken = spokenWords[spokenWords.length - 1]
             const normalizedSpoken = normalize(lastSpoken)
 
-            if (normalizedSpoken.length < 3) return
+            if (weight(normalizedSpoken) < 3) return
 
             const searchEnd = Math.min(searchStartRef.current + 20, scriptWords.length)
 
@@ -46,7 +57,7 @@ export function useScriptMatcher(scriptWords: string[]) {
 
             for (let i = searchStartRef.current; i < searchEnd; i++) {
                 const normalizedScript = normalize(scriptWords[i])
-                if (normalizedScript.length < 3) continue
+                if (weight(normalizedScript) < 3) continue
 
                 if (fuzzyMatch(scriptWords[i], lastSpoken)) {
                     const score = normalizedScript.length + normalizedSpoken.length
@@ -62,7 +73,7 @@ export function useScriptMatcher(scriptWords: string[]) {
                 setCurrentWordIndex(bestMatch)
             }
         },
-        [scriptWords],
+        [scriptWords, language],
     )
 
     const reset = useCallback(() => {
