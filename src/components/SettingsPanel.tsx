@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Contrast, EyeOff, Globe, PanelTop, RotateCcw, Settings } from 'lucide-react'
+import {
+    Contrast,
+    EyeOff,
+    Globe,
+    GraduationCap,
+    PanelTop,
+    RotateCcw,
+    Settings,
+} from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
 
 const PANEL_WIDTH = 288
@@ -15,6 +23,7 @@ interface SettingsPanelProps {
     onToggleAutoContrast: () => void
     onToggleTitleBar: () => void
     onReset: () => void
+    onShowTutorial: () => void
 }
 
 function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -68,6 +77,7 @@ export default function SettingsPanel({
     onToggleAutoContrast,
     onToggleTitleBar,
     onReset,
+    onShowTutorial,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -103,6 +113,7 @@ export default function SettingsPanel({
     return (
         <div
             ref={ref}
+            data-tour="settings"
             className="relative">
             <button
                 onClick={() => {
@@ -177,7 +188,16 @@ export default function SettingsPanel({
                             />
                         </Row>
 
-                        <div className="border-t border-white/10 mt-1 px-4 py-2.5">
+                        <div className="border-t border-white/10 mt-1 px-4 py-2.5 flex flex-col gap-2.5">
+                            <button
+                                onClick={() => {
+                                    setOpen(false)
+                                    onShowTutorial()
+                                }}
+                                className="flex items-center gap-2 text-[11px] text-white/50 hover:text-white transition-colors">
+                                <GraduationCap size={12} />
+                                {t.settings.tutorial}
+                            </button>
                             <button
                                 onClick={() => (confirmReset ? onReset() : setConfirmReset(true))}
                                 className={`flex items-center gap-2 text-[11px] transition-colors ${

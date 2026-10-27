@@ -62,6 +62,7 @@ export default function Canvas({
     return (
         <div
             ref={containerRef}
+            data-tour="canvas"
             style={
                 {
                     position: 'fixed',

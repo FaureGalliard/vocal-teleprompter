@@ -3,3 +3,60 @@
 ::-webkit-scrollbar {
     display: none;
 }
+
+/* Guided tour, themed like the app's own menus */
+.driver-popover.vt-tour {
+    background-color: #242424;
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 12px;
+    font-family: inherit;
+}
+.vt-tour .driver-popover-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+.vt-tour .driver-popover-description {
+    font-size: 12px;
+    color: rgb(255 255 255 / 0.7);
+}
+.vt-tour .driver-popover-progress-text {
+    font-size: 11px;
+    color: rgb(255 255 255 / 0.4);
+}
+.vt-tour .driver-popover-close-btn {
+    color: rgb(255 255 255 / 0.4);
+}
+.vt-tour .driver-popover-close-btn:hover {
+    color: #fff;
+}
+.vt-tour .driver-popover-footer-btn {
+    background-color: rgb(255 255 255 / 0.1);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 11px;
+    text-shadow: none;
+}
+.vt-tour .driver-popover-footer-btn:hover {
+    background-color: rgb(255 255 255 / 0.2);
+}
+.vt-tour .driver-popover-next-btn {
+    background-color: #445ade;
+}
+.vt-tour .driver-popover-next-btn:hover {
+    background-color: #3448c5;
+}
+.vt-tour .driver-popover-arrow-side-left.driver-popover-arrow {
+    border-left-color: #242424;
+}
+.vt-tour .driver-popover-arrow-side-right.driver-popover-arrow {
+    border-right-color: #242424;
+}
+.vt-tour .driver-popover-arrow-side-top.driver-popover-arrow {
+    border-top-color: #242424;
+}
+.vt-tour .driver-popover-arrow-side-bottom.driver-popover-arrow {
+    border-bottom-color: #242424;
+}

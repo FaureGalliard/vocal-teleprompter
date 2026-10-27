@@ -11,6 +11,7 @@ import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { Menu, X } from 'lucide-react'
+import { startTour } from './lib/tour'
 import { segmentText } from './lib/segment'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
@@ -47,6 +48,8 @@ function App() {
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+    const [tourActive, setTourActive] = useState(false)
+    const [tourSeen, setTourSeen] = usePersistentState('tourSeen', false)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -183,6 +186,34 @@ function App() {
             .catch((e) => console.error(e))
     }, [hiddenFromCapture])
 
+    // The tour points at toolbar controls, so open the toolbar and give its
+    // slide-in animation time to finish before starting
+    const showTutorial = () => {
+        setIsEditing(false)
+        setIsSpeechActive(false)
+        setIsPaused(false)
+        setLangMenuOpen(false)
+        setMicMenuOpen(false)
+        setToolbarVisible(true)
+        setTourActive(true)
+        setTimeout(
+            () =>
+                startTour(t, () => {
+                    setTourActive(false)
+                    setTourSeen(true)
+                }),
+            400,
+        )
+    }
+
+    // First launch: show the tour once (the ref keeps StrictMode from starting two)
+    const tourAutoStartedRef = useRef(false)
+    useEffect(() => {
+        if (tourSeen || tourAutoStartedRef.current) return
+        tourAutoStartedRef.current = true
+        showTutorial()
+    }, [])
+
     // Keyboard shortcuts, ignored while typing in a field
     useEffect(() => {
         const isTyping = (target: EventTarget | null) =>
@@ -191,7 +222,14 @@ function App() {
             target instanceof HTMLSelectElement
 
         const onKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || isEditing)
+            if (
+                e.ctrlKey ||
+                e.metaKey ||
+                e.altKey ||
+                isTyping(e.target) ||
+                isEditing ||
+                tourActive
+            )
                 return
             switch (e.key) {
                 case ' ':
@@ -242,7 +280,7 @@ function App() {
             window.removeEventListener('keydown', onKeyDown)
             window.removeEventListener('keyup', onKeyUp)
         }
-    }, [content, isSpeechActive, isEditing, currentWordIndex, jumpTo, setFontSize])
+    }, [content, isSpeechActive, isEditing, tourActive, currentWordIndex, jumpTo, setFontSize])
 
     // With auto contrast the chosen color is nudged until it reads well on the
     // background, and once the background turns see-through (so whatever is
@@ -319,6 +357,7 @@ function App() {
                     onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
                     autoContrast={autoContrast}
                     onToggleAutoContrast={() => setAutoContrast((v) => !v)}
+                onShowTutorial={showTutorial}
                 onReset={() => {
                     clearPersistentState()
                     window.location.reload()

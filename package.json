@@ -16,6 +16,7 @@
         "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
         "@tauri-apps/plugin-dialog": "^2.6.0",
         "@tauri-apps/plugin-fs": "^2.4.5",
+        "driver.js": "^1.10.2",
         "framer-motion": "^12.37.0",
         "lucide-react": "^1.61.0",
         "react": "^19.1.0",

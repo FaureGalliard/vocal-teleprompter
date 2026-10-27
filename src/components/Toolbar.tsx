@@ -60,6 +60,7 @@ interface ToolbarProps {
     onToggleHiddenFromCapture: () => void
     onToggleAutoContrast: () => void
     onReset: () => void
+    onShowTutorial: () => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -111,6 +112,7 @@ export default function Toolbar({
     onToggleHiddenFromCapture,
     onToggleAutoContrast,
     onReset,
+    onShowTutorial,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -227,37 +229,42 @@ export default function Toolbar({
                             transformOrigin: 'right center',
                         }}
                         className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-2 pl-5 pr-16 py-3 bg-[#1a1a1a] border-b border-white/10">
-                        <button
-                            onClick={onPasteText}
-                            className={`${btn} ${primary}`}>
-                            <ClipboardPaste size={ICON} />
-                            {t.toolbar.paste}
-                        </button>
+                        <div
+                            data-tour="script"
+                            className="flex flex-wrap items-center gap-2">
+                            <button
+                                onClick={onPasteText}
+                                className={`${btn} ${primary}`}>
+                                <ClipboardPaste size={ICON} />
+                                {t.toolbar.paste}
+                            </button>
 
-                        <button
-                            onClick={onImport}
-                            className={`${btn} ${ghost}`}>
-                            <FileUp size={ICON} />
-                            {t.toolbar.import}
-                        </button>
+                            <button
+                                onClick={onImport}
+                                className={`${btn} ${ghost}`}>
+                                <FileUp size={ICON} />
+                                {t.toolbar.import}
+                            </button>
 
-                        <button
-                            onClick={onClear}
-                            className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
-                            <Trash2 size={ICON} />
-                            {t.toolbar.clear}
-                        </button>
+                            <button
+                                onClick={onClear}
+                                className={`${btn} bg-white/10 text-white hover:bg-red-500/80 rounded-full`}>
+                                <Trash2 size={ICON} />
+                                {t.toolbar.clear}
+                            </button>
 
-                        <button
-                            onClick={onToggleEdit}
-                            className={`${btn} ${isEditing ? primary : ghost}`}>
-                            {isEditing ? <Check size={ICON} /> : <Pencil size={ICON} />}
-                            {isEditing ? t.toolbar.done : t.toolbar.edit}
-                        </button>
+                            <button
+                                onClick={onToggleEdit}
+                                className={`${btn} ${isEditing ? primary : ghost}`}>
+                                {isEditing ? <Check size={ICON} /> : <Pencil size={ICON} />}
+                                {isEditing ? t.toolbar.done : t.toolbar.edit}
+                            </button>
+                        </div>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
 
                         <button
+                            data-tour="start"
                             onClick={onToggleListen}
                             disabled={!content}
                             className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
@@ -292,6 +299,7 @@ export default function Toolbar({
                         {/* Idioma */}
                         <div
                             ref={langMenuRef}
+                            data-tour="speech-language"
                             className="relative">
                             <button
                                 onClick={onLangMenuToggle}
@@ -342,6 +350,7 @@ export default function Toolbar({
                         {/* Micrófono */}
                         <div
                             ref={micMenuRef}
+                            data-tour="microphone"
                             className="relative">
                             <button
                                 onClick={onMicMenuToggle}
@@ -399,81 +408,85 @@ export default function Toolbar({
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
 
-                        {/* Tamaño */}
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
-                            <span className="text-[9px] text-white/50 uppercase">
-                                {t.toolbar.size}
-                            </span>
-                            <input
-                                type="number"
-                                min={6}
-                                max={200}
-                                value={fontSize}
-                                onChange={onFontSizeChange}
-                                className="w-10 text-[11px] text-white bg-transparent text-center focus:outline-none"
-                            />
-                            <span className="text-[9px] text-white/30">px</span>
-                        </div>
-
-                        <div className="w-px h-5 mx-1 bg-white/15" />
-
-                        {/* Fondo */}
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
-                            <span className="text-[9px] text-white/50 uppercase">
-                                {t.toolbar.background}
-                            </span>
-                            <div className="relative w-4 h-4 rounded-full overflow-hidden border border-white/20">
+                        <div
+                            data-tour="look"
+                            className="flex flex-wrap items-center gap-2">
+                            {/* Tamaño */}
+                            <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                                <span className="text-[9px] text-white/50 uppercase">
+                                    {t.toolbar.size}
+                                </span>
                                 <input
-                                    type="color"
-                                    value={bgColor}
-                                    onChange={(e) => onBgColorChange(e.target.value)}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    type="number"
+                                    min={6}
+                                    max={200}
+                                    value={fontSize}
+                                    onChange={onFontSizeChange}
+                                    className="w-10 text-[11px] text-white bg-transparent text-center focus:outline-none"
                                 />
-                                <div
-                                    className="w-full h-full rounded-full"
-                                    style={{ backgroundColor: bgColor }}
+                                <span className="text-[9px] text-white/30">px</span>
+                            </div>
+
+                            <div className="w-px h-5 mx-1 bg-white/15" />
+
+                            {/* Fondo */}
+                            <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                                <span className="text-[9px] text-white/50 uppercase">
+                                    {t.toolbar.background}
+                                </span>
+                                <div className="relative w-4 h-4 rounded-full overflow-hidden border border-white/20">
+                                    <input
+                                        type="color"
+                                        value={bgColor}
+                                        onChange={(e) => onBgColorChange(e.target.value)}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                    <div
+                                        className="w-full h-full rounded-full"
+                                        style={{ backgroundColor: bgColor }}
+                                    />
+                                </div>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                    value={bgOpacity}
+                                    onMouseDown={() => {
+                                        if (colorPickerOpen) {
+                                            setColorPickerOpen(false)
+                                            onColorPickerClose()
+                                        }
+                                        onAdjustStart()
+                                    }}
+                                    onTouchStart={() => {
+                                        if (colorPickerOpen) {
+                                            setColorPickerOpen(false)
+                                            onColorPickerClose()
+                                        }
+                                        onAdjustStart()
+                                    }}
+                                    onChange={(e) =>
+                                        onBgOpacityChange(Number(e.target.value))
+                                    }
+                                    className="w-14 accent-[#445ade]"
                                 />
                             </div>
-                            <input
-                                type="range"
-                                min={0}
-                                max={1}
-                                step={0.01}
-                                value={bgOpacity}
-                                onMouseDown={() => {
-                                    if (colorPickerOpen) {
-                                        setColorPickerOpen(false)
-                                        onColorPickerClose()
-                                    }
-                                    onAdjustStart()
-                                }}
-                                onTouchStart={() => {
-                                    if (colorPickerOpen) {
-                                        setColorPickerOpen(false)
-                                        onColorPickerClose()
-                                    }
-                                    onAdjustStart()
-                                }}
-                                onChange={(e) =>
-                                    onBgOpacityChange(Number(e.target.value))
-                                }
-                                className="w-14 accent-[#445ade]"
-                            />
-                        </div>
 
-                        <div className="w-px h-5 mx-1 bg-white/15" />
+                            <div className="w-px h-5 mx-1 bg-white/15" />
 
-                        {/* Texto */}
-                        <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
-                            <span className="text-[9px] text-white/50 uppercase">
-                                {t.toolbar.text}
-                            </span>
-                            <button
-                                ref={colorButtonRef}
-                                onClick={handleOpenColorPicker}
-                                className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
-                                style={{ backgroundColor: textColor }}
-                            />
+                            {/* Texto */}
+                            <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
+                                <span className="text-[9px] text-white/50 uppercase">
+                                    {t.toolbar.text}
+                                </span>
+                                <button
+                                    ref={colorButtonRef}
+                                    onClick={handleOpenColorPicker}
+                                    className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
+                                    style={{ backgroundColor: textColor }}
+                                />
+                            </div>
                         </div>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
@@ -488,6 +501,7 @@ export default function Toolbar({
                             onToggleAutoContrast={onToggleAutoContrast}
                             onToggleTitleBar={onToggleTitleBar}
                             onReset={onReset}
+                            onShowTutorial={onShowTutorial}
                         />
 
                         {error && (
