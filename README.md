@@ -51,7 +51,9 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
   mispronounced or skipped words don't throw it off.
 - 🌍 **9 languages**: Spanish, English, French, German, Italian, Portuguese, Japanese,
   Chinese and Korean. Scripts without spaces are split into words with `Intl.Segmenter`.
-- 🖱️ **Click any word** to continue from there after you jump ahead or repeat a passage.
+- 🖱️ **Click any word to edit it** right there, or **Ctrl+click** it to continue reading
+  from that word after you jump ahead or repeat a passage. While listening, a plain click
+  also continues from there.
 - 🎙️ **Microphone picker** that picks up devices you plug in while the app is open.
 - 💾 **Remembers everything**: script, colors, opacity, size, language and microphone.
 - 🎨 **Customizable look**: background color and opacity, text color and font size.
@@ -62,7 +64,9 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - ⚙️ **Settings panel** behind the gear button: interface language, hiding from screen
   sharing, automatic contrast, click-through, reading line, target duration, title bar,
   the list of global shortcuts, and a reset to defaults.
-- 🎓 **Guided tour** on first launch (replay it any time from Settings).
+- 🎓 **Guided tour** on first launch (replay it any time with the **?** button).
+- 🔄 **Automatic updates**: the app tells you when a new version is out and updates itself
+  in one click.
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
 - 🖥️ **System tray**: show, hide, toggle click-through or quit from the tray icon.
 
@@ -108,6 +112,7 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 
 Get the latest installer (`.exe` or `.msi`) from the
 [Releases](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest) page.
+From v1.2.0 on, the app updates itself: you only install it once.
 
 > **Windows SmartScreen**: the app is not code-signed yet, so Windows may warn you on the
 > first launch. Click **More info → Run anyway**. The source is all here.
@@ -162,10 +167,34 @@ Build the installers:
 pnpm tauri build
 ```
 
-They end up in `src-tauri/target/release/bundle/` (`nsis/*.exe` and `msi/*.msi`).
+They end up in `src-tauri/target/release/bundle/` (`nsis/*.exe` and `msi/*.msi`). The
+bundler also signs the updater artifacts, so a local build needs the signing key in
+`TAURI_SIGNING_PRIVATE_KEY` (its contents or its path).
+
+**Releasing**: bump the version in `package.json`, `src-tauri/tauri.conf.json` and
+`src-tauri/Cargo.toml`, then push a tag such as `v1.2.0`. The
+[Release workflow](.github/workflows/release.yml) builds and signs the installers and opens
+a draft release with `latest.json`; publishing the draft is what makes installed apps see
+the update. The workflow reads the key from the `TAURI_SIGNING_PRIVATE_KEY` secret.
 
 **Stack**: React 19 + TypeScript, Vite, Tailwind CSS v4, Framer Motion, Tauri 2 (Rust), and
 the Web Speech API.
+
+---
+
+## 🗺️ Roadmap
+
+Ideas for upcoming versions:
+
+- ⏳ **Countdown** (3, 2, 1) before listening starts, to settle and look at the camera.
+- 🔤 **Typography**: font, line spacing and text width.
+- 📚 **Script library**: keep several scripts and switch between recent ones.
+- ⏭️ **Advance your slides by voice**: send the next-slide key to PowerPoint, Google Slides
+  or Keynote when a card is finished.
+- 📥 **Import PowerPoint notes**: one card per slide from a `.pptx`.
+- 🧭 **First-run setup**: language, microphone with a live level meter and a look preset.
+- 🏷️ **Script markers**: highlighted `[PAUSE]` cues and `(notes)` that you don't have to read.
+- 🔌 **Offline speech recognition** with a local Whisper model.
 
 ---
 
