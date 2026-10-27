@@ -109,5 +109,11 @@ export function useScriptMatcher(scriptWords: string[], language: string) {
 
     const reset = useCallback(() => moveTo(-1), [moveTo])
 
-    return { currentWordIndex, processTranscript, reset }
+    // Manual repositioning; matching resumes from the chosen word
+    const jumpTo = useCallback(
+        (index: number) => moveTo(Math.max(-1, Math.min(index, scriptWords.length - 1))),
+        [moveTo, scriptWords.length],
+    )
+
+    return { currentWordIndex, processTranscript, reset, jumpTo }
 }

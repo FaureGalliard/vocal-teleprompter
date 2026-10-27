@@ -63,7 +63,7 @@ function App() {
         () => segments.filter((s) => s.word !== -1).map((s) => s.text),
         [segments],
     )
-    const { currentWordIndex, processTranscript, reset } = useScriptMatcher(
+    const { currentWordIndex, processTranscript, reset, jumpTo } = useScriptMatcher(
         scriptWords,
         language,
     )
@@ -238,6 +238,7 @@ function App() {
             <Canvas
                 segments={segments}
                 currentWordIndex={currentWordIndex}
+                onWordClick={jumpTo}
                 fontSize={fontSize}
                 textColor={textColor}
                 titleBarHeight={titleBarVisible ? titleBarHeight : 0}

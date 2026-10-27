@@ -4,6 +4,7 @@ import type { Segment } from '../lib/segment'
 interface CanvasProps {
     segments: Segment[]
     currentWordIndex: number
+    onWordClick: (index: number) => void
     fontSize: number
     textColor: string
     titleBarHeight: number
@@ -13,6 +14,7 @@ interface CanvasProps {
 export default function Canvas({
     segments,
     currentWordIndex,
+    onWordClick,
     fontSize,
     textColor,
     titleBarHeight,
@@ -85,6 +87,8 @@ export default function Canvas({
                                 <span
                                     key={s}
                                     ref={isCurrentWord ? activeWordRef : null}
+                                    onClick={() => onWordClick(i)}
+                                    className="cursor-pointer"
                                     style={{
                                         color: isCurrentWord
                                             ? '#1a1a1a'
