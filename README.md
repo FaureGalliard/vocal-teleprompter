@@ -48,7 +48,9 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - ✍️ **Write right in the prompter**: press **EDIT** to type or fix the script in place,
   then **DONE** (or `Esc`) to go back to prompting.
 - 📋 **Paste or import** your script from the clipboard or a `.txt` file. Line breaks are kept.
-- 🌐 **Interface in English or Spanish** (English by default), tray menu included.
+- 🌐 **Interface in the same 9 languages** (English by default), tray menu included.
+- ⚙️ **Settings panel** behind the gear button: interface language, hiding from screen
+  sharing, automatic contrast, title bar, and a reset to defaults.
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
 - 🖥️ **System tray**: show, hide or quit from the tray icon.
 
@@ -92,8 +94,8 @@ Get the latest installer (`.exe` or `.msi`) from the
 - Speech recognition uses the engine built into Windows' WebView2 (the Web Speech API).
   It is free and needs no account, but it **needs an internet connection**.
 - Hiding from screen capture needs **Windows 10 version 2004 or newer**. On older builds the
-  window shows up black instead of disappearing. You can turn it off with the
-  **🕶 HIDDEN / 👁 VISIBLE** button if you want to record the app itself.
+  window shows up black instead of disappearing. You can turn it off in **Settings** if
+  you want to record the app itself.
 
 ---
 
