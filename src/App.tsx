@@ -9,6 +9,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { invoke } from '@tauri-apps/api/core'
 import { segmentText } from './lib/segment'
 import { usePersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, getMessages } from './i18n'
@@ -163,7 +164,8 @@ function App() {
 
     useEffect(() => {
         document.documentElement.lang = uiLanguage
-    }, [uiLanguage])
+        invoke('set_tray_labels', { ...t.tray }).catch((e) => console.error(e))
+    }, [uiLanguage, t])
 
     useEffect(() => {
         getCurrentWindow()
