@@ -37,6 +37,8 @@ export const ja: Messages = {
         tutorial: 'チュートリアルを見る',
         targetDuration: '目標時間',
         targetDurationHint: '速めるか遅くするかを知らせます。0 でオフ',
+        readingLine: '読み上げライン',
+        readingLineHint: '現在の行をカメラに近い上部に保ちます',
     },
 
     tour: {

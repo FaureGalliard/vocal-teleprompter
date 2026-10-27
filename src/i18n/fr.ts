@@ -37,6 +37,8 @@ export const fr: Messages = {
         tutorial: 'Voir le tutoriel',
         targetDuration: 'Durée visée',
         targetDurationHint: "Vous indique d'accélérer ou de ralentir. 0 = désactivé",
+        readingLine: 'Ligne de lecture',
+        readingLineHint: 'Garde la ligne en cours en haut, près de votre caméra',
     },
 
     tour: {

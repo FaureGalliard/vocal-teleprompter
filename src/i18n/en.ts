@@ -35,6 +35,8 @@ export const en = {
         tutorial: 'Show tutorial',
         targetDuration: 'Target duration',
         targetDurationHint: 'Tells you to speed up or slow down. 0 = off',
+        readingLine: 'Reading line',
+        readingLineHint: 'Keeps the current line near the top, close to your camera',
     },
 
     tour: {

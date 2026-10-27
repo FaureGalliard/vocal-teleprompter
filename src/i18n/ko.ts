@@ -37,6 +37,8 @@ export const ko: Messages = {
         tutorial: '튜토리얼 보기',
         targetDuration: '목표 시간',
         targetDurationHint: '빠르게 또는 천천히 말하라고 알려 줍니다. 0 = 끄기',
+        readingLine: '읽기 라인',
+        readingLineHint: '현재 줄을 카메라 가까운 위쪽에 유지합니다',
     },
 
     tour: {

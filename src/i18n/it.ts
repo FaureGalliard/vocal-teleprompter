@@ -37,6 +37,8 @@ export const it: Messages = {
         tutorial: 'Mostra il tutorial',
         targetDuration: 'Durata obiettivo',
         targetDurationHint: 'Ti dice se accelerare o rallentare. 0 = disattivato',
+        readingLine: 'Linea di lettura',
+        readingLineHint: 'Tiene la riga corrente in alto, vicino alla videocamera',
     },
 
     tour: {

@@ -9,6 +9,7 @@ import {
     RotateCcw,
     Settings,
     Timer,
+    ScanLine,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
 
@@ -27,6 +28,8 @@ interface SettingsPanelProps {
     onShowTutorial: () => void
     targetMinutes: number
     onTargetMinutesChange: (val: number) => void
+    readingLine: boolean
+    onToggleReadingLine: () => void
 }
 
 function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
@@ -83,6 +86,8 @@ export default function SettingsPanel({
     onShowTutorial,
     targetMinutes,
     onTargetMinutesChange,
+    readingLine,
+    onToggleReadingLine,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -181,6 +186,16 @@ export default function SettingsPanel({
                             <Switch
                                 on={autoContrast}
                                 onToggle={onToggleAutoContrast}
+                            />
+                        </Row>
+
+                        <Row
+                            icon={<ScanLine size={14} />}
+                            label={t.settings.readingLine}
+                            hint={t.settings.readingLineHint}>
+                            <Switch
+                                on={readingLine}
+                                onToggle={onToggleReadingLine}
                             />
                         </Row>
 

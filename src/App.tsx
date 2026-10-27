@@ -54,6 +54,7 @@ function App() {
     const [tourSeen, setTourSeen] = usePersistentState('tourSeen', false)
     // Minutes the speaker wants the presentation to last; 0 means no target
     const [targetMinutes, setTargetMinutes] = usePersistentState('targetMinutes', 0)
+    const [readingLine, setReadingLine] = usePersistentState('readingLine', false)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -391,6 +392,8 @@ function App() {
                     onShowTutorial={showTutorial}
                     targetMinutes={targetMinutes}
                     onTargetMinutesChange={setTargetMinutes}
+                    readingLine={readingLine}
+                    onToggleReadingLine={() => setReadingLine((v) => !v)}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -446,6 +449,7 @@ function App() {
                     fontSize={fontSize}
                     textColor={displayTextColor}
                     textHalo={textHalo}
+                    readingLine={readingLine}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     titleBarPosition={titleBarPosition}
                 />

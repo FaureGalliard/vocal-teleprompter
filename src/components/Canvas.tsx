@@ -3,6 +3,9 @@ import type { Segment } from '../lib/segment'
 import type { Card } from '../lib/cards'
 import { useT } from '../i18n'
 
+// Height of the reading line, as a share of the canvas
+const READING_LINE = 0.35
+
 interface CanvasProps {
     cards: Card[]
     // Card holding the next word to read
@@ -18,6 +21,8 @@ interface CanvasProps {
     textColor: string
     // Outline color that keeps text readable over an unknown backdrop
     textHalo?: string
+    // Hold the current line at a fixed height, near a top-mounted camera
+    readingLine: boolean
     titleBarHeight: number
     titleBarPosition: 'top' | 'bottom'
 }
@@ -35,6 +40,7 @@ export default function Canvas({
     fontSize,
     textColor,
     textHalo,
+    readingLine,
     titleBarHeight,
     titleBarPosition,
 }: CanvasProps) {
@@ -49,12 +55,13 @@ export default function Canvas({
         const container = containerRef.current
         const word = activeWordRef.current
         if (!container || !word) return
+        const anchor = readingLine ? READING_LINE : 0.5
         container.scrollTo({
-            top: word.offsetTop - (container.clientHeight - word.offsetHeight) / 2,
+            top: word.offsetTop - container.clientHeight * anchor + word.offsetHeight / 2,
             left: 0,
             behavior: 'smooth',
         })
-    }, [currentWordIndex])
+    }, [currentWordIndex, readingLine])
 
     let prevWord = -1
     const textShadow = textHalo
@@ -122,92 +129,124 @@ export default function Canvas({
     const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 34 : 36
 
     return (
-        <div
-            ref={containerRef}
-            data-tour="canvas"
-            style={
-                {
-                    position: 'fixed',
-                    top,
-                    bottom,
-                    left: 20,
-                    right: 20,
-                    overflowY: 'scroll',
-                    overflowX: 'hidden',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none',
-                } as React.CSSProperties
-            }
-            className="[&::-webkit-scrollbar]:hidden">
-            <div className="min-h-full">
-                {isEditing ? (
-                    <>
-                        <p
-                            className="text-center text-[11px] mb-3 opacity-50"
-                            style={{ color: textColor }}>
-                            {t.cards.hint}
-                        </p>
-                        <textarea
-                            autoFocus
-                            value={content}
-                            onChange={(e) => onContentChange(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Escape') onEditEnd()
-                            }}
-                            placeholder={t.canvas.editPlaceholder}
-                            spellCheck={false}
-                            className="block w-full min-h-[80%] text-center leading-relaxed bg-transparent resize-none outline-none placeholder:opacity-40"
-                            style={
-                                {
-                                    fontSize: `${fontSize}px`,
-                                    color: textColor,
-                                    caretColor: textColor,
-                                    textShadow,
-                                    // Grow with the text so the canvas scrolls, not the field
-                                    fieldSizing: 'content',
-                                } as React.CSSProperties
-                            }
-                        />
-                    </>
-                ) : cards.some((c) => c.segments.length > 0) ? (
-                    cards.map((card, c) => (
-                        <section
-                            key={c}
-                            className={cards.length > 1 ? 'mb-10' : undefined}
-                            style={{
-                                // Other slides fade back so the current one stands out
-                                opacity: cards.length > 1 && c !== currentCard ? 0.45 : 1,
-                                transition: 'opacity 0.3s ease',
-                            }}>
-                            {cards.length > 1 && (
-                                <div
-                                    className="text-center text-[10px] font-medium uppercase tracking-widest mb-2"
-                                    style={{ color: `${textColor}80` }}>
-                                    {t.cards.label(c + 1)}
-                                </div>
-                            )}
+        <>
+            <div
+                ref={containerRef}
+                data-tour="canvas"
+                style={
+                    {
+                        position: 'fixed',
+                        top,
+                        bottom,
+                        left: 20,
+                        right: 20,
+                        overflowY: 'scroll',
+                        overflowX: 'hidden',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        // Fade the text away from the reading line
+                        maskImage: readingLine
+                            ? `linear-gradient(to bottom, rgb(0 0 0 / 0.2), #000 ${READING_LINE * 60}%, #000 ${READING_LINE * 140}%, rgb(0 0 0 / 0.2))`
+                            : undefined,
+                    } as React.CSSProperties
+                }
+                className="[&::-webkit-scrollbar]:hidden">
+                <div
+                    className="min-h-full"
+                    // Start the text on the reading line and leave room to bring
+                    // the last lines up to it
+                    style={
+                        readingLine
+                            ? {
+                                  paddingTop: `calc((100vh - ${top + bottom}px) * ${READING_LINE} - ${fontSize}px)`,
+                                  paddingBottom: '60vh',
+                              }
+                            : undefined
+                    }>
+                    {isEditing ? (
+                        <>
                             <p
-                                className="text-center leading-relaxed"
-                                style={{
-                                    fontSize: `${fontSize}px`,
-                                    whiteSpace: 'pre-wrap',
-                                    // Long unbroken strings (URLs) wrap instead of widening the line
-                                    overflowWrap: 'anywhere',
-                                    textShadow,
-                                }}>
-                                {card.segments.map(renderSegment)}
+                                className="text-center text-[11px] mb-3 opacity-50"
+                                style={{ color: textColor }}>
+                                {t.cards.hint}
                             </p>
-                        </section>
-                    ))
-                ) : (
-                    <p
-                        onClick={onEditStart}
-                        className="text-5xl text-center opacity-65 cursor-text"
-                        style={{ color: textColor, textShadow }}>
-                        {t.canvas.placeholder}
-                    </p>
-                )}
+                            <textarea
+                                autoFocus
+                                value={content}
+                                onChange={(e) => onContentChange(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') onEditEnd()
+                                }}
+                                placeholder={t.canvas.editPlaceholder}
+                                spellCheck={false}
+                                className="block w-full min-h-[80%] text-center leading-relaxed bg-transparent resize-none outline-none placeholder:opacity-40"
+                                style={
+                                    {
+                                        fontSize: `${fontSize}px`,
+                                        color: textColor,
+                                        caretColor: textColor,
+                                        textShadow,
+                                        // Grow with the text so the canvas scrolls, not the field
+                                        fieldSizing: 'content',
+                                    } as React.CSSProperties
+                                }
+                            />
+                        </>
+                    ) : cards.some((c) => c.segments.length > 0) ? (
+                        cards.map((card, c) => (
+                            <section
+                                key={c}
+                                className={cards.length > 1 ? 'mb-10' : undefined}
+                                style={{
+                                    // Other slides fade back so the current one stands out
+                                    opacity: cards.length > 1 && c !== currentCard ? 0.45 : 1,
+                                    transition: 'opacity 0.3s ease',
+                                }}>
+                                {cards.length > 1 && (
+                                    <div
+                                        className="text-center text-[10px] font-medium uppercase tracking-widest mb-2"
+                                        style={{ color: `${textColor}80` }}>
+                                        {t.cards.label(c + 1)}
+                                    </div>
+                                )}
+                                <p
+                                    className="text-center leading-relaxed"
+                                    style={{
+                                        fontSize: `${fontSize}px`,
+                                        whiteSpace: 'pre-wrap',
+                                        // Long unbroken strings (URLs) wrap instead of widening the line
+                                        overflowWrap: 'anywhere',
+                                        textShadow,
+                                    }}>
+                                    {card.segments.map(renderSegment)}
+                                </p>
+                            </section>
+                        ))
+                    ) : (
+                        <p
+                            onClick={onEditStart}
+                            className="text-5xl text-center opacity-65 cursor-text"
+                            style={{ color: textColor, textShadow }}>
+                            {t.canvas.placeholder}
+                        </p>
+                    )}
+                </div>
             </div>
-        </div>
+            {readingLine && !isEditing && (
+                <div
+                    className="fixed pointer-events-none rounded-md"
+                    style={{
+                        left: 12,
+                        right: 12,
+                        top: `calc(${top}px + (100vh - ${top + bottom}px) * ${READING_LINE})`,
+                        height: fontSize * 1.625 + 8,
+                        transform: 'translateY(-50%)',
+                        backgroundColor: `${textColor}14`,
+                        borderTop: `1px solid ${textColor}30`,
+                        borderBottom: `1px solid ${textColor}30`,
+                    }}
+                />
+            )}
+        </>
     )
 }

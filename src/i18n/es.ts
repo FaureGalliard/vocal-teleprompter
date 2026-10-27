@@ -37,6 +37,8 @@ export const es: Messages = {
         tutorial: 'Ver tutorial',
         targetDuration: 'Duración objetivo',
         targetDurationHint: 'Te avisa si debes ir más rápido o más lento. 0 = apagado',
+        readingLine: 'Línea de lectura',
+        readingLineHint: 'Mantiene la línea actual arriba, cerca de tu cámara',
     },
 
     tour: {

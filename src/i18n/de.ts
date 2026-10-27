@@ -37,6 +37,8 @@ export const de: Messages = {
         tutorial: 'Tutorial anzeigen',
         targetDuration: 'Zieldauer',
         targetDurationHint: 'Sagt dir, ob du schneller oder langsamer sprechen sollst. 0 = aus',
+        readingLine: 'Leselinie',
+        readingLineHint: 'Hält die aktuelle Zeile oben, nah an deiner Kamera',
     },
 
     tour: {

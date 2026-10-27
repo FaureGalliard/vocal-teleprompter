@@ -63,6 +63,8 @@ interface ToolbarProps {
     onShowTutorial: () => void
     targetMinutes: number
     onTargetMinutesChange: (val: number) => void
+    readingLine: boolean
+    onToggleReadingLine: () => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -117,6 +119,8 @@ export default function Toolbar({
     onShowTutorial,
     targetMinutes,
     onTargetMinutesChange,
+    readingLine,
+    onToggleReadingLine,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -508,6 +512,8 @@ export default function Toolbar({
                             onShowTutorial={onShowTutorial}
                             targetMinutes={targetMinutes}
                             onTargetMinutesChange={onTargetMinutesChange}
+                            readingLine={readingLine}
+                            onToggleReadingLine={onToggleReadingLine}
                         />
 
                         {error && (

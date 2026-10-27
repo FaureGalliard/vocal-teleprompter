@@ -37,6 +37,8 @@ export const zh: Messages = {
         tutorial: '查看教程',
         targetDuration: '目标时长',
         targetDurationHint: '提示你加快或放慢语速。0 = 关闭',
+        readingLine: '阅读线',
+        readingLineHint: '让当前行保持在上方，靠近摄像头',
     },
 
     tour: {
