@@ -28,8 +28,20 @@
             "csp": null
         }
     },
+    "plugins": {
+        "updater": {
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVENjk3MUFDMEQ0Q0NBMTkKUldRWnlrd05ySEZwWGNNYytTdi9icW1nRytpWGxFeU5Wak9wOFpYNldKeFBWTzdNSUJ5VUY0cmwK",
+            "endpoints": [
+                "https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/latest.json"
+            ],
+            "windows": {
+                "installMode": "passive"
+            }
+        }
+    },
     "bundle": {
         "active": true,
+        "createUpdaterArtifacts": true,
         "targets": "all",
         "icon": [
             "icons/32x32.png",

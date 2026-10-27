@@ -17,6 +17,8 @@
         "@tauri-apps/plugin-dialog": "^2.6.0",
         "@tauri-apps/plugin-fs": "^2.4.5",
         "@tauri-apps/plugin-global-shortcut": "^2.4.1",
+        "@tauri-apps/plugin-process": "^2.4.0",
+        "@tauri-apps/plugin-updater": "^2.14.0",
         "driver.js": "^1.10.2",
         "framer-motion": "^12.37.0",
         "lucide-react": "^1.61.0",

@@ -28,6 +28,8 @@
         "core:window:allow-set-content-protected",
         "core:webview:allow-set-webview-background-color",
         "global-shortcut:allow-register",
-        "global-shortcut:allow-unregister"
+        "global-shortcut:allow-unregister",
+        "updater:default",
+        "process:allow-restart"
     ]
 }
