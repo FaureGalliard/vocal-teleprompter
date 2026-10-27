@@ -51,6 +51,7 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - 🌐 **Interface in the same 9 languages** (English by default), tray menu included.
 - ⚙️ **Settings panel** behind the gear button: interface language, hiding from screen
   sharing, automatic contrast, title bar, and a reset to defaults.
+- 🎓 **Guided tour** on first launch (replay it any time from Settings).
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
 - 🖥️ **System tray**: show, hide or quit from the tray icon.
 
