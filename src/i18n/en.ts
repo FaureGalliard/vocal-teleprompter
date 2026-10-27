@@ -81,6 +81,14 @@ export const en = {
         'slow-down': 'Slow down',
     },
 
+    shortcuts: {
+        title: 'Global shortcuts',
+        toggleListening: 'Start / pause',
+        nextCard: 'Next slide',
+        previousCard: 'Previous slide',
+        toggleWindow: 'Show / hide window',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

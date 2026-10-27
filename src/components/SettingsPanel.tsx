@@ -5,6 +5,7 @@ import {
     EyeOff,
     Globe,
     GraduationCap,
+    Keyboard,
     PanelTop,
     RotateCcw,
     Settings,
@@ -12,8 +13,20 @@ import {
     ScanLine,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
+import { GLOBAL_SHORTCUTS, type GlobalAction } from '../hooks/useGlobalShortcuts'
 
 const PANEL_WIDTH = 288
+
+const IS_MAC = navigator.userAgent.includes('Mac')
+
+// "CommandOrControl+Alt+Right" -> "Ctrl+Alt+→" (or ⌘ on macOS)
+function displayShortcut(accelerator: string): string {
+    return accelerator
+        .replace('CommandOrControl', IS_MAC ? '⌘' : 'Ctrl')
+        .replace('Alt', IS_MAC ? '⌥' : 'Alt')
+        .replace('Right', '→')
+        .replace('Left', '←')
+}
 
 interface SettingsPanelProps {
     uiLanguage: string
@@ -230,7 +243,24 @@ export default function SettingsPanel({
                             />
                         </Row>
 
-                        <div className="border-t border-white/10 mt-1 px-4 py-2.5 flex flex-col gap-2.5">
+                        <div className="border-t border-white/10 mt-1 px-4 py-2.5">
+                            <div className="flex items-center gap-2 mb-1.5 text-[10px] font-medium uppercase tracking-wide text-white/40">
+                                <Keyboard size={12} />
+                                {t.shortcuts.title}
+                            </div>
+                            {(Object.keys(GLOBAL_SHORTCUTS) as GlobalAction[]).map((action) => (
+                                <div
+                                    key={action}
+                                    className="flex items-center justify-between py-0.5 text-[11px]">
+                                    <span className="text-white/70">{t.shortcuts[action]}</span>
+                                    <kbd className="font-mono text-[10px] text-white/60 bg-white/10 rounded px-1.5 py-0.5">
+                                        {displayShortcut(GLOBAL_SHORTCUTS[action])}
+                                    </kbd>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="border-t border-white/10 px-4 py-2.5 flex flex-col gap-2.5">
                             <button
                                 onClick={() => {
                                     setOpen(false)

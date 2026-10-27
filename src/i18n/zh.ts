@@ -83,6 +83,14 @@ export const zh: Messages = {
         'slow-down': '放慢',
     },
 
+    shortcuts: {
+        title: '全局快捷键',
+        toggleListening: '开始 / 暂停',
+        nextCard: '下一张幻灯片',
+        previousCard: '上一张幻灯片',
+        toggleWindow: '显示 / 隐藏窗口',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

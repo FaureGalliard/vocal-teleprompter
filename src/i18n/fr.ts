@@ -83,6 +83,14 @@ export const fr: Messages = {
         'slow-down': 'Ralentissez',
     },
 
+    shortcuts: {
+        title: 'Raccourcis globaux',
+        toggleListening: 'Démarrer / pause',
+        nextCard: 'Diapo suivante',
+        previousCard: 'Diapo précédente',
+        toggleWindow: 'Afficher / masquer la fenêtre',
+    },
+
     titleBar: {
         moveDown: 'Déplacer en bas',
         moveUp: 'Déplacer en haut',

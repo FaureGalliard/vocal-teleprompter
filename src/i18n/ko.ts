@@ -83,6 +83,14 @@ export const ko: Messages = {
         'slow-down': '더 천천히',
     },
 
+    shortcuts: {
+        title: '전역 단축키',
+        toggleListening: '시작 / 일시정지',
+        nextCard: '다음 슬라이드',
+        previousCard: '이전 슬라이드',
+        toggleWindow: '창 표시 / 숨기기',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

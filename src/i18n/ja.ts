@@ -83,6 +83,14 @@ export const ja: Messages = {
         'slow-down': 'ゆっくり',
     },
 
+    shortcuts: {
+        title: 'グローバルショートカット',
+        toggleListening: '開始 / 一時停止',
+        nextCard: '次のスライド',
+        previousCard: '前のスライド',
+        toggleWindow: 'ウィンドウの表示 / 非表示',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

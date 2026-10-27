@@ -15,6 +15,7 @@ import { startTour } from './lib/tour'
 import { splitCards, currentCardIndex } from './lib/cards'
 import StatusBar from './components/StatusBar'
 import { usePace } from './hooks/usePace'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -111,6 +112,26 @@ function App() {
         const card = cards[Math.max(0, Math.min(index, cards.length - 1))]
         if (card) jumpTo(card.firstWord - 1)
     }
+
+    useGlobalShortcuts({
+        toggleListening: () => {
+            if (!content || isEditing) return
+            if (isSpeechActive) setIsPaused((v) => !v)
+            else setIsSpeechActive(true)
+        },
+        nextCard: () =>
+            cards.length > 1 ? goToCard(currentCard + 1) : jumpTo(currentWordIndex + 10),
+        previousCard: () =>
+            cards.length > 1 ? goToCard(currentCard - 1) : jumpTo(currentWordIndex - 10),
+        toggleWindow: async () => {
+            const win = getCurrentWindow()
+            if (await win.isVisible()) await win.hide()
+            else {
+                await win.show()
+                await win.setFocus()
+            }
+        },
+    })
 
     useLayoutEffect(() => {
         if (titleBarRef.current) {

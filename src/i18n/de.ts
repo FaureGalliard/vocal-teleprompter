@@ -83,6 +83,14 @@ export const de: Messages = {
         'slow-down': 'Langsamer',
     },
 
+    shortcuts: {
+        title: 'Globale Tastenkürzel',
+        toggleListening: 'Starten / pausieren',
+        nextCard: 'Nächste Folie',
+        previousCard: 'Vorherige Folie',
+        toggleWindow: 'Fenster ein- / ausblenden',
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',
