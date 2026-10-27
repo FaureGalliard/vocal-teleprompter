@@ -37,6 +37,16 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 
 ## 🧩 Features
 
+- 🃏 **Slide cards**: put a line with `---` between slides and each part becomes a card.
+  The current card stands out, the bottom bar shows *Slide 3 / 12*, and it moves on as
+  soon as you say the last word of the slide.
+- ⏱️ **Pace and time**: see how long the script takes before you start, then the elapsed
+  time, words per minute and time left. Set a **target duration** (say 10 minutes) and it
+  tells you to speed up or slow down.
+- ⌨️ **Global shortcuts** that work while Zoom, Meet or your slides have the focus.
+- 🖱️ **Click-through mode**: clicks pass through the window to the app behind it.
+- 📏 **Reading line** (optional): the current line stays at a fixed height near your
+  camera, with the text around it faded.
 - 🔎 **Word-level sync**: fuzzy matching (edit distance) on the last few spoken words, so
   mispronounced or skipped words don't throw it off.
 - 🌍 **9 languages**: Spanish, English, French, German, Italian, Portuguese, Japanese,
@@ -50,14 +60,26 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - 📋 **Paste or import** your script from the clipboard or a `.txt` file. Line breaks are kept.
 - 🌐 **Interface in the same 9 languages** (English by default), tray menu included.
 - ⚙️ **Settings panel** behind the gear button: interface language, hiding from screen
-  sharing, automatic contrast, title bar, and a reset to defaults.
+  sharing, automatic contrast, click-through, reading line, target duration, title bar,
+  the list of global shortcuts, and a reset to defaults.
 - 🎓 **Guided tour** on first launch (replay it any time from Settings).
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
-- 🖥️ **System tray**: show, hide or quit from the tray icon.
+- 🖥️ **System tray**: show, hide, toggle click-through or quit from the tray icon.
 
 ---
 
 ## ⌨️ Keyboard shortcuts
+
+**Global** (work from any app):
+
+| Keys | Action |
+|---|---|
+| `Ctrl+Alt+Space` | Start listening / pause / resume |
+| `Ctrl+Alt+→` / `Ctrl+Alt+←` | Next / previous slide card |
+| `Ctrl+Alt+H` | Show / hide the window |
+| `Ctrl+Alt+K` | Click-through on / off |
+
+**In the window:**
 
 | Key | Action |
 |---|---|
@@ -65,7 +87,7 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 | `Esc` | Stop listening |
 | `→` `↓` | Next word |
 | `←` `↑` | Previous word |
-| `PageDown` / `PageUp` | Jump 10 words forward / back |
+| `PageDown` / `PageUp` | Next / previous slide card (10 words without cards) |
 | `+` / `-` | Bigger / smaller text |
 
 ---
