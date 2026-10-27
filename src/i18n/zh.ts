@@ -1,0 +1,68 @@
+import type { Messages } from './en'
+
+export const zh: Messages = {
+    appName: 'Vocal Teleprompter',
+    sampleScript:
+        '欢迎使用 Vocal Teleprompter。点击开始，然后大声朗读这段文字：提词器会聆听你的声音，逐字跟随。你可以随时停顿，读快或读慢，它都会等你。点击任意一个词即可从那里继续，或者点击编辑来写你自己的稿子。在 Zoom 或 Meet 中共享屏幕时，观众看不到这个窗口。',
+
+    toolbar: {
+        paste: '粘贴',
+        import: '导入',
+        clear: '清空',
+        edit: '编辑',
+        done: '完成',
+        start: '开始',
+        stop: '停止',
+        pause: '暂停',
+        resume: '继续',
+        noMicrophones: '没有麦克风',
+        size: '字号',
+        background: '背景',
+        text: '文字',
+        ok: '确定',
+    },
+
+    settings: {
+        title: '设置',
+        interfaceLanguage: '界面语言',
+        hideFromCapture: '共享屏幕时隐藏',
+        hideFromCaptureHint: 'Zoom、Meet、OBS 和截图都看不到这个窗口',
+        autoContrast: '自动对比度',
+        autoContrastHint: '调整文字颜色，确保始终清晰可读',
+        titleBar: '显示标题栏',
+        reset: '重置所有设置',
+        resetConfirm: '再次点击以重置',
+    },
+
+    titleBar: {
+        moveDown: '移到底部',
+        moveUp: '移到顶部',
+        minimize: '最小化',
+        maximize: '最大化',
+        close: '关闭',
+    },
+
+    tray: {
+        show: '显示',
+        hide: '隐藏',
+        quit: '退出',
+    },
+
+    canvas: {
+        placeholder: '你的文字将显示在这里',
+        editPlaceholder: '在这里输入或粘贴你的稿子…',
+    },
+
+    textFiles: '文本',
+    microphone: (id: string) => `麦克风 ${id}`,
+
+    errors: {
+        unsupported: '语音识别不可用',
+        microphone: '无法访问麦克风',
+        'not-allowed': '麦克风权限被拒绝',
+        'service-not-allowed': '语音服务不被允许',
+        'audio-capture': '未找到麦克风',
+        'language-not-supported': '不支持该语言',
+        network: '网络错误，正在重试…',
+    },
+}

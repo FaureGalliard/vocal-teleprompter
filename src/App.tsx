@@ -13,7 +13,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { Menu, X } from 'lucide-react'
 import { segmentText } from './lib/segment'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
-import { DEFAULT_UI_LANGUAGE, I18nProvider, getMessages } from './i18n'
+import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
 
 // Below this background opacity the backdrop shows through enough to need a halo
@@ -293,7 +293,14 @@ function App() {
                     hiddenFromCapture={hiddenFromCapture}
                     language={language}
                     uiLanguage={uiLanguage}
-                    onUiLanguageChange={setUiLanguage}
+                    onUiLanguageChange={(val) => {
+                    // Swap the welcome script along with the language, unless it was edited
+                    if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
+                        setContent(getMessages(val).sampleScript)
+                        reset()
+                    }
+                    setUiLanguage(val)
+                }}
                     langMenuOpen={langMenuOpen}
                     micMenuOpen={micMenuOpen}
                     selectedMic={activeMic}
