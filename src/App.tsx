@@ -10,19 +10,24 @@ import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { segmentText } from './lib/segment'
+import { usePersistentState } from './hooks/usePersistentState'
 
 function App() {
-    const [bgOpacity, setBgOpacity] = useState(0.9)
-    const [bgColor, setBgColor] = useState('#0a0000')
-    const [textColor, setTextColor] = useState('#7698fe')
-    const [titleBarPosition, setTitleBarPosition] = useState<'top' | 'bottom'>('top')
-    const [titleBarVisible, setTitleBarVisible] = useState(true)
+    const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0.9)
+    const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
+    const [textColor, setTextColor] = usePersistentState('textColor', '#7698fe')
+    const [titleBarPosition, setTitleBarPosition] = usePersistentState<'top' | 'bottom'>(
+        'titleBarPosition',
+        'top',
+    )
+    const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
-    const [content, setContent] = useState(
+    const [content, setContent] = usePersistentState(
+        'content',
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     )
-    const [fontSize, setFontSize] = useState(16)
+    const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
     const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
@@ -40,15 +45,19 @@ function App() {
 
     const handleColorPickerOpen = () => setIsAdjusting(true)
     const handleColorPickerClose = () => setIsAdjusting(false)
-    const [language, setLanguage] = useState('es-ES')
+    const [language, setLanguage] = usePersistentState('language', 'es-ES')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
-    const [selectedMic, setSelectedMic] = useState('default')
+    const [selectedMic, setSelectedMic] = usePersistentState('microphone', 'default')
     const titleBarRef = useRef<HTMLDivElement>(null)
     const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const isDraggingRef = useRef(false)
 
     const { microphones } = useMicrophones()
+    // A remembered microphone may have been unplugged since last time
+    const activeMic = microphones.some((m) => m.deviceId === selectedMic)
+        ? selectedMic
+        : 'default'
     const segments = useMemo(() => segmentText(content, language), [content, language])
     const scriptWords = useMemo(
         () => segments.filter((s) => s.word !== -1).map((s) => s.text),
@@ -60,7 +69,7 @@ function App() {
     )
     const { listening: isRecognizing, error } = useSpeechRecognition({
         language,
-        deviceId: selectedMic,
+        deviceId: activeMic,
         onTranscript: processTranscript,
         enabled: isSpeechActive && !isPaused,
     })
@@ -178,7 +187,7 @@ function App() {
                 language={language}
                 langMenuOpen={langMenuOpen}
                 micMenuOpen={micMenuOpen}
-                selectedMic={selectedMic}
+                selectedMic={activeMic}
                 microphones={microphones}
                 onPasteText={handlePasteText}
                 onImport={handleImport}
