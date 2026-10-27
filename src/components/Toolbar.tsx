@@ -88,6 +88,20 @@ export default function Toolbar({
     const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 })
     const colorPickerRef = useRef<HTMLDivElement>(null)
     const colorButtonRef = useRef<HTMLButtonElement>(null)
+    const langMenuRef = useRef<HTMLDivElement>(null)
+    const micMenuRef = useRef<HTMLDivElement>(null)
+
+    // Cerrar menús de idioma y micrófono al click fuera
+    useEffect(() => {
+        if (!langMenuOpen && !micMenuOpen) return
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as Node
+            if (langMenuOpen && !langMenuRef.current?.contains(target)) onLangMenuToggle()
+            if (micMenuOpen && !micMenuRef.current?.contains(target)) onMicMenuToggle()
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [langMenuOpen, micMenuOpen, onLangMenuToggle, onMicMenuToggle])
 
     // Cerrar picker al click fuera
     useEffect(() => {
@@ -220,7 +234,9 @@ export default function Toolbar({
                         <div className="w-px h-5 mx-1 bg-white/15" />
 
                         {/* Idioma */}
-                        <div className="relative">
+                        <div
+                            ref={langMenuRef}
+                            className="relative">
                             <button
                                 onClick={onLangMenuToggle}
                                 className={`${btn} ${ghost}`}>
@@ -258,7 +274,9 @@ export default function Toolbar({
                         </div>
 
                         {/* Micrófono */}
-                        <div className="relative">
+                        <div
+                            ref={micMenuRef}
+                            className="relative">
                             <button
                                 onClick={onMicMenuToggle}
                                 className={`${btn} ${ghost}`}>
