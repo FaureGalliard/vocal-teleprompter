@@ -92,7 +92,7 @@ function App() {
         () => cards.flatMap((c) => c.segments.filter((s) => s.word !== -1).map((s) => s.text)),
         [cards],
     )
-    const { currentWordIndex, processTranscript, reset, jumpTo } = useScriptMatcher(
+    const { currentWordIndex, heard, processTranscript, reset, jumpTo } = useScriptMatcher(
         scriptWords,
         language,
     )
@@ -483,7 +483,9 @@ function App() {
                     cards={cards}
                     currentCard={currentCard}
                     currentWordIndex={currentWordIndex}
-                    onWordClick={jumpTo}
+                    heard={heard}
+                    // The clicked word becomes the next one to read
+                    onWordClick={(index) => jumpTo(index - 1)}
                     content={content}
                     isEditing={isEditing}
                     onContentChange={setContent}

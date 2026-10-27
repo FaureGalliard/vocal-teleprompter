@@ -10,6 +10,8 @@ interface CanvasProps {
     cards: Card[]
     // Card holding the next word to read
     currentCard: number
+    // Current word reached by voice (highlighted) rather than placed by hand
+    heard: boolean
     currentWordIndex: number
     onWordClick: (index: number) => void
     content: string
@@ -30,6 +32,7 @@ interface CanvasProps {
 export default function Canvas({
     cards,
     currentCard,
+    heard,
     currentWordIndex,
     onWordClick,
     content,
@@ -61,7 +64,7 @@ export default function Canvas({
             left: 0,
             behavior: 'smooth',
         })
-    }, [currentWordIndex, readingLine])
+    }, [currentWordIndex, heard, readingLine])
 
     let prevWord = -1
     const textShadow = textHalo
@@ -90,15 +93,18 @@ export default function Canvas({
             )
         }
         prevWord = i
-        const isCurrentWord = i === currentWordIndex
-        const isPast = i < currentWordIndex
+        // Only a word actually heard gets the highlight; after a manual move
+        // the next word to read is just underlined
+        const isCurrentWord = heard && i === currentWordIndex
+        const isNextWord = !heard && i === currentWordIndex + 1
+        const isPast = i < currentWordIndex || (!heard && i === currentWordIndex)
         const isNearby =
             i > currentWordIndex && i <= currentWordIndex + 8
 
         return (
             <span
                 key={s}
-                ref={isCurrentWord ? activeWordRef : null}
+                ref={isCurrentWord || isNextWord ? activeWordRef : null}
                 onClick={() => onWordClick(i)}
                 className="cursor-pointer"
                 style={{
@@ -116,6 +122,9 @@ export default function Canvas({
                     // The highlight already has its own background
                     textShadow: isCurrentWord ? 'none' : undefined,
                     padding: isCurrentWord ? '0 2px' : undefined,
+                    textDecoration: isNextWord ? 'underline' : undefined,
+                    textDecorationThickness: isNextWord ? '2px' : undefined,
+                    textUnderlineOffset: isNextWord ? '0.25em' : undefined,
                     transition:
                         'color 0.2s ease, background-color 0.2s ease',
                 }}>
@@ -210,7 +219,8 @@ export default function Canvas({
                                     </div>
                                 )}
                                 <p
-                                    className="text-center leading-relaxed"
+                                    // Clicking words moves the position; don't select text too
+                                className="text-center leading-relaxed select-none"
                                     style={{
                                         fontSize: `${fontSize}px`,
                                         whiteSpace: 'pre-wrap',
