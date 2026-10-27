@@ -32,9 +32,17 @@ export function useSpeechRecognition({
     const sessionRef = useRef(0)
     const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+    // The recognizer lives across renders, so read the latest callback
+    // instead of the one captured when it started
+    const onTranscriptRef = useRef(onTranscript)
+
     useEffect(() => {
         enabledRef.current = enabled
     }, [enabled])
+
+    useEffect(() => {
+        onTranscriptRef.current = onTranscript
+    }, [onTranscript])
 
     const stop = useCallback(() => {
         sessionRef.current++
@@ -111,7 +119,7 @@ export function useSpeechRecognition({
             setError(null)
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript.trim()
-                if (transcript) onTranscript(transcript)
+                if (transcript) onTranscriptRef.current(transcript)
             }
         }
 
@@ -119,13 +127,13 @@ export function useSpeechRecognition({
         // Chromium feeds the recognizer from the given track; older engines
         // ignore the argument and fall back to the default microphone.
         recognition.start(track)
-    }, [language, deviceId, onTranscript])
+    }, [language, deviceId])
 
     useEffect(() => {
         if (enabled) start()
         else stop()
         return () => stop()
-    }, [enabled, language, deviceId])
+    }, [enabled, start, stop])
 
     return { listening, error }
 }
