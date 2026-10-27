@@ -3,7 +3,7 @@ interface SpeechRecognition extends EventTarget {
     interimResults: boolean
     lang: string
     maxAlternatives: number
-    start(): void
+    start(audioTrack?: MediaStreamTrack): void
     stop(): void
     onstart: ((this: SpeechRecognition, ev: Event) => void) | null
     onend: ((this: SpeechRecognition, ev: Event) => void) | null

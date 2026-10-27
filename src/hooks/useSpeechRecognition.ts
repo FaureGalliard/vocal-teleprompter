@@ -43,11 +43,13 @@ export function useSpeechRecognition({
             return
         }
 
+        let track: MediaStreamTrack | undefined
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: deviceId ? { deviceId: { exact: deviceId } } : true,
             })
             streamRef.current = stream
+            track = stream.getAudioTracks()[0]
         } catch (e) {
             setError('No se pudo acceder al micrófono')
             return
@@ -64,7 +66,7 @@ export function useSpeechRecognition({
             if (e.error !== 'aborted') setError(e.error)
         }
         recognition.onend = () => {
-            if (enabledRef.current) recognition.start()
+            if (enabledRef.current) recognition.start(track)
             else setListening(false)
         }
         recognition.onresult = (event) => {
@@ -75,7 +77,9 @@ export function useSpeechRecognition({
         }
 
         recognitionRef.current = recognition
-        recognition.start()
+        // Chromium feeds the recognizer from the given track; older engines
+        // ignore the argument and fall back to the default microphone.
+        recognition.start(track)
     }, [language, deviceId, onTranscript])
 
     useEffect(() => {
