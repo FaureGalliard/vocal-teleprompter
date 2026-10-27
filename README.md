@@ -102,7 +102,7 @@ The fuzzy matcher normalizes text (removes accents, lowercases, strips punctuati
 1. Build the app:
 
 ```bash
-npm run tauri build
+pnpm tauri build
 ```
 
 2. The installers will be generated at:
