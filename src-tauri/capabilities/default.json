@@ -23,6 +23,7 @@
         "dialog:allow-open",
         "fs:allow-read-text-file",
         "core:window:allow-set-always-on-top",
+        "core:window:allow-set-content-protected",
         "core:webview:allow-set-webview-background-color"
     ]
 }

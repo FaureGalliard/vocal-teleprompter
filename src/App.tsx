@@ -28,6 +28,11 @@ function App() {
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     )
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
+    // Keep the window out of screen shares and recordings (Zoom, Meet, OBS...)
+    const [hiddenFromCapture, setHiddenFromCapture] = usePersistentState(
+        'hiddenFromCapture',
+        true,
+    )
     const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
@@ -148,6 +153,12 @@ function App() {
         if (isSpeechActive) reset()
     }
 
+    useEffect(() => {
+        getCurrentWindow()
+            .setContentProtected(hiddenFromCapture)
+            .catch((e) => console.error(e))
+    }, [hiddenFromCapture])
+
     // Keyboard shortcuts, ignored while typing in a field
     useEffect(() => {
         const isTyping = (target: EventTarget | null) =>
@@ -242,6 +253,7 @@ function App() {
                 bgOpacity={bgOpacity}
                 textColor={textColor}
                 titleBarVisible={titleBarVisible}
+                hiddenFromCapture={hiddenFromCapture}
                 language={language}
                 langMenuOpen={langMenuOpen}
                 micMenuOpen={micMenuOpen}
@@ -257,6 +269,7 @@ function App() {
                 onBgOpacityChange={setBgOpacity}
                 onTextColorChange={setTextColor}
                 onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
                 onAdjustStart={() => handleAdjustStart()}
                 onColorPickerOpen={() => handleColorPickerOpen()}
                 onColorPickerClose={() => handleColorPickerClose()}

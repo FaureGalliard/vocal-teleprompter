@@ -19,6 +19,7 @@ interface ToolbarProps {
     bgOpacity: number
     textColor: string
     titleBarVisible: boolean
+    hiddenFromCapture: boolean
     language: string
     langMenuOpen: boolean
     micMenuOpen: boolean
@@ -34,6 +35,7 @@ interface ToolbarProps {
     onBgOpacityChange: (val: number) => void
     onTextColorChange: (val: string) => void
     onToggleTitleBar: () => void
+    onToggleHiddenFromCapture: () => void
     onLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
     onLangMenuToggle: () => void
@@ -61,6 +63,7 @@ export default function Toolbar({
     bgOpacity,
     textColor,
     titleBarVisible,
+    hiddenFromCapture,
     language,
     langMenuOpen,
     micMenuOpen,
@@ -76,6 +79,7 @@ export default function Toolbar({
     onBgOpacityChange,
     onTextColorChange,
     onToggleTitleBar,
+    onToggleHiddenFromCapture,
     onLanguageChange,
     onMicChange,
     onLangMenuToggle,
@@ -401,6 +405,17 @@ export default function Toolbar({
                             onClick={onToggleTitleBar}
                             className={`${btn} ${ghost}`}>
                             {titleBarVisible ? '▲ BARRA' : '▼ BARRA'}
+                        </button>
+
+                        <button
+                            onClick={onToggleHiddenFromCapture}
+                            title={
+                                hiddenFromCapture
+                                    ? 'Invisible al compartir pantalla o grabar'
+                                    : 'Visible al compartir pantalla o grabar'
+                            }
+                            className={`${btn} ${hiddenFromCapture ? primary : ghost}`}>
+                            {hiddenFromCapture ? '🕶 OCULTO' : '👁 VISIBLE'}
                         </button>
 
                         {error && (

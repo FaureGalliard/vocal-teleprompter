@@ -19,6 +19,7 @@
                 "decorations": false,
                 "skipTaskbar": true,
                 "alwaysOnTop": true,
+                "contentProtected": true,
                 "shadow": false
             }
         ],
