@@ -385,6 +385,7 @@ function App() {
                 />
 
                 <button
+                    data-tour="menu"
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onClick={handleClick}
