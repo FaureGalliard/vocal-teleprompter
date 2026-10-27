@@ -9,6 +9,7 @@ import SettingsPanel from './SettingsPanel'
 import type { useUpdater } from '../hooks/useUpdater'
 import {
     Check,
+    CircleHelp,
     ChevronDown,
     ChevronUp,
     ClipboardPaste,
@@ -509,6 +510,13 @@ export default function Toolbar({
                         </div>
 
                         <div className="w-px h-5 mx-1 bg-white/15" />
+
+                        <button
+                            onClick={onShowTutorial}
+                            title={t.settings.tutorial}
+                            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+                            <CircleHelp size={14} />
+                        </button>
 
                         <SettingsPanel
                             uiLanguage={uiLanguage}
