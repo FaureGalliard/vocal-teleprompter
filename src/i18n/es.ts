@@ -61,6 +61,14 @@ export const es: Messages = {
         menu: 'Abre o cierra esta barra aquí. Mantén pulsado el botón para mover la ventana.',
     },
 
+    cards: {
+        label: (n: number) => `Diapositiva ${n}`,
+        position: (n: number, total: number) => `Diapositiva ${n} / ${total}`,
+        previous: 'Diapositiva anterior',
+        next: 'Diapositiva siguiente',
+        hint: 'Consejo: una línea con --- empieza una nueva tarjeta de diapositiva',
+    },
+
     titleBar: {
         moveDown: 'Mover abajo',
         moveUp: 'Mover arriba',

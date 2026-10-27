@@ -61,6 +61,14 @@ export const pt: Messages = {
         menu: 'Abra ou feche esta barra aqui. Segure o botão para mover a janela.',
     },
 
+    cards: {
+        label: (n: number) => `Slide ${n}`,
+        position: (n: number, total: number) => `Slide ${n} / ${total}`,
+        previous: 'Slide anterior',
+        next: 'Próximo slide',
+        hint: 'Dica: uma linha com --- começa um novo cartão de slide',
+    },
+
     titleBar: {
         moveDown: 'Mover para baixo',
         moveUp: 'Mover para cima',

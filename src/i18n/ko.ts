@@ -61,6 +61,14 @@ export const ko: Messages = {
         menu: '여기에서 도구 모음을 열고 닫습니다. 버튼을 길게 누르면 창을 옮길 수 있습니다.',
     },
 
+    cards: {
+        label: (n: number) => `슬라이드 ${n}`,
+        position: (n: number, total: number) => `슬라이드 ${n} / ${total}`,
+        previous: '이전 슬라이드',
+        next: '다음 슬라이드',
+        hint: '팁: --- 만 있는 줄에서 새 슬라이드 카드가 시작됩니다',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

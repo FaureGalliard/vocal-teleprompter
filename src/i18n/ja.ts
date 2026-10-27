@@ -61,6 +61,14 @@ export const ja: Messages = {
         menu: 'ここでこのバーを開閉します。ボタンを長押しするとウィンドウを移動できます。',
     },
 
+    cards: {
+        label: (n: number) => `スライド ${n}`,
+        position: (n: number, total: number) => `スライド ${n} / ${total}`,
+        previous: '前のスライド',
+        next: '次のスライド',
+        hint: 'ヒント：--- だけの行で新しいスライドカードになります',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

@@ -12,7 +12,8 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { Menu, X } from 'lucide-react'
 import { startTour } from './lib/tour'
-import { segmentText } from './lib/segment'
+import { splitCards, currentCardIndex } from './lib/cards'
+import StatusBar from './components/StatusBar'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -77,10 +78,10 @@ function App() {
     const activeMic = microphones.some((m) => m.deviceId === selectedMic)
         ? selectedMic
         : 'default'
-    const segments = useMemo(() => segmentText(content, language), [content, language])
+    const cards = useMemo(() => splitCards(content, language), [content, language])
     const scriptWords = useMemo(
-        () => segments.filter((s) => s.word !== -1).map((s) => s.text),
-        [segments],
+        () => cards.flatMap((c) => c.segments.filter((s) => s.word !== -1).map((s) => s.text)),
+        [cards],
     )
     const { currentWordIndex, processTranscript, reset, jumpTo } = useScriptMatcher(
         scriptWords,
@@ -92,6 +93,13 @@ function App() {
         onTranscript: processTranscript,
         enabled: isSpeechActive && !isPaused,
     })
+
+    const currentCard = currentCardIndex(cards, currentWordIndex)
+    // Land just before the card's first word so that word is the next one to read
+    const goToCard = (index: number) => {
+        const card = cards[Math.max(0, Math.min(index, cards.length - 1))]
+        if (card) jumpTo(card.firstWord - 1)
+    }
 
     useLayoutEffect(() => {
         if (titleBarRef.current) {
@@ -250,11 +258,14 @@ function App() {
                 case 'ArrowUp':
                     jumpTo(currentWordIndex - 1)
                     break
+                // With slide cards, page keys move between cards
                 case 'PageDown':
-                    jumpTo(currentWordIndex + 10)
+                    if (cards.length > 1) goToCard(currentCard + 1)
+                    else jumpTo(currentWordIndex + 10)
                     break
                 case 'PageUp':
-                    jumpTo(currentWordIndex - 10)
+                    if (cards.length > 1) goToCard(currentCard - 1)
+                    else jumpTo(currentWordIndex - 10)
                     break
                 case '+':
                 case '=':
@@ -280,7 +291,17 @@ function App() {
             window.removeEventListener('keydown', onKeyDown)
             window.removeEventListener('keyup', onKeyUp)
         }
-    }, [content, isSpeechActive, isEditing, tourActive, currentWordIndex, jumpTo, setFontSize])
+    }, [
+        content,
+        isSpeechActive,
+        isEditing,
+        tourActive,
+        currentWordIndex,
+        jumpTo,
+        setFontSize,
+        cards,
+        currentCard,
+    ])
 
     // With auto contrast the chosen color is nudged until it reads well on the
     // background, and once the background turns see-through (so whatever is
@@ -401,7 +422,8 @@ function App() {
                 </button>
 
                 <Canvas
-                    segments={segments}
+                    cards={cards}
+                    currentCard={currentCard}
                     currentWordIndex={currentWordIndex}
                     onWordClick={jumpTo}
                     content={content}
@@ -415,6 +437,20 @@ function App() {
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     titleBarPosition={titleBarPosition}
                 />
+
+                {!isEditing && (
+                    <StatusBar
+                        bottom={
+                            (titleBarVisible && titleBarPosition === 'bottom'
+                                ? titleBarHeight
+                                : 0) + 6
+                        }
+                        cardCount={cards.length}
+                        currentCard={currentCard}
+                        onPreviousCard={() => goToCard(currentCard - 1)}
+                        onNextCard={() => goToCard(currentCard + 1)}
+                    />
+                )}
             </div>
         </I18nProvider>
     )

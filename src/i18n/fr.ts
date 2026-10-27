@@ -61,6 +61,14 @@ export const fr: Messages = {
         menu: 'Ouvrez ou fermez cette barre ici. Maintenez le bouton pour déplacer la fenêtre.',
     },
 
+    cards: {
+        label: (n: number) => `Diapo ${n}`,
+        position: (n: number, total: number) => `Diapo ${n} / ${total}`,
+        previous: 'Diapo précédente',
+        next: 'Diapo suivante',
+        hint: 'Astuce : une ligne avec --- commence une nouvelle carte de diapo',
+    },
+
     titleBar: {
         moveDown: 'Déplacer en bas',
         moveUp: 'Déplacer en haut',

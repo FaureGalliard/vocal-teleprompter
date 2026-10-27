@@ -61,6 +61,14 @@ export const it: Messages = {
         menu: 'Apri o chiudi questa barra da qui. Tieni premuto il pulsante per spostare la finestra.',
     },
 
+    cards: {
+        label: (n: number) => `Slide ${n}`,
+        position: (n: number, total: number) => `Slide ${n} / ${total}`,
+        previous: 'Slide precedente',
+        next: 'Slide successiva',
+        hint: 'Suggerimento: una riga con --- inizia una nuova scheda slide',
+    },
+
     titleBar: {
         moveDown: 'Sposta in basso',
         moveUp: 'Sposta in alto',

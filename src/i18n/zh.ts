@@ -61,6 +61,14 @@ export const zh: Messages = {
         menu: '在这里打开或关闭工具栏。按住按钮可以拖动窗口。',
     },
 
+    cards: {
+        label: (n: number) => `幻灯片 ${n}`,
+        position: (n: number, total: number) => `幻灯片 ${n} / ${total}`,
+        previous: '上一张幻灯片',
+        next: '下一张幻灯片',
+        hint: '提示：单独一行 --- 会开始一张新的幻灯片卡片',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

@@ -59,6 +59,14 @@ export const en = {
         menu: 'Open or close this toolbar here. Hold the button to drag the window.',
     },
 
+    cards: {
+        label: (n: number) => `Slide ${n}`,
+        position: (n: number, total: number) => `Slide ${n} / ${total}`,
+        previous: 'Previous slide',
+        next: 'Next slide',
+        hint: 'Tip: a line with --- starts a new slide card',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

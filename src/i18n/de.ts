@@ -61,6 +61,14 @@ export const de: Messages = {
         menu: 'Öffne oder schließe diese Leiste hier. Halte die Taste gedrückt, um das Fenster zu verschieben.',
     },
 
+    cards: {
+        label: (n: number) => `Folie ${n}`,
+        position: (n: number, total: number) => `Folie ${n} / ${total}`,
+        previous: 'Vorherige Folie',
+        next: 'Nächste Folie',
+        hint: 'Tipp: Eine Zeile mit --- beginnt eine neue Folienkarte',
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',
