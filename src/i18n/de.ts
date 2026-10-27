@@ -16,6 +16,8 @@ export const de: Messages = {
         pause: 'PAUSE',
         resume: 'FORTSETZEN',
         noMicrophones: 'Keine Mikrofone',
+        speechLanguage: 'Sprache der Spracheingabe',
+        microphone: 'Mikrofon',
         size: 'Größe',
         background: 'Hintergrund',
         text: 'Text',

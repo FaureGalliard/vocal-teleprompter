@@ -14,6 +14,8 @@ export const en = {
         pause: 'PAUSE',
         resume: 'RESUME',
         noMicrophones: 'No microphones',
+        speechLanguage: 'Speech language',
+        microphone: 'Microphone',
         size: 'Size',
         background: 'Background',
         text: 'Text',

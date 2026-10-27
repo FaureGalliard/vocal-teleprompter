@@ -7,13 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useT } from '../i18n'
 import SettingsPanel from './SettingsPanel'
 import {
-    AudioLines,
     Check,
     ChevronDown,
     ChevronUp,
     ClipboardPaste,
     FileUp,
     Mic,
+    Languages,
     Pause,
     Pencil,
     Play,
@@ -125,6 +125,12 @@ export default function Toolbar({
     const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 })
     const colorPickerRef = useRef<HTMLDivElement>(null)
     const colorButtonRef = useRef<HTMLButtonElement>(null)
+    const selectedMicrophone = microphones.find((m) => m.deviceId === selectedMic)
+    // Chromium names its alias entries "Default - <device>"; keep just the device
+    const shortMicLabel = (mic: Microphone) =>
+        mic.deviceId === 'default' || mic.deviceId === 'communications'
+            ? micLabel(mic).replace(/^[^-]+ - /, '')
+            : micLabel(mic)
     const micLabel = (mic: Microphone) => mic.label || t.microphone(mic.deviceId.slice(0, 6))
     const langMenuRef = useRef<HTMLDivElement>(null)
     const micMenuRef = useRef<HTMLDivElement>(null)
@@ -264,7 +270,7 @@ export default function Toolbar({
                                     ? 'animate-pulse'
                                     : ''
                             }`}>
-                            {isSpeechActive ? <Square size={ICON} /> : <Mic size={ICON} />}
+                            {isSpeechActive ? <Square size={ICON} /> : <Play size={ICON} />}
                             {isSpeechActive ? t.toolbar.stop : t.toolbar.start}
                         </button>
 
@@ -289,7 +295,9 @@ export default function Toolbar({
                             className="relative">
                             <button
                                 onClick={onLangMenuToggle}
+                                title={t.toolbar.speechLanguage}
                                 className={`${btn} ${ghost}`}>
+                                <Languages size={ICON} />
                                 {LANGUAGES.find((l) => l.value === language)?.label ??
                                     language}
                                 {langMenuOpen ? (
@@ -337,8 +345,15 @@ export default function Toolbar({
                             className="relative">
                             <button
                                 onClick={onMicMenuToggle}
+                                title={t.toolbar.microphone}
                                 className={`${btn} ${ghost}`}>
-                                <AudioLines size={ICON} />
+                                <Mic size={ICON} />
+                                {/* Name the device in use so the button explains itself */}
+                                <span className="max-w-[110px] truncate">
+                                    {selectedMicrophone
+                                        ? shortMicLabel(selectedMicrophone)
+                                        : t.toolbar.microphone}
+                                </span>
                                 {micMenuOpen ? (
                                     <ChevronUp
                                         size={12}

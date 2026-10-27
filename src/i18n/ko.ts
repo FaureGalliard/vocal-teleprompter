@@ -16,6 +16,8 @@ export const ko: Messages = {
         pause: '일시정지',
         resume: '계속',
         noMicrophones: '마이크 없음',
+        speechLanguage: '음성 언어',
+        microphone: '마이크',
         size: '크기',
         background: '배경',
         text: '텍스트',

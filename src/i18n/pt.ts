@@ -16,6 +16,8 @@ export const pt: Messages = {
         pause: 'PAUSAR',
         resume: 'RETOMAR',
         noMicrophones: 'Nenhum microfone',
+        speechLanguage: 'Idioma da fala',
+        microphone: 'Microfone',
         size: 'Tamanho',
         background: 'Fundo',
         text: 'Texto',

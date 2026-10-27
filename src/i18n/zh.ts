@@ -16,6 +16,8 @@ export const zh: Messages = {
         pause: '暂停',
         resume: '继续',
         noMicrophones: '没有麦克风',
+        speechLanguage: '语音语言',
+        microphone: '麦克风',
         size: '字号',
         background: '背景',
         text: '文字',

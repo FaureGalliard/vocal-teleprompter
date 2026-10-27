@@ -16,6 +16,8 @@ export const ja: Messages = {
         pause: '一時停止',
         resume: '再開',
         noMicrophones: 'マイクがありません',
+        speechLanguage: '音声の言語',
+        microphone: 'マイク',
         size: 'サイズ',
         background: '背景',
         text: '文字',
