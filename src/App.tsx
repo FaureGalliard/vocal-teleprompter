@@ -485,8 +485,8 @@ function App() {
             .catch((e) => console.error(e))
     }, [hiddenFromCapture])
 
-    // The tour points at toolbar controls, so open the toolbar and give its
-    // slide-in animation time to finish before starting
+    // The tour points at toolbar controls, so open the toolbar and give the
+    // window time to grow for it and the toolbar to slide in before starting
     const showTutorial = () => {
         setIsEditing(false)
         setIsSpeechActive(false)
@@ -501,7 +501,7 @@ function App() {
                     setTourActive(false)
                     setTourSeen(true)
                 }),
-            400,
+            700,
         )
     }
 
