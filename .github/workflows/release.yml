@@ -13,7 +13,12 @@ permissions:
   contents: write
 
 jobs:
+  # Nothing is built or published unless every test passes
+  test:
+    uses: ./.github/workflows/tests.yml
+
   release:
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

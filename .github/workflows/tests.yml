@@ -1,0 +1,54 @@
+name: Tests
+
+# Unit tests for the frontend and the Rust code, plus speech recognition on
+# recorded scripts. Runs on every push and pull request, and gates releases.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Type-check and unit tests
+        run: |
+          pnpm exec tsc --noEmit
+          pnpm test
+
+      # The models are large and rarely change, so keep them between runs
+      - uses: actions/cache@v4
+        with:
+          path: .speech-models
+          key: speech-models-${{ hashFiles('scripts/fetch-speech-models.ps1', 'src-tauri/tests/fixtures/*.wav') }}
+
+      - name: Fetch speech models for the recordings
+        shell: pwsh
+        run: ./scripts/fetch-speech-models.ps1
+
+      # The frontend must exist for the Tauri crate to compile
+      - run: pnpm build
+
+      - name: Rust and speech recognition tests
+        shell: pwsh
+        run: |
+          $env:VOSK_MODELS_DIR = "$PWD\.speech-models"
+          cargo test --manifest-path src-tauri/Cargo.toml -- --nocapture
