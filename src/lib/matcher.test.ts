@@ -99,6 +99,37 @@ describe('nextPosition', () => {
         expect(at).toBe(4)
     })
 
+    it('does not jump a line ahead on one distinctive word said again later', () => {
+        const scriptWords = words(SCRIPT)
+        // At "everyone" (2), a lone "delivery" (word 12) must not be followed
+        expect(nextPosition(scriptWords, words('delivery'), 2)).toBe(2)
+    })
+
+    it('still follows a lone word right after the current one', () => {
+        const scriptWords = words(SCRIPT)
+        expect(nextPosition(scriptWords, words('today'), 2)).toBe(3)
+    })
+
+    it('jumps ahead when two words in a row line up', () => {
+        const scriptWords = words(SCRIPT)
+        expect(nextPosition(scriptWords, words('delivery times'), 2)).toBe(14)
+    })
+
+    it('comes back after a mistaken jump when the speaker keeps reading', () => {
+        const scriptWords = words(SCRIPT)
+        // The marker ran ahead to "question" (24) while the speaker is still at
+        // "how we cut our delivery": three words in a row bring it back
+        let current = 24
+        for (const n of [1, 2, 3])
+            current = nextPosition(scriptWords, words('we cut our').slice(0, n), current)
+        expect(scriptWords[current]).toBe('our')
+    })
+
+    it('does not move back on a single repeated word', () => {
+        const scriptWords = words(SCRIPT)
+        expect(nextPosition(scriptWords, words('time'), 24)).toBe(24)
+    })
+
     it('does not move on a lone common word far ahead', () => {
         const scriptWords = words(SCRIPT)
         expect(nextPosition(scriptWords, words('a'), -1)).toBe(-1)

@@ -6,6 +6,11 @@ const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hang
 const LOOKAHEAD = 25
 // How many trailing spoken words are compared against the script
 const CONTEXT = 3
+// A lone word may only move the position this far; longer jumps need the
+// words said before it to line up too
+const NEAR = 3
+// How far back a mistaken jump can be undone (about a line and a half)
+const BACKTRACK = 20
 
 export function normalize(word: string): string {
     return word
@@ -65,32 +70,43 @@ export function similar(a: string, b: string): boolean {
 export function nextPosition(script: string[], spoken: string[], current: number): number {
     if (!spoken.length) return current
     const last = spoken[spoken.length - 1]
-    const from = Math.max(0, current)
-    const to = Math.min(from + LOOKAHEAD, script.length)
 
-    let best = -1
-    let bestContext = 0
-
-    for (let i = from; i < to; i++) {
-        if (!similar(script[i], last)) continue
-
-        // Count how many of the words said just before line up too
+    // How many of the last spoken words line up with the script ending at i
+    const contextAt = (i: number) => {
         let context = 1
         for (let j = 1; j < CONTEXT && j < spoken.length && i - j >= 0; j++) {
             if (similar(script[i - j], spoken[spoken.length - 1 - j])) context++
         }
+        return context
+    }
 
-        // A lone short word ("the", "は") is too common to jump on,
-        // unless it is right after where we already are
-        const reliable = context >= 2 || weight(last) >= 4 || i - current <= 2
+    let best = -1
+    let bestContext = 0
+    const from = Math.max(0, current)
+    const to = Math.min(from + LOOKAHEAD, script.length)
+    for (let i = from; i < to; i++) {
+        if (!similar(script[i], last)) continue
+        const context = contextAt(i)
+        const distance = i - current
+        // A lone word only moves the position a few words: a distinctive word
+        // repeated further on must not drag the text a line ahead. A lone
+        // short word ("the", "は") is too common even for that, unless it is
+        // right after where we already are.
+        const reliable =
+            context >= 2 || distance <= 2 || (weight(last) >= 4 && distance <= NEAR)
         if (!reliable) continue
-
         // Strictly greater keeps the nearest candidate on ties
         if (context > bestContext) {
             best = i
             bestContext = context
         }
     }
+    if (best !== -1) return best
 
-    return best === -1 ? current : best
+    // Nothing ahead: if the speaker is clearly reading a passage behind the
+    // marker (a mistaken jump), follow them back, but only on a full match
+    for (let i = current - 1; i >= Math.max(0, current - BACKTRACK); i--) {
+        if (similar(script[i], last) && contextAt(i) >= CONTEXT) return i
+    }
+    return current
 }
