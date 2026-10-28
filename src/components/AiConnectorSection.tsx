@@ -6,6 +6,7 @@ import Switch from './Switch'
 
 const CLIENTS = [
     { id: 'claude', name: 'Claude Desktop' },
+    { id: 'claude-code', name: 'Claude Code' },
     { id: 'cursor', name: 'Cursor' },
     { id: 'vscode', name: 'VS Code' },
 ] as const
