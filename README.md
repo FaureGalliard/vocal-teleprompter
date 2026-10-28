@@ -13,7 +13,9 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 ![Languages](https://img.shields.io/badge/speech-ES%20%7C%20EN%20%7C%20FR%20%7C%20DE%20%7C%20IT%20%7C%20PT%20%7C%20JA%20%7C%20ZH%20%7C%20KO-445ade)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
-**[⬇️ Download the installer](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest)** · [Features](#-features) · [Shortcuts](#%EF%B8%8F-keyboard-shortcuts) · [Development](#-development)
+### [⬇️ Download for Windows](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter-Setup.exe)
+
+[Features](#-features) · [Shortcuts](#%EF%B8%8F-keyboard-shortcuts) · [Development](#-development)
 
 ![Main Screenshot](docs/screenshot-main.png)
 
@@ -61,7 +63,8 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
   also continues from there.
 - 🎙️ **Microphone picker** that picks up devices you plug in while the app is open.
 - 💾 **Remembers everything**: script, colors, opacity, size, language and microphone.
-- 🎨 **Customizable look**: background color and opacity, text color and font size.
+- 🎨 **Appearance panel**: text size, background color and opacity, text color and
+  typography in one place.
 - ✍️ **Write right in the prompter**: press **EDIT** to type or fix the script in place,
   then **DONE** (or `Esc`) to go back to prompting.
 - 📋 **Paste or import** your script from the clipboard or a `.txt` file. Line breaks are kept.
@@ -142,9 +145,11 @@ What the assistant can do:
 | `load_script` | Puts a script in the prompter (replace or append slides) |
 | `get_script` | Reads the current script, to review or improve it |
 | `get_status` | Slides, words, estimated time, target duration, language and live pace |
-| `control` | Start, pause, resume, stop, next or previous slide |
+| `control` | Start, pause, resume, stop, next or previous slide, show or hide the window |
+| `update_settings` | Hide from screen sharing, text size, target duration, countdown, reading line, contrast, click-through, speech language |
 
-It also ships a **format guide** (plain spoken text, `---` between slides, about 130
+It also ships an **app guide** (every feature and where it is, so the assistant can point
+you to it), a **format guide** (plain spoken text, `---` between slides, about 130
 words per minute) and a **Prepare a presentation** prompt. Everything stays on your
 computer: the connector talks to the open app over localhost with a private token, and
 opens the app if it is closed. MCP clients that run local servers are supported; web
@@ -154,7 +159,9 @@ versions such as claude.ai in the browser cannot reach a desktop app.
 
 ## ⬇️ Download
 
-Get the latest installer (`.exe` or `.msi`) from the
+**[⬇️ Download Vocal Teleprompter for Windows](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter-Setup.exe)**: one click, then run the file.
+
+Prefer the `.msi`, or an older version? They are all on the
 [Releases](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest) page.
 From v1.2.0 on, the app updates itself: you only install it once.
 
@@ -244,6 +251,14 @@ Ideas for upcoming versions:
 
 YouTube videos · talks and presentations · video calls · podcasts · live streaming ·
 recording courses
+
+---
+
+## ⭐ Found this project useful?
+
+- **Star the repo** on GitHub: it helps other people find it.
+- **Share it** with a classmate or a colleague who has a presentation coming up.
+- **Found a bug or have an idea?** [Open an issue](https://github.com/FaureGalliard/vocal-teleprompter/issues).
 
 ---
 
