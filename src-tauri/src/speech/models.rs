@@ -30,11 +30,22 @@ pub fn models_dir(app: &AppHandle) -> Result<PathBuf, String> {
         .join("models"))
 }
 
-/// Folder of the model if it is installed
+/// Folder of the model if it is installed in `dir`
 pub fn installed_model(dir: &Path, language: &str) -> Option<PathBuf> {
     let path = dir.join(model_name(language)?);
     // Every Vosk model ships an acoustic model folder
     path.join("am").exists().then_some(path)
+}
+
+/// The model for a language, whether it shipped with the app (English) or
+/// was downloaded later
+pub fn find_model(app: &AppHandle, language: &str) -> Result<Option<PathBuf>, String> {
+    if let Ok(resources) = app.path().resource_dir() {
+        if let Some(path) = installed_model(&resources.join("models"), language) {
+            return Ok(Some(path));
+        }
+    }
+    Ok(installed_model(&models_dir(app)?, language))
 }
 
 #[derive(Serialize)]
@@ -46,7 +57,7 @@ pub struct ModelStatus {
 #[tauri::command]
 pub fn speech_model_status(app: AppHandle, language: String) -> Result<ModelStatus, String> {
     Ok(ModelStatus {
-        installed: installed_model(&models_dir(&app)?, &language).is_some(),
+        installed: find_model(&app, &language)?.is_some(),
     })
 }
 
@@ -69,10 +80,10 @@ pub async fn download_speech_model(app: AppHandle, language: String) -> Result<(
 
 fn download(app: &AppHandle, language: &str) -> Result<(), String> {
     let name = model_name(language).ok_or("Unsupported language")?;
-    let dir = models_dir(app)?;
-    if installed_model(&dir, language).is_some() {
+    if find_model(app, language)?.is_some() {
         return Ok(());
     }
+    let dir = models_dir(app)?;
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 
     let url = format!("https://alphacephei.com/vosk/models/{name}.zip");

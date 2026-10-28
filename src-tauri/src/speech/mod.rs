@@ -115,8 +115,7 @@ pub fn speech_start(
     device_id: Option<String>,
 ) -> Result<(), String> {
     speech_stop(engine.clone());
-    let dir = models::installed_model(&models::models_dir(&app)?, &language)
-        .ok_or("model-missing")?;
+    let dir = models::find_model(&app, &language)?.ok_or("model-missing")?;
     let model = load_model(&engine, &dir)?;
     let mut transcriber = Transcriber::new(&model)?;
     let mut resampler = Resampler::new();

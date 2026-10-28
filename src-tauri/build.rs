@@ -7,6 +7,7 @@ fn main() {
 /// Speech recognition runs on Vosk, a native library. Its Windows build is
 /// downloaded once into `vosk/` (kept out of git), linked from there and
 /// copied next to the executables so `tauri dev` and `cargo test` find it.
+/// The English model is fetched there too, to ship inside the installer.
 #[cfg(windows)]
 mod vosk {
     use std::fs;
@@ -14,6 +15,9 @@ mod vosk {
     use std::path::{Path, PathBuf};
 
     const VERSION: &str = "0.3.45";
+
+    /// Bundled so the app understands English out of the box
+    const BUNDLED_MODEL: &str = "vosk-model-small-en-us-0.15";
 
     pub const DLLS: [&str; 4] = [
         "libvosk.dll",
@@ -26,7 +30,19 @@ mod vosk {
         let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         let dir = manifest.join("vosk").join(format!("vosk-win64-{VERSION}"));
         if !dir.join("libvosk.lib").exists() {
-            download(&manifest.join("vosk"));
+            download(
+                &format!(
+                    "https://github.com/alphacep/vosk-api/releases/download/v{VERSION}/vosk-win64-{VERSION}.zip"
+                ),
+                &manifest.join("vosk"),
+            );
+        }
+        let models = manifest.join("vosk").join("models");
+        if !models.join(BUNDLED_MODEL).join("am").exists() {
+            download(
+                &format!("https://alphacephei.com/vosk/models/{BUNDLED_MODEL}.zip"),
+                &models,
+            );
         }
         println!("cargo:rustc-link-search=native={}", dir.display());
         println!("cargo:rerun-if-changed=build.rs");
@@ -45,22 +61,19 @@ mod vosk {
         }
     }
 
-    fn download(into: &Path) {
-        let url = format!(
-            "https://github.com/alphacep/vosk-api/releases/download/v{VERSION}/vosk-win64-{VERSION}.zip"
-        );
+    fn download(url: &str, into: &Path) {
         let mut bytes = Vec::new();
-        ureq::get(&url)
+        ureq::get(url)
             .call()
-            .expect("download Vosk")
+            .unwrap_or_else(|e| panic!("download {url}: {e}"))
             .into_body()
             .into_reader()
             .read_to_end(&mut bytes)
-            .expect("read Vosk download");
+            .unwrap_or_else(|e| panic!("read {url}: {e}"));
         fs::create_dir_all(into).unwrap();
         zip::ZipArchive::new(std::io::Cursor::new(bytes))
-            .expect("open Vosk archive")
+            .unwrap_or_else(|e| panic!("open {url}: {e}"))
             .extract(into)
-            .expect("extract Vosk");
+            .unwrap_or_else(|e| panic!("extract {url}: {e}"));
     }
 }
