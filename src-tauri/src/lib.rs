@@ -1,4 +1,5 @@
 mod mcp;
+pub mod speech;
 
 use tauri::{
     menu::{Menu, MenuItem},
@@ -60,9 +61,16 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(mcp::bridge::Bridge::default())
+        .manage(speech::SpeechEngine::default())
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
             open_sound_settings,
+            speech::list_microphones,
+            speech::speech_start,
+            speech::speech_stop,
+            speech::mic_monitor_start,
+            speech::models::speech_model_status,
+            speech::models::download_speech_model,
             mcp::bridge::mcp_respond,
             mcp::bridge::mcp_ready,
             mcp::clients::connect_mcp_client,
