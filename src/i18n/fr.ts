@@ -131,6 +131,16 @@ export const fr: Messages = {
         reset: 'Valeurs par défaut',
     },
 
+    ai: {
+        title: 'Connecteur IA (MCP)',
+        hint: "Laissez Claude et d'autres assistants IA écrire votre texte et le charger ici",
+        connect: 'Connecter',
+        connected: 'Connecté',
+        copy: 'Copier la configuration pour une autre app',
+        copied: 'Copié',
+        restart: (app: string) => `C'est fait. Redémarrez ${app} pour l'utiliser`,
+    },
+
     titleBar: {
         moveDown: 'Déplacer en bas',
         moveUp: 'Déplacer en haut',

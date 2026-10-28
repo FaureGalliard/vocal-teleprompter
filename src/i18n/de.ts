@@ -131,6 +131,16 @@ export const de: Messages = {
         reset: 'Standardwerte',
     },
 
+    ai: {
+        title: 'KI-Connector (MCP)',
+        hint: 'Lass Claude und andere KI-Assistenten dein Skript schreiben und hier laden',
+        connect: 'Verbinden',
+        connected: 'Verbunden',
+        copy: 'Konfiguration für eine andere App kopieren',
+        copied: 'Kopiert',
+        restart: (app: string) => `Fertig. Starte ${app} neu, um ihn zu nutzen`,
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',

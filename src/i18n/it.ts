@@ -131,6 +131,16 @@ export const it: Messages = {
         reset: 'Ripristina valori',
     },
 
+    ai: {
+        title: 'Connettore IA (MCP)',
+        hint: 'Lascia che Claude e altri assistenti IA scrivano il tuo copione e lo carichino qui',
+        connect: 'Collega',
+        connected: 'Collegato',
+        copy: "Copia la configurazione per un'altra app",
+        copied: 'Copiato',
+        restart: (app: string) => `Fatto. Riavvia ${app} per usarlo`,
+    },
+
     titleBar: {
         moveDown: 'Sposta in basso',
         moveUp: 'Sposta in alto',

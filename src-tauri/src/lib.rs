@@ -51,7 +51,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
             mcp::bridge::mcp_respond,
-            mcp::bridge::mcp_ready
+            mcp::bridge::mcp_ready,
+            mcp::clients::connect_mcp_client,
+            mcp::clients::is_mcp_client_connected,
+            mcp::clients::mcp_config_snippet
         ])
         .setup(|app| {
             if let Err(e) = mcp::bridge::start(app.handle()) {

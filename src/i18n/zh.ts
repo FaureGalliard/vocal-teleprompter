@@ -131,6 +131,16 @@ export const zh: Messages = {
         reset: '恢复默认',
     },
 
+    ai: {
+        title: 'AI 连接器（MCP）',
+        hint: '让 Claude 等 AI 助手撰写稿子并直接加载到这里',
+        connect: '连接',
+        connected: '已连接',
+        copy: '复制给其他应用的配置',
+        copied: '已复制',
+        restart: (app: string) => `完成。重启 ${app} 后即可使用`,
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

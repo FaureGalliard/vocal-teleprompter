@@ -86,6 +86,8 @@ interface ToolbarProps {
     onCountdownSecondsChange: (val: number) => void
     isCountingDown: boolean
     typography: Typography
+    aiConnectorEnabled: boolean
+    onToggleAiConnector: () => void
     onTypographyChange: (value: Typography) => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
@@ -160,6 +162,8 @@ export default function Toolbar({
     isCountingDown,
     typography,
     onTypographyChange,
+    aiConnectorEnabled,
+    onToggleAiConnector,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -584,6 +588,8 @@ export default function Toolbar({
                             onRecordingShortcut={onRecordingShortcut}
                             countdownSeconds={countdownSeconds}
                             onCountdownSecondsChange={onCountdownSecondsChange}
+                            aiConnectorEnabled={aiConnectorEnabled}
+                            onToggleAiConnector={onToggleAiConnector}
                         />
 
                         {error && (

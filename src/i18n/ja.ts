@@ -131,6 +131,16 @@ export const ja: Messages = {
         reset: '既定に戻す',
     },
 
+    ai: {
+        title: 'AI コネクタ（MCP）',
+        hint: 'Claude などの AI アシスタントに原稿を書かせ、ここに読み込めます',
+        connect: '接続',
+        connected: '接続済み',
+        copy: 'ほかのアプリ用の設定をコピー',
+        copied: 'コピーしました',
+        restart: (app: string) => `完了しました。${app} を再起動してください`,
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

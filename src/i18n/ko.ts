@@ -131,6 +131,16 @@ export const ko: Messages = {
         reset: '기본값 복원',
     },
 
+    ai: {
+        title: 'AI 커넥터 (MCP)',
+        hint: 'Claude 등 AI 어시스턴트가 원고를 쓰고 여기로 불러오게 하세요',
+        connect: '연결',
+        connected: '연결됨',
+        copy: '다른 앱용 설정 복사',
+        copied: '복사됨',
+        restart: (app: string) => `완료. ${app}을(를) 다시 시작하면 사용할 수 있습니다`,
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

@@ -129,6 +129,16 @@ export const en = {
         reset: 'Restore defaults',
     },
 
+    ai: {
+        title: 'AI connector (MCP)',
+        hint: 'Let Claude and other AI assistants write your script and load it here',
+        connect: 'Connect',
+        connected: 'Connected',
+        copy: 'Copy the config for another app',
+        copied: 'Copied',
+        restart: (app: string) => `Done. Restart ${app} to use it`,
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

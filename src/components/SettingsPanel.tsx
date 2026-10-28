@@ -19,6 +19,7 @@ import type { GlobalAction, ShortcutBindings } from '../hooks/useGlobalShortcuts
 import { displayShortcut } from '../lib/shortcuts'
 import Switch from './Switch'
 import ShortcutsSection from './ShortcutsSection'
+import AiConnectorSection from './AiConnectorSection'
 import type { useUpdater } from '../hooks/useUpdater'
 
 const PANEL_WIDTH = 288
@@ -54,6 +55,8 @@ interface SettingsPanelProps {
     onRecordingShortcut: (recording: boolean) => void
     countdownSeconds: number
     onCountdownSecondsChange: (val: number) => void
+    aiConnectorEnabled: boolean
+    onToggleAiConnector: () => void
 }
 
 function Row({
@@ -108,6 +111,8 @@ export default function SettingsPanel({
     onRecordingShortcut,
     countdownSeconds,
     onCountdownSecondsChange,
+    aiConnectorEnabled,
+    onToggleAiConnector,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -289,6 +294,11 @@ export default function SettingsPanel({
                                 onToggle={onToggleTitleBar}
                             />
                         </Row>
+
+                        <AiConnectorSection
+                            enabled={aiConnectorEnabled}
+                            onToggleEnabled={onToggleAiConnector}
+                        />
 
                         <ShortcutsSection
                             enabled={shortcutsEnabled}

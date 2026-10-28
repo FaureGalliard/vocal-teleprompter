@@ -87,6 +87,7 @@ function App() {
     // Seconds counted down before listening starts; 0 starts right away
     const [countdownSeconds, setCountdownSeconds] = usePersistentState('countdownSeconds', 3)
     const [countdown, setCountdown] = useState<number | null>(null)
+    const [aiConnectorEnabled, setAiConnectorEnabled] = usePersistentState('aiConnector', true)
     const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     const cancelCountdown = () => {
@@ -215,8 +216,15 @@ function App() {
         const words = scriptCards.reduce((sum, c) => sum + c.wordCount, 0)
         return { slides: scriptCards.length, words, estimatedMinutes: minutesFor(words) }
     }
+    const requireConnector = () => {
+        if (!aiConnectorEnabled)
+            throw new Error(
+                'The AI connector is turned off in Vocal Teleprompter. Ask the user to turn it on in Settings.',
+            )
+    }
     useMcpBridge({
         load_script: ({ text, mode }) => {
+            requireConnector()
             if (typeof text !== 'string' || !text.trim()) throw new Error('text must be a non-empty string')
             const next =
                 mode === 'append' && content.trim() ? `${content.trimEnd()}\n\n---\n\n${text}` : text
@@ -226,22 +234,29 @@ function App() {
             reset()
             return { loaded: true, ...describeScript(next) }
         },
-        get_script: () => ({ text: content, ...describeScript(content) }),
-        get_status: () => ({
-            ...describeScript(content),
-            speechLanguage: language,
-            targetMinutes: targetMinutes || null,
-            listening: isSpeechActive,
-            paused: isPaused,
-            countingDown: countdown !== null,
-            currentSlide: currentCard + 1,
-            spokenWords: currentWordIndex + 1,
-            elapsedSeconds: Math.round(pace.elapsedMs / 1000),
-            wordsPerMinute: pace.wpm === null ? null : Math.round(pace.wpm),
-            remainingMinutes: Math.round((pace.remainingMs / 60000) * 10) / 10,
-            pace: pace.status,
-        }),
+        get_script: () => {
+            requireConnector()
+            return { text: content, ...describeScript(content) }
+        },
+        get_status: () => {
+            requireConnector()
+            return {
+                ...describeScript(content),
+                speechLanguage: language,
+                targetMinutes: targetMinutes || null,
+                listening: isSpeechActive,
+                paused: isPaused,
+                countingDown: countdown !== null,
+                currentSlide: currentCard + 1,
+                spokenWords: currentWordIndex + 1,
+                elapsedSeconds: Math.round(pace.elapsedMs / 1000),
+                wordsPerMinute: pace.wpm === null ? null : Math.round(pace.wpm),
+                remainingMinutes: Math.round((pace.remainingMs / 60000) * 10) / 10,
+                pace: pace.status,
+            }
+        },
         control: ({ action }) => {
+            requireConnector()
             switch (action) {
                 case 'start':
                     if (!content.trim()) throw new Error('There is no script to read yet')
@@ -606,6 +621,8 @@ function App() {
                     isCountingDown={countdown !== null}
                     typography={typography}
                     onTypographyChange={setTypography}
+                    aiConnectorEnabled={aiConnectorEnabled}
+                    onToggleAiConnector={() => setAiConnectorEnabled((v) => !v)}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()

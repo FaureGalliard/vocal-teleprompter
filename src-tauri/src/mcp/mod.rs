@@ -6,6 +6,7 @@
 //! forwards each tool call to that bridge, where the frontend answers it.
 
 pub mod bridge;
+pub mod clients;
 pub mod guide;
 pub mod server;
 
