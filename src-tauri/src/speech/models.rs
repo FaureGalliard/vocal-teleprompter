@@ -23,11 +23,25 @@ pub fn model_name(language: &str) -> Option<&'static str> {
 }
 
 pub fn models_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    Ok(app
-        .path()
-        .app_data_dir()
-        .map_err(|e| e.to_string())?
-        .join("models"))
+    Ok(plain_path(
+        app.path()
+            .app_data_dir()
+            .map_err(|e| e.to_string())?
+            .join("models"),
+    ))
+}
+
+/// Drops the `\\?\` prefix of Windows extended-length paths. Tauri returns
+/// the resource folder in that form and Vosk cannot open a model there.
+pub fn plain_path(path: PathBuf) -> PathBuf {
+    let text = path.to_string_lossy();
+    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+        return PathBuf::from(format!(r"\\{rest}"));
+    }
+    match text.strip_prefix(r"\\?\") {
+        Some(rest) => PathBuf::from(rest.to_string()),
+        None => path,
+    }
 }
 
 /// Folder of the model if it is installed in `dir`
@@ -41,7 +55,7 @@ pub fn installed_model(dir: &Path, language: &str) -> Option<PathBuf> {
 /// was downloaded later
 pub fn find_model(app: &AppHandle, language: &str) -> Result<Option<PathBuf>, String> {
     if let Ok(resources) = app.path().resource_dir() {
-        if let Some(path) = installed_model(&resources.join("models"), language) {
+        if let Some(path) = installed_model(&plain_path(resources).join("models"), language) {
             return Ok(Some(path));
         }
     }

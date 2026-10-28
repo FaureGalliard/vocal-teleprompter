@@ -6,7 +6,8 @@
 
 use std::path::{Path, PathBuf};
 use vocal_teleprompter_lib::speech::audio::Resampler;
-use vocal_teleprompter_lib::speech::{models::model_name, transcribe, Transcriber};
+use vocal_teleprompter_lib::speech::models::{model_name, plain_path};
+use vocal_teleprompter_lib::speech::{transcribe, Transcriber};
 
 /// Share of the script's words that must come back, in order
 const MIN_ACCURACY: f64 = 0.8;
@@ -129,4 +130,20 @@ fn recognizes_a_live_48khz_stream() {
     let score = accuracy(&words(&script), &words(&heard));
     println!("live 48 kHz: {:.0}% — {heard}", score * 100.0);
     assert!(score >= MIN_ACCURACY, "live stream recognized only {:.0}%: {heard}", score * 100.0);
+}
+
+/// Installed builds get the resource folder from Tauri as an extended-length
+/// path (`\\?\C:\...`), which Vosk cannot open. Loading must go through
+/// plain_path, like the app does.
+#[test]
+fn loads_models_from_extended_length_paths() {
+    let Ok(models) = std::env::var("VOSK_MODELS_DIR") else {
+        eprintln!("VOSK_MODELS_DIR not set, skipping model path test");
+        return;
+    };
+    // On Windows canonicalize returns the \\?\ form, the same as Tauri
+    let extended = std::fs::canonicalize(Path::new(&models).join(model_name("en-US").unwrap())).unwrap();
+    let plain = plain_path(extended.clone());
+    assert!(!plain.to_string_lossy().starts_with(r"\\?\"), "{}", plain.display());
+    assert!(vosk::Model::new(plain.to_string_lossy()).is_some(), "model did not load from {}", plain.display());
 }
