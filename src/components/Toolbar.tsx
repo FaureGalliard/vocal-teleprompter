@@ -7,6 +7,7 @@ import {
     ClipboardPaste,
     FileUp,
     Languages,
+    ExternalLink,
     Mic,
     Pause,
     Pencil,
@@ -15,7 +16,6 @@ import {
     Trash2,
 } from 'lucide-react'
 import { LANGUAGES } from '../constants/languages'
-import type { Microphone } from '../hooks/useMicrophones'
 import { useT } from '../i18n'
 
 const ICON = 13
@@ -36,8 +36,10 @@ interface ToolbarProps {
     language: string
     langMenuOpen: boolean
     micMenuOpen: boolean
-    selectedMic: string
-    microphones: Microphone[]
+    // The system default input, the one speech recognition listens to
+    defaultMicrophone: string
+    micLevel: number
+    onOpenSoundSettings: () => void
     onPasteText: () => void
     onImport: () => void
     onClear: () => void
@@ -45,7 +47,6 @@ interface ToolbarProps {
     onToggleListen: () => void
     onTogglePause: () => void
     onLanguageChange: (val: string) => void
-    onMicChange: (val: string) => void
     onLangMenuToggle: () => void
     onMicMenuToggle: () => void
     onShowTutorial: () => void
@@ -95,8 +96,9 @@ function ToolbarBar({
     language,
     langMenuOpen,
     micMenuOpen,
-    selectedMic,
-    microphones,
+    defaultMicrophone,
+    micLevel,
+    onOpenSoundSettings,
     onPasteText,
     onImport,
     onClear,
@@ -104,7 +106,6 @@ function ToolbarBar({
     onToggleListen,
     onTogglePause,
     onLanguageChange,
-    onMicChange,
     onLangMenuToggle,
     onMicMenuToggle,
     onShowTutorial,
@@ -117,13 +118,6 @@ function ToolbarBar({
     const micMenuRef = useRef<HTMLDivElement>(null)
     const running = isSpeechActive || isCountingDown
 
-    const micLabel = (mic: Microphone) => mic.label || t.microphone(mic.deviceId.slice(0, 6))
-    // Chromium names its alias entries "Default - <device>"; keep just the device
-    const shortMicLabel = (mic: Microphone) =>
-        mic.deviceId === 'default' || mic.deviceId === 'communications'
-            ? micLabel(mic).replace(/^[^-]+ - /, '')
-            : micLabel(mic)
-    const selectedMicrophone = microphones.find((m) => m.deviceId === selectedMic)
 
     useEffect(() => {
         const bar = barRef.current
@@ -259,7 +253,7 @@ function ToolbarBar({
                     <Mic size={ICON} />
                     {/* Name the device in use so the button explains itself */}
                     <span className="max-w-[90px] truncate">
-                        {selectedMicrophone ? shortMicLabel(selectedMicrophone) : t.toolbar.microphone}
+                        {defaultMicrophone || t.toolbar.microphone}
                     </span>
                     <ChevronDown
                         size={12}
@@ -270,21 +264,28 @@ function ToolbarBar({
                     {micMenuOpen && (
                         <motion.div
                             {...menuMotion}
-                            className={`${menu} min-w-[180px] max-w-[260px]`}>
-                            {microphones.map((mic) => (
-                                <button
-                                    key={mic.deviceId}
-                                    onClick={() => onMicChange(mic.deviceId)}
-                                    className={menuItem(selectedMic === mic.deviceId)}
-                                    title={micLabel(mic)}>
-                                    {micLabel(mic)}
-                                </button>
-                            ))}
-                            {microphones.length === 0 && (
-                                <span className="px-4 py-1.5 text-[11px] text-white/30">
-                                    {t.toolbar.noMicrophones}
-                                </span>
-                            )}
+                            className={`${menu} w-64 p-3 gap-2`}>
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-white/40">
+                                {t.mic.title}
+                            </span>
+                            <span className="text-[12px] text-white truncate" title={defaultMicrophone}>
+                                {defaultMicrophone || t.toolbar.noMicrophones}
+                            </span>
+                            <div
+                                className="h-1.5 rounded-full bg-white/10 overflow-hidden"
+                                title={t.mic.level}>
+                                <div
+                                    className="h-full rounded-full bg-[#4ade80] transition-[width] duration-75"
+                                    style={{ width: `${Math.round(micLevel * 100)}%` }}
+                                />
+                            </div>
+                            <span className="text-[10px] text-white/40 leading-snug">{t.mic.hint}</span>
+                            <button
+                                onClick={onOpenSoundSettings}
+                                className="flex items-center justify-center gap-1.5 h-7 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-white transition-colors">
+                                <ExternalLink size={12} />
+                                {t.mic.change}
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>

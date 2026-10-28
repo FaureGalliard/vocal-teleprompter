@@ -144,6 +144,14 @@ export const en = {
         opacity: 'Background opacity',
     },
 
+    mic: {
+        title: 'Microphone in use',
+        level: 'Input level: speak to test it',
+        hint: 'Speech recognition always listens to the Windows default microphone. To use another one, change the default in Windows.',
+        change: 'Change in Windows',
+        heard: 'What the prompter hears',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

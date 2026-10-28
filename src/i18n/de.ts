@@ -146,6 +146,14 @@ export const de: Messages = {
         opacity: 'Deckkraft des Hintergrunds',
     },
 
+    mic: {
+        title: 'Verwendetes Mikrofon',
+        level: 'Eingangspegel: sprich, um es zu testen',
+        hint: 'Die Spracherkennung hört immer auf das Standardmikrofon von Windows. Um ein anderes zu nutzen, ändere es in Windows.',
+        change: 'In Windows ändern',
+        heard: 'Was der Prompter hört',
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',

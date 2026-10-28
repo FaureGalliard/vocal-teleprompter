@@ -42,5 +42,9 @@ export function useMicrophones() {
         return () => navigator.mediaDevices.removeEventListener('devicechange', refresh)
     }, [])
 
-    return { microphones }
+    // The recognizer always uses this one; Chromium lists it as "Default - <device>"
+    const system = microphones.find((m) => m.deviceId === 'default') ?? microphones[0]
+    const defaultMicrophone = system?.label.replace(/^[^-]+ - /, '') ?? ''
+
+    return { microphones, defaultMicrophone }
 }

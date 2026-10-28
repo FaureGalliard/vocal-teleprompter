@@ -13,28 +13,22 @@ const RESTART_DELAY_MS = 1000
 
 interface UseSpeechRecognitionProps {
     language: string
-    deviceId: string
     onTranscript: (transcript: string) => void
     enabled: boolean
 }
 
-export function useSpeechRecognition({
-    language,
-    deviceId,
-    onTranscript,
-    enabled,
-}: UseSpeechRecognitionProps) {
+// The recognizer always listens to the system's default microphone. WebView2
+// only offers cloud recognition, which answers "network" when fed a specific
+// device's MediaStreamTrack, so choosing the input is left to Windows.
+export function useSpeechRecognition({ language, onTranscript, enabled }: UseSpeechRecognitionProps) {
     const [listening, setListening] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    // Latest words the recognizer heard, shown so the speaker can tell it works
+    const [heard, setHeard] = useState('')
     const recognitionRef = useRef<SpeechRecognition | null>(null)
-    const streamRef = useRef<MediaStream | null>(null)
     const enabledRef = useRef(enabled)
     const sessionRef = useRef(0)
     const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    // Some WebView2 builds answer a recognizer fed from a MediaStreamTrack with
-    // a network error. Once that happens, fall back to the default input for
-    // the rest of the run instead of failing forever.
-    const trackRejectedRef = useRef(false)
 
     // The recognizer lives across renders, so read the latest callback
     // instead of the one captured when it started
@@ -59,14 +53,11 @@ export function useSpeechRecognition({
             recognitionRef.current.stop()
             recognitionRef.current = null
         }
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((t) => t.stop())
-            streamRef.current = null
-        }
         setListening(false)
+        setHeard('')
     }, [])
 
-    const start = useCallback(async () => {
+    const start = useCallback(() => {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition
         if (!SR) {
             setError('unsupported')
@@ -74,23 +65,6 @@ export function useSpeechRecognition({
         }
         const session = ++sessionRef.current
         setError(null)
-
-        let track: MediaStreamTrack | undefined
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: deviceId ? { deviceId: { exact: deviceId } } : true,
-            })
-            // stop() ran while we waited for the device
-            if (session !== sessionRef.current) {
-                stream.getTracks().forEach((t) => t.stop())
-                return
-            }
-            streamRef.current = stream
-            track = stream.getAudioTracks()[0]
-        } catch (e) {
-            setError('microphone')
-            return
-        }
 
         const recognition = new SR()
         recognition.continuous = true
@@ -100,17 +74,11 @@ export function useSpeechRecognition({
 
         let fatal = false
         let failed = false
-        // Passing undefined makes the engine use the system's default microphone
-        const input = () => (trackRejectedRef.current ? undefined : track)
 
         recognition.onstart = () => setListening(true)
         recognition.onerror = (e) => {
             if (SILENT_ERRORS.has(e.error)) return
-            if (e.error === 'network' && track && !trackRejectedRef.current) {
-                console.warn('Speech recognition rejected the selected microphone; using the default one')
-                trackRejectedRef.current = true
-                return
-            }
+            console.warn('Speech recognition error:', e.error)
             setError(e.error)
             if (FATAL_ERRORS.has(e.error)) fatal = true
             else failed = true
@@ -123,22 +91,22 @@ export function useSpeechRecognition({
             failed = false
             restartTimerRef.current = setTimeout(() => {
                 restartTimerRef.current = null
-                if (session === sessionRef.current) recognition.start(input())
+                if (session === sessionRef.current) recognition.start()
             }, delay)
         }
         recognition.onresult = (event) => {
             setError(null)
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript.trim()
-                if (transcript) onTranscriptRef.current(transcript)
+                if (!transcript) continue
+                setHeard(transcript)
+                onTranscriptRef.current(transcript)
             }
         }
 
         recognitionRef.current = recognition
-        // Chromium feeds the recognizer from the given track; older engines
-        // ignore the argument and fall back to the default microphone.
-        recognition.start(input())
-    }, [language, deviceId])
+        recognition.start()
+    }, [language])
 
     useEffect(() => {
         if (enabled) start()
@@ -146,5 +114,5 @@ export function useSpeechRecognition({
         return () => stop()
     }, [enabled, start, stop])
 
-    return { listening, error }
+    return { listening, error, heard }
 }

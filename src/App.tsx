@@ -10,6 +10,7 @@ import { readTextFile } from '@tauri-apps/plugin-fs'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
+import { useMicLevel } from './hooks/useMicLevel'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -139,16 +140,13 @@ function App() {
     const [language, setLanguage] = usePersistentState('language', 'en-US')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
-    const [selectedMic, setSelectedMic] = usePersistentState('microphone', 'default')
     const titleBarRef = useRef<HTMLDivElement>(null)
     const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const isDraggingRef = useRef(false)
 
-    const { microphones } = useMicrophones()
-    // A remembered microphone may have been unplugged since last time
-    const activeMic = microphones.some((m) => m.deviceId === selectedMic)
-        ? selectedMic
-        : 'default'
+    const { defaultMicrophone } = useMicrophones()
+    // Only measured while the microphone menu is open
+    const micLevel = useMicLevel(micMenuOpen)
     const cards = useMemo(() => splitCards(content, language), [content, language])
     const scriptWords = useMemo(
         () => cards.flatMap((c) => c.segments.filter((s) => s.word !== -1).map((s) => s.text)),
@@ -158,9 +156,12 @@ function App() {
         scriptWords,
         language,
     )
-    const { listening: isRecognizing, error } = useSpeechRecognition({
+    const {
+        listening: isRecognizing,
+        error,
+        heard: heardText,
+    } = useSpeechRecognition({
         language,
-        deviceId: activeMic,
         onTranscript: processTranscript,
         enabled: isSpeechActive && !isPaused,
     })
@@ -619,8 +620,11 @@ function App() {
                     language={language}
                     langMenuOpen={langMenuOpen}
                     micMenuOpen={micMenuOpen}
-                    selectedMic={activeMic}
-                    microphones={microphones}
+                    defaultMicrophone={defaultMicrophone}
+                    micLevel={micLevel}
+                    onOpenSoundSettings={() =>
+                        invoke('open_sound_settings').catch((e) => console.error(e))
+                    }
                     onPasteText={handlePasteText}
                     onImport={handleImport}
                     onClear={handleClear}
@@ -633,10 +637,6 @@ function App() {
                     onLanguageChange={(val) => {
                         setLanguage(val)
                         setLangMenuOpen(false)
-                    }}
-                    onMicChange={(val) => {
-                        setSelectedMic(val)
-                        setMicMenuOpen(false)
                     }}
                     onLangMenuToggle={() => {
                         setLangMenuOpen((v) => !v)
@@ -795,6 +795,7 @@ function App() {
                         targetMinutes={targetMinutes}
                         {...pace}
                         clickThrough={clickThrough}
+                        heard={isSpeechActive && !isPaused ? heardText : ''}
                     />
                 )}
             </div>

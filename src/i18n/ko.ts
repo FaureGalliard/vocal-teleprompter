@@ -146,6 +146,14 @@ export const ko: Messages = {
         opacity: '배경 불투명도',
     },
 
+    mic: {
+        title: '사용 중인 마이크',
+        level: '입력 레벨: 말해서 테스트하세요',
+        hint: '음성 인식은 항상 Windows 기본 마이크를 사용합니다. 다른 마이크를 쓰려면 Windows에서 기본 장치를 바꾸세요.',
+        change: 'Windows에서 변경',
+        heard: '프롬프터가 듣는 내용',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

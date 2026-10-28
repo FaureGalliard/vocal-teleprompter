@@ -146,6 +146,14 @@ export const zh: Messages = {
         opacity: '背景不透明度',
     },
 
+    mic: {
+        title: '正在使用的麦克风',
+        level: '输入音量：说话来测试',
+        hint: '语音识别始终使用 Windows 的默认麦克风。要换用其他麦克风，请在 Windows 中更改默认设备。',
+        change: '在 Windows 中更改',
+        heard: '提词器听到的内容',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

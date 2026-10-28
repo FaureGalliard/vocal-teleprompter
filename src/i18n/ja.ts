@@ -146,6 +146,14 @@ export const ja: Messages = {
         opacity: '背景の不透明度',
     },
 
+    mic: {
+        title: '使用中のマイク',
+        level: '入力レベル：話してテストしてください',
+        hint: '音声認識は常に Windows の既定のマイクを使います。別のマイクを使うには Windows で既定を変更してください。',
+        change: 'Windows で変更',
+        heard: 'プロンプターが聞き取った内容',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

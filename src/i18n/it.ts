@@ -146,6 +146,14 @@ export const it: Messages = {
         opacity: 'Opacità dello sfondo',
     },
 
+    mic: {
+        title: 'Microfono in uso',
+        level: 'Livello di ingresso: parla per provarlo',
+        hint: 'Il riconoscimento vocale ascolta sempre il microfono predefinito di Windows. Per usarne un altro, cambialo in Windows.',
+        change: 'Cambia in Windows',
+        heard: 'Cosa sente il gobbo',
+    },
+
     titleBar: {
         moveDown: 'Sposta in basso',
         moveUp: 'Sposta in alto',

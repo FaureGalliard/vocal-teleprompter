@@ -146,6 +146,14 @@ export const pt: Messages = {
         opacity: 'Opacidade do fundo',
     },
 
+    mic: {
+        title: 'Microfone em uso',
+        level: 'Nível de entrada: fale para testar',
+        hint: 'O reconhecimento de voz sempre ouve o microfone padrão do Windows. Para usar outro, troque-o no Windows.',
+        change: 'Trocar no Windows',
+        heard: 'O que o teleprompter ouve',
+    },
+
     titleBar: {
         moveDown: 'Mover para baixo',
         moveUp: 'Mover para cima',

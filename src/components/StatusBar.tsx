@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MousePointerClick, Timer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Mic, MousePointerClick, Timer } from 'lucide-react'
 import { useT } from '../i18n'
 import { formatDuration, type PaceStatus } from '../hooks/usePace'
 
@@ -16,6 +16,8 @@ interface StatusBarProps {
     targetMinutes: number
     status: PaceStatus | null
     clickThrough: boolean
+    // What the recognizer heard last, while listening
+    heard: string
 }
 
 const STATUS_COLOR: Record<PaceStatus, string> = {
@@ -43,6 +45,7 @@ export default function StatusBar({
     targetMinutes,
     status,
     clickThrough,
+    heard,
 }: StatusBarProps) {
     const t = useT()
     const target = targetMinutes > 0 ? formatDuration(targetMinutes * 60000) : null
@@ -84,6 +87,23 @@ export default function StatusBar({
                     <span />
                 )}
             </div>
+
+            {heard && (
+                <div
+                    className={`${pill} px-2.5 gap-1.5 min-w-0 max-w-[40%]`}
+                    title={t.mic.heard}>
+                    <Mic
+                        size={11}
+                        className="flex-shrink-0 text-[#4ade80]"
+                    />
+                    {/* Last few words only, newest on the right */}
+                    <span
+                        className="truncate italic"
+                        dir="rtl">
+                        <bdi>{heard}</bdi>
+                    </span>
+                </div>
+            )}
 
             {estimatedMs > 0 && (
                 <div className={`${pill} px-2.5 gap-1.5 tabular-nums`}>

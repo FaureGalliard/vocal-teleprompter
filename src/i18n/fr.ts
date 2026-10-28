@@ -146,6 +146,14 @@ export const fr: Messages = {
         opacity: 'Opacité du fond',
     },
 
+    mic: {
+        title: 'Microphone utilisé',
+        level: "Niveau d'entrée : parlez pour le tester",
+        hint: 'La reconnaissance vocale écoute toujours le microphone par défaut de Windows. Pour en utiliser un autre, changez-le dans Windows.',
+        change: 'Changer dans Windows',
+        heard: 'Ce que le prompteur entend',
+    },
+
     titleBar: {
         moveDown: 'Déplacer en bas',
         moveUp: 'Déplacer en haut',
