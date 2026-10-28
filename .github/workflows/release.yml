@@ -44,3 +44,13 @@ jobs:
           releaseBody: See the release notes below.
           releaseDraft: true
           prerelease: false
+
+      # Same installer under a name that never changes, so a plain link to
+      # releases/latest/download/VocalTeleprompter-Setup.exe always works
+      - name: Upload installer with a fixed name
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp src-tauri/target/release/bundle/nsis/*-setup.exe VocalTeleprompter-Setup.exe
+          gh release upload "${{ github.ref_name }}" VocalTeleprompter-Setup.exe --clobber
