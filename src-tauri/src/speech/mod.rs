@@ -5,7 +5,7 @@
 pub mod audio;
 pub mod models;
 
-use audio::{Capture, Resampler, TARGET_RATE};
+use audio::{AutoGain, Capture, Resampler, TARGET_RATE};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::path::Path;
@@ -60,9 +60,19 @@ pub struct Transcriber {
 }
 
 impl Transcriber {
-    pub fn new(model: &Model) -> Result<Self, String> {
-        let recognizer =
-            Recognizer::new(model, TARGET_RATE as f32).ok_or("Could not create the recognizer")?;
+    /// With a vocabulary (the script's words), the recognizer only considers
+    /// those words and reports anything else as [unk]. Knowing what the
+    /// speaker is about to say makes recognition far more reliable.
+    pub fn new(model: &Model, vocabulary: Option<&[String]>) -> Result<Self, String> {
+        let recognizer = match vocabulary {
+            Some(words) if !words.is_empty() => {
+                let mut grammar = grammar(words);
+                grammar.push("[unk]".to_string());
+                Recognizer::new_with_grammar(model, TARGET_RATE as f32, &grammar)
+            }
+            _ => Recognizer::new(model, TARGET_RATE as f32),
+        }
+        .ok_or("Could not create the recognizer")?;
         Ok(Self {
             recognizer,
             partial: String::new(),
@@ -73,17 +83,14 @@ impl Transcriber {
     pub fn feed(&mut self, samples: &[i16]) -> Option<(String, bool)> {
         match self.recognizer.accept_waveform(samples) {
             Ok(DecodingState::Finalized) => {
-                let text = self
-                    .recognizer
-                    .result()
-                    .single()
-                    .map(|r| r.text.to_string())
-                    .unwrap_or_default();
+                let text = without_unknown(
+                    self.recognizer.result().single().map(|r| r.text).unwrap_or_default(),
+                );
                 self.partial.clear();
                 (!text.is_empty()).then_some((text, true))
             }
             Ok(DecodingState::Running) => {
-                let text = self.recognizer.partial_result().partial.to_string();
+                let text = without_unknown(self.recognizer.partial_result().partial);
                 if text.is_empty() || text == self.partial {
                     return None;
                 }
@@ -95,12 +102,41 @@ impl Transcriber {
     }
 
     pub fn finish(&mut self) -> String {
-        self.recognizer
-            .final_result()
-            .single()
-            .map(|r| r.text.to_string())
-            .unwrap_or_default()
+        without_unknown(self.recognizer.final_result().single().map(|r| r.text).unwrap_or_default())
     }
+}
+
+/// Drops the [unk] markers a vocabulary-limited recognizer puts where it
+/// heard a word outside the script
+fn without_unknown(text: &str) -> String {
+    text.split_whitespace()
+        .filter(|w| *w != "[unk]")
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Phrases for the recognizer: every run of three consecutive words of the
+/// script, so it keeps the order words come in, plus each word alone, so the
+/// speaker can still skip or repeat. Lowercase, without the characters that
+/// would break the grammar's JSON; the model ignores words it does not know.
+pub fn grammar(words: &[String]) -> Vec<String> {
+    let clean: Vec<String> = words
+        .iter()
+        .map(|w| {
+            w.to_lowercase()
+                .chars()
+                .filter(|c| c.is_alphanumeric() || *c == '\'')
+                .collect::<String>()
+        })
+        .filter(|w| !w.is_empty())
+        .collect();
+    let mut seen = std::collections::HashSet::new();
+    clean
+        .windows(3)
+        .map(|w| w.join(" "))
+        .chain(clean.iter().cloned())
+        .filter(|phrase| seen.insert(phrase.clone()))
+        .collect()
 }
 
 #[tauri::command]
@@ -116,6 +152,8 @@ pub fn speech_start(
     engine: State<'_, SpeechEngine>,
     language: String,
     device_id: Option<String>,
+    // Words of the script, to narrow recognition down to them
+    vocabulary: Option<Vec<String>>,
 ) -> Result<(), String> {
     speech_stop(engine.clone());
     // Two captures of the same microphone are not needed: listening reports
@@ -123,8 +161,10 @@ pub fn speech_start(
     engine.monitor.lock().unwrap().take();
     let dir = models::find_model(&app, &language)?.ok_or("model-missing")?;
     let model = load_model(&engine, &dir)?;
-    let mut transcriber = Transcriber::new(&model)?;
+    let mut transcriber = Transcriber::new(&model, vocabulary.as_deref())?;
     let mut resampler = Resampler::new();
+    let mut gain = AutoGain::new();
+    let mut boosted = Vec::new();
     let mut buffer = Vec::new();
     let mut last_level = Instant::now();
 
@@ -135,8 +175,12 @@ pub fn speech_start(
             last_level = Instant::now();
             let _ = app.emit("mic-level", audio::level(samples));
         }
+        // Soft voices and quiet microphones are brought up before decoding
+        boosted.clear();
+        boosted.extend_from_slice(samples);
+        gain.process(&mut boosted);
         buffer.clear();
-        resampler.process(samples, rate, &mut buffer);
+        resampler.process(&boosted, rate, &mut buffer);
         if let Some((text, is_final)) = transcriber.feed(&buffer) {
             let _ = app.emit("speech", SpeechEvent { text, is_final });
         }
@@ -178,11 +222,16 @@ pub fn mic_monitor_stop(engine: State<'_, SpeechEngine>) {
     engine.monitor.lock().unwrap().take();
 }
 
-/// Transcribes a whole 16 kHz mono recording; used by the tests
-pub fn transcribe(model_dir: &Path, samples: &[i16]) -> Result<String, String> {
+/// Transcribes a whole 16 kHz mono recording, optionally limited to a
+/// vocabulary; used by the tests
+pub fn transcribe(
+    model_dir: &Path,
+    samples: &[i16],
+    vocabulary: Option<&[String]>,
+) -> Result<String, String> {
     quiet();
     let model = Model::new(model_dir.to_string_lossy()).ok_or("model-unreadable")?;
-    let mut transcriber = Transcriber::new(&model)?;
+    let mut transcriber = Transcriber::new(&model, vocabulary)?;
     let mut text = Vec::new();
     for chunk in samples.chunks(4000) {
         if let Some((utterance, true)) = transcriber.feed(chunk) {

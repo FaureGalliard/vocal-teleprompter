@@ -181,6 +181,51 @@ impl Resampler {
     }
 }
 
+/// Automatic gain for quiet voices: learns how loud speech is (ignoring
+/// silence) and boosts it towards a comfortable level, never above 8x and
+/// never attenuating, with a limiter so loud bursts do not clip
+pub struct AutoGain {
+    speech_level: f32,
+    gain: f32,
+}
+
+const TARGET_LEVEL: f32 = 0.1;
+const MAX_GAIN: f32 = 8.0;
+// Below this the chunk is background noise, not speech
+const NOISE_FLOOR: f32 = 0.004;
+
+impl AutoGain {
+    pub fn new() -> Self {
+        Self {
+            speech_level: TARGET_LEVEL,
+            gain: 1.0,
+        }
+    }
+
+    pub fn gain(&self) -> f32 {
+        self.gain
+    }
+
+    pub fn process(&mut self, samples: &mut [f32]) {
+        if samples.is_empty() {
+            return;
+        }
+        let rms = (samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32).sqrt();
+        if rms > NOISE_FLOOR {
+            // Follow the speaker's level over a few seconds
+            self.speech_level += (rms - self.speech_level) * 0.02;
+        }
+        let wanted = (TARGET_LEVEL / self.speech_level.max(1e-4)).clamp(1.0, MAX_GAIN);
+        // Change the gain gradually so the level does not pump
+        self.gain += (wanted - self.gain) * 0.05;
+        for s in samples.iter_mut() {
+            let v = *s * self.gain;
+            // Soft limiter near full scale
+            *s = if v.abs() > 0.9 { v.signum() * (0.9 + (v.abs() - 0.9) * 0.1).min(1.0) } else { v };
+        }
+    }
+}
+
 /// Loudness of a chunk from 0 to 1, scaled so normal speech fills most of it
 pub fn level(samples: &[f32]) -> f32 {
     if samples.is_empty() {

@@ -6,6 +6,8 @@ interface UseSpeechRecognitionProps {
     language: string
     // Microphone to listen to; null for the system default
     deviceId: string | null
+    // Words of the script; the recognizer only listens for these
+    vocabulary: string[]
     onTranscript: (transcript: string) => void
     enabled: boolean
 }
@@ -21,9 +23,12 @@ interface SpeechEvent {
 export function useSpeechRecognition({
     language,
     deviceId,
+    vocabulary,
     onTranscript,
     enabled,
 }: UseSpeechRecognitionProps) {
+    // Restart only when the words themselves change, not on every render
+    const vocabularyKey = vocabulary.join(' ')
     const [listening, setListening] = useState(false)
     const [error, setError] = useState<string | null>(null)
     // Latest words the recognizer heard, shown so the speaker can tell it works
@@ -54,7 +59,7 @@ export function useSpeechRecognition({
         }
         let cancelled = false
         setError(null)
-        invoke('speech_start', { language, deviceId })
+        invoke('speech_start', { language, deviceId, vocabulary: vocabularyKey.split(' ').filter(Boolean) })
             .then(() => !cancelled && setListening(true))
             .catch((e) => {
                 if (cancelled) return
@@ -65,7 +70,7 @@ export function useSpeechRecognition({
         return () => {
             cancelled = true
         }
-    }, [enabled, language, deviceId])
+    }, [enabled, language, deviceId, vocabularyKey])
 
     // Release the microphone when the app closes the hook for good
     useEffect(() => () => void invoke('speech_stop').catch(() => {}), [])

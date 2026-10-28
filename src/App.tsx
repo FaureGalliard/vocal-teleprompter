@@ -182,6 +182,7 @@ function App() {
     } = useSpeechRecognition({
         language,
         deviceId: activeMic,
+        vocabulary: scriptWords,
         onTranscript: processTranscript,
         enabled: isSpeechActive && !isPaused,
     })

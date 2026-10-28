@@ -5,7 +5,7 @@
 //! skipped, so run `scripts/fetch-speech-models.ps1` first.
 
 use std::path::{Path, PathBuf};
-use vocal_teleprompter_lib::speech::audio::Resampler;
+use vocal_teleprompter_lib::speech::audio::{AutoGain, Resampler};
 use vocal_teleprompter_lib::speech::models::{model_name, plain_path};
 use vocal_teleprompter_lib::speech::{transcribe, Transcriber};
 
@@ -77,9 +77,17 @@ fn recognizes_the_recorded_scripts() {
         assert!(model.exists(), "model for {language} missing at {}", model.display());
 
         let script = std::fs::read_to_string(path.with_extension("txt")).unwrap();
-        let heard = transcribe(&model, &read_wav(&path)).unwrap();
+        let samples = read_wav(&path);
+        let heard = transcribe(&model, &samples, None).unwrap();
         let score = accuracy(&words(&script), &words(&heard));
         println!("{language}: {:.0}% — {heard}", score * 100.0);
+
+        // Limited to the script's words, as the app listens, it must do at least as well
+        let vocabulary: Vec<String> = script.split_whitespace().map(String::from).collect();
+        let guided = transcribe(&model, &samples, Some(&vocabulary)).unwrap();
+        let guided_score = accuracy(&words(&script), &words(&guided));
+        println!("{language} with the script's vocabulary: {:.0}% — {guided}", guided_score * 100.0);
+        assert!(guided_score >= score, "the vocabulary made {language} worse: {guided}");
         assert!(
             score >= MIN_ACCURACY,
             "{language} recognized only {:.0}% of the script: {heard}",
@@ -112,7 +120,7 @@ fn recognizes_a_live_48khz_stream() {
         })
         .collect();
 
-    let mut transcriber = Transcriber::new(&model).unwrap();
+    let mut transcriber = Transcriber::new(&model, None).unwrap();
     let mut resampler = Resampler::new();
     let mut buffer = Vec::new();
     let mut heard = Vec::new();
@@ -146,4 +154,41 @@ fn loads_models_from_extended_length_paths() {
     let plain = plain_path(extended.clone());
     assert!(!plain.to_string_lossy().starts_with(r"\\?\"), "{}", plain.display());
     assert!(vosk::Model::new(plain.to_string_lossy()).is_some(), "model did not load from {}", plain.display());
+}
+
+/// A soft voice (the recording at a twentieth of its level) must still be
+/// recognized once the automatic gain has brought it up
+#[test]
+fn recognizes_a_quiet_voice_with_automatic_gain() {
+    let Ok(models) = std::env::var("VOSK_MODELS_DIR") else {
+        eprintln!("VOSK_MODELS_DIR not set, skipping quiet voice test");
+        return;
+    };
+    let path = fixtures().join("en-US.wav");
+    let model_dir = Path::new(&models).join(model_name("en-US").unwrap());
+    let model = vosk::Model::new(model_dir.to_string_lossy()).expect("model");
+    let quiet: Vec<f32> = read_wav(&path).iter().map(|&s| s as f32 / i16::MAX as f32 * 0.05).collect();
+
+    let mut gain = AutoGain::new();
+    let mut transcriber = Transcriber::new(&model, None).unwrap();
+    let mut resampler = Resampler::new();
+    let mut buffer = Vec::new();
+    let mut heard = Vec::new();
+    for chunk in quiet.chunks(160) {
+        let mut chunk = chunk.to_vec();
+        gain.process(&mut chunk);
+        buffer.clear();
+        resampler.process(&chunk, 16_000, &mut buffer);
+        if let Some((text, true)) = transcriber.feed(&buffer) {
+            heard.push(text);
+        }
+    }
+    heard.push(transcriber.finish());
+    let heard = heard.join(" ");
+
+    let script = std::fs::read_to_string(path.with_extension("txt")).unwrap();
+    let score = accuracy(&words(&script), &words(&heard));
+    println!("quiet voice, gain {:.1}x: {:.0}% — {heard}", gain.gain(), score * 100.0);
+    assert!(gain.gain() > 4.0, "the gain did not rise for a quiet voice: {:.1}", gain.gain());
+    assert!(score >= MIN_ACCURACY, "quiet voice recognized only {:.0}%: {heard}", score * 100.0);
 }
