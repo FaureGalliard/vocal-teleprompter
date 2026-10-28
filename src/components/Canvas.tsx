@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import type { Card, CardSegment } from '../lib/cards'
+import { FONTS, type Typography } from '../lib/typography'
 import { useT } from '../i18n'
 
 // Height of the reading line, as a share of the canvas
@@ -30,6 +31,7 @@ interface CanvasProps {
     textHalo?: string
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
+    typography: Typography
     titleBarHeight: number
     titleBarPosition: 'top' | 'bottom'
 }
@@ -52,6 +54,7 @@ export default function Canvas({
     textColor,
     textHalo,
     readingLine,
+    typography,
     titleBarHeight,
     titleBarPosition,
 }: CanvasProps) {
@@ -89,6 +92,16 @@ export default function Canvas({
     }, [currentWordIndex, heard, readingLine])
 
     let prevWord = -1
+    // Shared by the prompter text and the editor so editing looks the same
+    const textStyle: React.CSSProperties = {
+        fontFamily: FONTS[typography.font],
+        fontWeight: typography.weight,
+        lineHeight: typography.lineHeight,
+        textAlign: typography.align,
+        maxWidth: `${typography.width}%`,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+    }
     const textShadow = textHalo
         ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
         : undefined
@@ -214,9 +227,10 @@ export default function Canvas({
                                 }}
                                 placeholder={t.canvas.editPlaceholder}
                                 spellCheck={false}
-                                className="block w-full min-h-[80%] text-center leading-relaxed bg-transparent resize-none outline-none placeholder:opacity-40"
+                                className="block w-full min-h-[80%] bg-transparent resize-none outline-none placeholder:opacity-40"
                                 style={
                                     {
+                                        ...textStyle,
                                         fontSize: `${fontSize}px`,
                                         color: textColor,
                                         caretColor: textColor,
@@ -246,8 +260,9 @@ export default function Canvas({
                                 )}
                                 <p
                                     // Clicking words moves the position; don't select text too
-                                className="text-center leading-relaxed select-none"
+                                className="select-none"
                                     style={{
+                                        ...textStyle,
                                         fontSize: `${fontSize}px`,
                                         whiteSpace: 'pre-wrap',
                                         // Long unbroken strings (URLs) wrap instead of widening the line
@@ -275,7 +290,7 @@ export default function Canvas({
                         left: 12,
                         right: 12,
                         top: `calc(${top}px + (100vh - ${top + bottom}px) * ${READING_LINE})`,
-                        height: fontSize * 1.625 + 8,
+                        height: fontSize * typography.lineHeight + 8,
                         transform: 'translateY(-50%)',
                         backgroundColor: `${textColor}14`,
                         borderTop: `1px solid ${textColor}30`,

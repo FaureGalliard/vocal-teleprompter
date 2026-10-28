@@ -118,6 +118,17 @@ export const en = {
         version: (v: string) => `Version ${v}`,
     },
 
+    typography: {
+        title: 'Typography',
+        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Rounded', legible: 'Legible' },
+        weights: { 400: 'Regular', 600: 'Semibold', 700: 'Bold' },
+        lineHeight: 'Line spacing',
+        width: 'Text width',
+        alignCenter: 'Centered',
+        alignLeft: 'Left aligned',
+        reset: 'Restore defaults',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

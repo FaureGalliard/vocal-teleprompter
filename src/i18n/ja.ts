@@ -120,6 +120,17 @@ export const ja: Messages = {
         version: (v: string) => `バージョン ${v}`,
     },
 
+    typography: {
+        title: 'タイポグラフィ',
+        fonts: { sans: 'ゴシック', serif: '明朝', mono: '等幅', rounded: '丸ゴシック', legible: '読みやすい' },
+        weights: { 400: '標準', 600: 'やや太字', 700: '太字' },
+        lineHeight: '行間',
+        width: 'テキストの幅',
+        alignCenter: '中央揃え',
+        alignLeft: '左揃え',
+        reset: '既定に戻す',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

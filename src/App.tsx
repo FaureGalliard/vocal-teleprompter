@@ -24,6 +24,7 @@ import {
 import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
 import CountdownOverlay from './components/CountdownOverlay'
+import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -50,6 +51,10 @@ function App() {
     const [titleBarHeight, setTitleBarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
+    const [typography, setTypography] = usePersistentState<Typography>(
+        'typography',
+        DEFAULT_TYPOGRAPHY,
+    )
     // Keep the window out of screen shares and recordings (Zoom, Meet, OBS...)
     const [hiddenFromCapture, setHiddenFromCapture] = usePersistentState(
         'hiddenFromCapture',
@@ -530,6 +535,8 @@ function App() {
                     countdownSeconds={countdownSeconds}
                     onCountdownSecondsChange={setCountdownSeconds}
                     isCountingDown={countdown !== null}
+                    typography={typography}
+                    onTypographyChange={setTypography}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -597,6 +604,7 @@ function App() {
                     textColor={displayTextColor}
                     textHalo={textHalo}
                     readingLine={readingLine}
+                    typography={typography}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     titleBarPosition={titleBarPosition}
                 />

@@ -6,6 +6,8 @@ import type { Microphone } from '../hooks/useMicrophones'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useT } from '../i18n'
 import SettingsPanel from './SettingsPanel'
+import TypographyMenu from './TypographyMenu'
+import type { Typography } from '../lib/typography'
 import type { useUpdater } from '../hooks/useUpdater'
 import type { GlobalAction, ShortcutBindings } from '../hooks/useGlobalShortcuts'
 import {
@@ -83,6 +85,8 @@ interface ToolbarProps {
     countdownSeconds: number
     onCountdownSecondsChange: (val: number) => void
     isCountingDown: boolean
+    typography: Typography
+    onTypographyChange: (value: Typography) => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -154,6 +158,8 @@ export default function Toolbar({
     countdownSeconds,
     onCountdownSecondsChange,
     isCountingDown,
+    typography,
+    onTypographyChange,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -471,6 +477,12 @@ export default function Toolbar({
                                 />
                                 <span className="text-[9px] text-white/30">px</span>
                             </div>
+
+                            <TypographyMenu
+                                value={typography}
+                                onChange={onTypographyChange}
+                                onAdjustStart={onAdjustStart}
+                            />
 
                             <div className="w-px h-5 mx-1 bg-white/15" />
 

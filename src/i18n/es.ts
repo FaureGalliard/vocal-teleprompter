@@ -120,6 +120,17 @@ export const es: Messages = {
         version: (v: string) => `Versión ${v}`,
     },
 
+    typography: {
+        title: 'Tipografía',
+        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Redondeada', legible: 'Legible' },
+        weights: { 400: 'Normal', 600: 'Seminegrita', 700: 'Negrita' },
+        lineHeight: 'Interlineado',
+        width: 'Ancho del texto',
+        alignCenter: 'Centrado',
+        alignLeft: 'Alineado a la izquierda',
+        reset: 'Restaurar valores',
+    },
+
     titleBar: {
         moveDown: 'Mover abajo',
         moveUp: 'Mover arriba',

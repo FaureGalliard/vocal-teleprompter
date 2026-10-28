@@ -120,6 +120,17 @@ export const ko: Messages = {
         version: (v: string) => `버전 ${v}`,
     },
 
+    typography: {
+        title: '타이포그래피',
+        fonts: { sans: '고딕', serif: '명조', mono: '고정폭', rounded: '둥근체', legible: '가독성' },
+        weights: { 400: '보통', 600: '약간 굵게', 700: '굵게' },
+        lineHeight: '줄 간격',
+        width: '텍스트 너비',
+        alignCenter: '가운데 정렬',
+        alignLeft: '왼쪽 정렬',
+        reset: '기본값 복원',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

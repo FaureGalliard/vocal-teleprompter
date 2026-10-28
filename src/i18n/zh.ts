@@ -120,6 +120,17 @@ export const zh: Messages = {
         version: (v: string) => `版本 ${v}`,
     },
 
+    typography: {
+        title: '字体排版',
+        fonts: { sans: '无衬线', serif: '衬线', mono: '等宽', rounded: '圆体', legible: '易读' },
+        weights: { 400: '常规', 600: '中粗', 700: '粗体' },
+        lineHeight: '行距',
+        width: '文字宽度',
+        alignCenter: '居中',
+        alignLeft: '左对齐',
+        reset: '恢复默认',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',
