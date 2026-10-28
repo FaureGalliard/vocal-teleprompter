@@ -56,6 +56,7 @@ pub fn run() {
             speech::speech_start,
             speech::speech_stop,
             speech::mic_monitor_start,
+            speech::mic_monitor_stop,
             speech::models::speech_model_status,
             speech::models::download_speech_model,
             mcp::bridge::mcp_respond,

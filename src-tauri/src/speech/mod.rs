@@ -20,6 +20,9 @@ const LEVEL_INTERVAL: Duration = Duration::from_millis(50);
 #[derive(Default)]
 pub struct SpeechEngine {
     capture: Mutex<Option<Capture>>,
+    // The level meter has its own capture, so stopping it can never stop
+    // recognition that started meanwhile
+    monitor: Mutex<Option<Capture>>,
     // Loading a model takes a moment, so keep the ones already used
     models: Mutex<HashMap<String, Arc<Model>>>,
 }
@@ -115,6 +118,9 @@ pub fn speech_start(
     device_id: Option<String>,
 ) -> Result<(), String> {
     speech_stop(engine.clone());
+    // Two captures of the same microphone are not needed: listening reports
+    // the level too
+    engine.monitor.lock().unwrap().take();
     let dir = models::find_model(&app, &language)?.ok_or("model-missing")?;
     let model = load_model(&engine, &dir)?;
     let mut transcriber = Transcriber::new(&model)?;
@@ -144,14 +150,18 @@ pub fn speech_stop(engine: State<'_, SpeechEngine>) {
     engine.capture.lock().unwrap().take();
 }
 
-/// Only measures the input level, to test a microphone without listening
+/// Only measures the input level, to test a microphone without listening.
+/// Does nothing while listening, which already reports the level.
 #[tauri::command]
 pub fn mic_monitor_start(
     app: AppHandle,
     engine: State<'_, SpeechEngine>,
     device_id: Option<String>,
 ) -> Result<(), String> {
-    speech_stop(engine.clone());
+    if engine.capture.lock().unwrap().is_some() {
+        return Ok(());
+    }
+    engine.monitor.lock().unwrap().take();
     let mut last_level = Instant::now();
     let capture = audio::capture(device_id, move |samples, _| {
         if last_level.elapsed() >= LEVEL_INTERVAL {
@@ -159,8 +169,13 @@ pub fn mic_monitor_start(
             let _ = app.emit("mic-level", audio::level(samples));
         }
     })?;
-    *engine.capture.lock().unwrap() = Some(capture);
+    *engine.monitor.lock().unwrap() = Some(capture);
     Ok(())
+}
+
+#[tauri::command]
+pub fn mic_monitor_stop(engine: State<'_, SpeechEngine>) {
+    engine.monitor.lock().unwrap().take();
 }
 
 /// Transcribes a whole 16 kHz mono recording; used by the tests

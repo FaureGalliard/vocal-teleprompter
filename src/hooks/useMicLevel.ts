@@ -19,7 +19,7 @@ export function useMicLevel(monitor: boolean, listening: boolean, deviceId: stri
         if (!monitor || listening) return
         invoke('mic_monitor_start', { deviceId }).catch((e) => console.warn(e))
         return () => {
-            invoke('speech_stop').catch(() => {})
+            invoke('mic_monitor_stop').catch(() => {})
             setLevel(0)
         }
     }, [monitor, listening, deviceId])
