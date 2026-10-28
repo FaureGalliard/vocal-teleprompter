@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Speech models for the tests (scripts/fetch-speech-models.ps1)
+.speech-models
