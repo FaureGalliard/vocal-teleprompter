@@ -152,6 +152,12 @@ export const pt: Messages = {
         hint: 'O reconhecimento de voz sempre ouve o microfone padrão do Windows. Para usar outro, troque-o no Windows.',
         change: 'Trocar no Windows',
         heard: 'O que o teleprompter ouve',
+        systemDefault: 'Padrão do sistema',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `Baixando o modelo de voz ${language}… ${p}%`,
+        failed: 'Não foi possível baixar o modelo de voz. Verifique a conexão e pressione Iniciar de novo',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const pt: Messages = {
         'audio-capture': 'Nenhum microfone encontrado',
         'language-not-supported': 'Idioma não suportado',
         network: 'Erro de rede, tentando novamente…',
+        'model-missing': 'O modelo de voz deste idioma ainda não está instalado',
+        'model-unreadable': 'Não foi possível carregar o modelo de voz; apague-o e baixe de novo',
+        'microphone-unavailable': 'Esse microfone não está disponível; escolha outro',
     },
 }

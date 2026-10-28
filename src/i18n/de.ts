@@ -152,6 +152,12 @@ export const de: Messages = {
         hint: 'Die Spracherkennung hört immer auf das Standardmikrofon von Windows. Um ein anderes zu nutzen, ändere es in Windows.',
         change: 'In Windows ändern',
         heard: 'Was der Prompter hört',
+        systemDefault: 'Systemstandard',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `Sprachmodell ${language} wird geladen… ${p}%`,
+        failed: 'Das Sprachmodell konnte nicht geladen werden. Prüfe die Verbindung und drücke erneut auf Starten',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const de: Messages = {
         'audio-capture': 'Kein Mikrofon gefunden',
         'language-not-supported': 'Sprache wird nicht unterstützt',
         network: 'Netzwerkfehler, neuer Versuch…',
+        'model-missing': 'Das Sprachmodell für diese Sprache ist noch nicht installiert',
+        'model-unreadable': 'Das Sprachmodell konnte nicht geladen werden; lösche es und lade es neu',
+        'microphone-unavailable': 'Dieses Mikrofon ist nicht verfügbar; wähle ein anderes',
     },
 }

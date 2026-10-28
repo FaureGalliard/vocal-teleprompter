@@ -11,6 +11,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { useMicLevel } from './hooks/useMicLevel'
+import { useSpeechModel } from './hooks/useSpeechModel'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -108,8 +109,10 @@ function App() {
 
     // Start a fresh session, after the countdown when one is set. Resuming from
     // a pause goes through setIsPaused instead and skips it.
-    const startListening = () => {
-        if (countdownTimerRef.current) return
+    const startListening = async () => {
+        if (countdownTimerRef.current || speechModel.downloading) return
+        // The first time in a language, fetch its speech model, then go on
+        if (speechModel.installed !== true && !(await speechModel.download())) return
         setIsEditing(false)
         setIsPaused(false)
         if (countdownSeconds <= 0) {
@@ -149,9 +152,12 @@ function App() {
     const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const isDraggingRef = useRef(false)
 
-    const { defaultMicrophone } = useMicrophones()
-    // Only measured while the microphone menu is open
-    const micLevel = useMicLevel(micMenuOpen)
+    const { microphones, refresh: refreshMicrophones } = useMicrophones()
+    // null listens to the system default input
+    const [selectedMic, setSelectedMic] = usePersistentState<string | null>('microphoneId', null)
+    // A remembered microphone may have been unplugged since last time
+    const activeMic = microphones.some((m) => m.id === selectedMic) ? selectedMic : null
+    const speechModel = useSpeechModel(language)
     const cards = useMemo(() => splitCards(content, language), [content, language])
     const scriptWords = useMemo(
         () => cards.flatMap((c) => c.segments.filter((s) => s.word !== -1).map((s) => s.text)),
@@ -167,9 +173,13 @@ function App() {
         heard: heardText,
     } = useSpeechRecognition({
         language,
+        deviceId: activeMic,
         onTranscript: processTranscript,
         enabled: isSpeechActive && !isPaused,
     })
+
+    // Measured while the microphone menu is open, to test the input
+    const micLevel = useMicLevel(micMenuOpen, isRecognizing, activeMic)
 
     const currentCard = currentCardIndex(cards, currentWordIndex)
     const pace = usePace({
@@ -624,11 +634,13 @@ function App() {
                     language={language}
                     langMenuOpen={langMenuOpen}
                     micMenuOpen={micMenuOpen}
-                    defaultMicrophone={defaultMicrophone}
+                    microphones={microphones}
+                    selectedMic={activeMic}
                     micLevel={micLevel}
-                    onOpenSoundSettings={() =>
-                        invoke('open_sound_settings').catch((e) => console.error(e))
-                    }
+                    onMicChange={(id) => {
+                        setSelectedMic(id)
+                        setMicMenuOpen(false)
+                    }}
                     onPasteText={handlePasteText}
                     onImport={handleImport}
                     onClear={handleClear}
@@ -647,6 +659,7 @@ function App() {
                         setMicMenuOpen(false)
                     }}
                     onMicMenuToggle={() => {
+                        if (!micMenuOpen) refreshMicrophones()
                         setMicMenuOpen((v) => !v)
                         setLangMenuOpen(false)
                     }}
@@ -799,6 +812,16 @@ function App() {
                         {...pace}
                         clickThrough={clickThrough}
                         heard={isSpeechActive && !isPaused ? heardText : ''}
+                        modelDownload={
+                            speechModel.downloading
+                                ? t.speechModel.downloading(
+                                      LANGUAGES.find((l) => l.value === language)?.label ?? language,
+                                      Math.round(speechModel.progress * 100),
+                                  )
+                                : speechModel.failed
+                                  ? t.speechModel.failed
+                                  : null
+                        }
                         error={error ? (t.errors[error] ?? error) : null}
                         rightInset={TOOLBAR_RAIL_WIDTH}
                     />

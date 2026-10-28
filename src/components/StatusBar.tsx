@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Mic, MousePointerClick, Timer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Mic, MousePointerClick, Timer } from 'lucide-react'
 import { useT } from '../i18n'
 import { formatDuration, type PaceStatus } from '../hooks/usePace'
 
@@ -19,6 +19,8 @@ interface StatusBarProps {
     // What the recognizer heard last, while listening
     heard: string
     error: string | null
+    // Progress or failure of a speech model download
+    modelDownload: string | null
     // Room kept free on the right for the toolbar
     rightInset: number
 }
@@ -50,6 +52,7 @@ export default function StatusBar({
     clickThrough,
     heard,
     error,
+    modelDownload,
     rightInset,
 }: StatusBarProps) {
     const t = useT()
@@ -93,7 +96,17 @@ export default function StatusBar({
                 )}
             </div>
 
-            {error && (
+            {modelDownload && (
+                <div className={`${pill} px-2.5 gap-1.5 text-[#7698fe] min-w-0 max-w-[50%] tabular-nums`}>
+                    <Download
+                        size={11}
+                        className="flex-shrink-0"
+                    />
+                    <span className="truncate">{modelDownload}</span>
+                </div>
+            )}
+
+            {error && !modelDownload && (
                 <div className={`${pill} px-2.5 text-red-300 min-w-0 max-w-[40%]`}>
                     <span className="truncate">{error}</span>
                 </div>

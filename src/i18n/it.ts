@@ -152,6 +152,12 @@ export const it: Messages = {
         hint: 'Il riconoscimento vocale ascolta sempre il microfono predefinito di Windows. Per usarne un altro, cambialo in Windows.',
         change: 'Cambia in Windows',
         heard: 'Cosa sente il gobbo',
+        systemDefault: 'Predefinito di sistema',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `Download del modello vocale ${language}… ${p}%`,
+        failed: 'Impossibile scaricare il modello vocale. Controlla la connessione e premi di nuovo Avvia',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const it: Messages = {
         'audio-capture': 'Nessun microfono trovato',
         'language-not-supported': 'Lingua non supportata',
         network: 'Errore di rete, nuovo tentativo…',
+        'model-missing': 'Il modello vocale di questa lingua non è ancora installato',
+        'model-unreadable': 'Impossibile caricare il modello vocale; eliminalo e scaricalo di nuovo',
+        'microphone-unavailable': 'Quel microfono non è disponibile; scegline un altro',
     },
 }

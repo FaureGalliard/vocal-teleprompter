@@ -39,18 +39,6 @@ pub fn run_mcp_server() {
     mcp::server::run()
 }
 
-/// Opens the Windows sound settings, where the default microphone (the one
-/// speech recognition listens to) is chosen
-#[tauri::command]
-fn open_sound_settings() -> Result<(), String> {
-    #[cfg(windows)]
-    std::process::Command::new("explorer")
-        .arg("ms-settings:sound")
-        .spawn()
-        .map_err(|e| e.to_string())?;
-    Ok(())
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -64,7 +52,6 @@ pub fn run() {
         .manage(speech::SpeechEngine::default())
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
-            open_sound_settings,
             speech::list_microphones,
             speech::speech_start,
             speech::speech_stop,

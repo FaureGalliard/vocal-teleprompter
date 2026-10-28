@@ -4,7 +4,7 @@ import {
     Check,
     CircleHelp,
     ClipboardPaste,
-    ExternalLink,
+    Check as Selected,
     FileUp,
     Mic,
     Pause,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { LANGUAGES } from '../constants/languages'
 import { useT } from '../i18n'
+import type { Microphone } from '../hooks/useMicrophones'
 
 const ICON = 14
 
@@ -36,10 +37,11 @@ interface ToolbarProps {
     language: string
     langMenuOpen: boolean
     micMenuOpen: boolean
-    // The system default input, the one speech recognition listens to
-    defaultMicrophone: string
+    microphones: Microphone[]
+    // null for the system default input
+    selectedMic: string | null
     micLevel: number
-    onOpenSoundSettings: () => void
+    onMicChange: (id: string | null) => void
     onPasteText: () => void
     onImport: () => void
     onClear: () => void
@@ -129,9 +131,10 @@ function ToolbarRail({
     language,
     langMenuOpen,
     micMenuOpen,
-    defaultMicrophone,
+    microphones,
+    selectedMic,
     micLevel,
-    onOpenSoundSettings,
+    onMicChange,
     onPasteText,
     onImport,
     onClear,
@@ -149,6 +152,8 @@ function ToolbarRail({
     const langMenuRef = useRef<HTMLDivElement>(null)
     const micMenuRef = useRef<HTMLDivElement>(null)
     const running = isSpeechActive || isCountingDown
+    const systemMic = microphones.find((m) => m.isDefault)
+    const currentMic = microphones.find((m) => m.id === selectedMic) ?? systemMic
 
     // Close the language and microphone menus on outside click
     useEffect(() => {
@@ -273,8 +278,8 @@ function ToolbarRail({
                 </button>
                 <RailTooltip
                     label={
-                        defaultMicrophone
-                            ? `${t.toolbar.microphone}: ${defaultMicrophone}`
+                        currentMic
+                            ? `${t.toolbar.microphone}: ${currentMic.name}`
                             : t.toolbar.microphone
                     }
                     hidden={micMenuOpen}
@@ -283,30 +288,49 @@ function ToolbarRail({
                     {micMenuOpen && (
                         <motion.div
                             {...menuMotion}
-                            className={`${menu} w-64 p-3 gap-2`}>
-                            <span className="text-[10px] font-medium uppercase tracking-wide text-white/40">
+                            className={`${menu} w-64 py-1`}>
+                            <span className="px-4 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
                                 {t.mic.title}
                             </span>
-                            <span
-                                className="text-[12px] text-white truncate"
-                                title={defaultMicrophone}>
-                                {defaultMicrophone || t.toolbar.noMicrophones}
-                            </span>
+                            {[
+                                {
+                                    id: null,
+                                    name: systemMic
+                                        ? `${t.mic.systemDefault} (${systemMic.name})`
+                                        : t.mic.systemDefault,
+                                },
+                                ...microphones.map((m) => ({ id: m.id as string | null, name: m.name })),
+                            ].map((mic) => (
+                                <button
+                                    key={mic.id ?? 'default'}
+                                    onClick={() => onMicChange(mic.id)}
+                                    title={mic.name}
+                                    className={`flex items-center gap-2 px-4 py-1.5 text-[11px] text-left transition-colors ${
+                                        selectedMic === mic.id
+                                            ? 'text-white'
+                                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                    }`}>
+                                    <Selected
+                                        size={12}
+                                        className={`flex-shrink-0 ${selectedMic === mic.id ? 'text-[#7698fe]' : 'invisible'}`}
+                                    />
+                                    <span className="truncate">{mic.name}</span>
+                                </button>
+                            ))}
+                            {microphones.length === 0 && (
+                                <span className="px-4 py-1.5 text-[11px] text-white/30">
+                                    {t.toolbar.noMicrophones}
+                                </span>
+                            )}
                             <div
-                                className="h-1.5 rounded-full bg-white/10 overflow-hidden"
+                                className="mx-4 my-2 h-1.5 rounded-full bg-white/10 overflow-hidden"
                                 title={t.mic.level}>
                                 <div
                                     className="h-full rounded-full bg-[#4ade80] transition-[width] duration-75"
                                     style={{ width: `${Math.round(micLevel * 100)}%` }}
                                 />
                             </div>
-                            <span className="text-[10px] text-white/40 leading-snug">{t.mic.hint}</span>
-                            <button
-                                onClick={onOpenSoundSettings}
-                                className="flex items-center justify-center gap-1.5 h-7 rounded-full bg-white/10 hover:bg-white/20 text-[11px] text-white transition-colors">
-                                <ExternalLink size={12} />
-                                {t.mic.change}
-                            </button>
+                            <span className="px-4 pb-2 text-[10px] text-white/40">{t.mic.level}</span>
                         </motion.div>
                     )}
                 </AnimatePresence>

@@ -152,6 +152,12 @@ export const ko: Messages = {
         hint: '음성 인식은 항상 Windows 기본 마이크를 사용합니다. 다른 마이크를 쓰려면 Windows에서 기본 장치를 바꾸세요.',
         change: 'Windows에서 변경',
         heard: '프롬프터가 듣는 내용',
+        systemDefault: '시스템 기본값',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `${language} 음성 모델 다운로드 중… ${p}%`,
+        failed: '음성 모델을 다운로드할 수 없습니다. 연결을 확인하고 다시 시작을 누르세요',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const ko: Messages = {
         'audio-capture': '마이크를 찾을 수 없습니다',
         'language-not-supported': '지원하지 않는 언어입니다',
         network: '네트워크 오류, 다시 시도하는 중…',
+        'model-missing': '이 언어의 음성 모델이 아직 설치되지 않았습니다',
+        'model-unreadable': '음성 모델을 불러올 수 없습니다. 삭제한 뒤 다시 다운로드하세요',
+        'microphone-unavailable': '그 마이크를 사용할 수 없습니다. 다른 마이크를 고르세요',
     },
 }

@@ -152,6 +152,12 @@ export const ja: Messages = {
         hint: '音声認識は常に Windows の既定のマイクを使います。別のマイクを使うには Windows で既定を変更してください。',
         change: 'Windows で変更',
         heard: 'プロンプターが聞き取った内容',
+        systemDefault: 'システムの既定',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `${language} の音声モデルをダウンロード中… ${p}%`,
+        failed: '音声モデルをダウンロードできませんでした。接続を確認して、もう一度開始を押してください',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const ja: Messages = {
         'audio-capture': 'マイクが見つかりません',
         'language-not-supported': 'この言語には対応していません',
         network: 'ネットワークエラー、再試行しています…',
+        'model-missing': 'この言語の音声モデルはまだインストールされていません',
+        'model-unreadable': '音声モデルを読み込めませんでした。削除して再ダウンロードしてください',
+        'microphone-unavailable': 'そのマイクは使用できません。別のマイクを選んでください',
     },
 }

@@ -150,6 +150,12 @@ export const en = {
         hint: 'Speech recognition always listens to the Windows default microphone. To use another one, change the default in Windows.',
         change: 'Change in Windows',
         heard: 'What the prompter hears',
+        systemDefault: 'System default',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `Downloading the ${language} speech model… ${p}%`,
+        failed: "Couldn't download the speech model. Check your connection and press Start again",
     },
 
     titleBar: {
@@ -183,6 +189,9 @@ export const en = {
         'audio-capture': 'No microphone found',
         'language-not-supported': 'Language not supported',
         network: 'Network error, retrying…',
+        'model-missing': 'The speech model for this language is not installed yet',
+        'model-unreadable': 'The speech model could not be loaded; delete it and download it again',
+        'microphone-unavailable': 'That microphone is not available; pick another one',
     } as Record<string, string>,
 }
 

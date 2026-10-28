@@ -1,118 +1,74 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-
-// Errors the recognizer cannot recover from by restarting
-const FATAL_ERRORS = new Set([
-    'not-allowed',
-    'service-not-allowed',
-    'audio-capture',
-    'language-not-supported',
-])
-// Errors that only mean "nothing heard yet" and are not worth showing
-const SILENT_ERRORS = new Set(['aborted', 'no-speech'])
-const RESTART_DELAY_MS = 1000
+import { useEffect, useRef, useState } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 
 interface UseSpeechRecognitionProps {
     language: string
+    // Microphone to listen to; null for the system default
+    deviceId: string | null
     onTranscript: (transcript: string) => void
     enabled: boolean
 }
 
-// The recognizer always listens to the system's default microphone. WebView2
-// only offers cloud recognition, which answers "network" when fed a specific
-// device's MediaStreamTrack, so choosing the input is left to Windows.
-export function useSpeechRecognition({ language, onTranscript, enabled }: UseSpeechRecognitionProps) {
+interface SpeechEvent {
+    text: string
+    isFinal: boolean
+}
+
+// Speech recognition runs natively (Vosk, see src-tauri/src/speech) on the
+// chosen microphone and reports the text of the current utterance as it
+// grows, which is what the script matcher expects.
+export function useSpeechRecognition({
+    language,
+    deviceId,
+    onTranscript,
+    enabled,
+}: UseSpeechRecognitionProps) {
     const [listening, setListening] = useState(false)
     const [error, setError] = useState<string | null>(null)
     // Latest words the recognizer heard, shown so the speaker can tell it works
     const [heard, setHeard] = useState('')
-    const recognitionRef = useRef<SpeechRecognition | null>(null)
-    const enabledRef = useRef(enabled)
-    const sessionRef = useRef(0)
-    const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    // The recognizer lives across renders, so read the latest callback
-    // instead of the one captured when it started
+    // Read the latest callback instead of the one captured when listening began
     const onTranscriptRef = useRef(onTranscript)
-
-    useEffect(() => {
-        enabledRef.current = enabled
-    }, [enabled])
-
     useEffect(() => {
         onTranscriptRef.current = onTranscript
     }, [onTranscript])
 
-    const stop = useCallback(() => {
-        sessionRef.current++
-        if (restartTimerRef.current) {
-            clearTimeout(restartTimerRef.current)
-            restartTimerRef.current = null
+    useEffect(() => {
+        const unlisten = listen<SpeechEvent>('speech', ({ payload }) => {
+            setHeard(payload.text)
+            onTranscriptRef.current(payload.text)
+        })
+        return () => {
+            unlisten.then((off) => off())
         }
-        if (recognitionRef.current) {
-            recognitionRef.current.onend = null
-            recognitionRef.current.stop()
-            recognitionRef.current = null
-        }
-        setListening(false)
-        setHeard('')
     }, [])
 
-    const start = useCallback(() => {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-        if (!SR) {
-            setError('unsupported')
+    useEffect(() => {
+        if (!enabled) {
+            setListening(false)
+            setHeard('')
+            invoke('speech_stop').catch(() => {})
             return
         }
-        const session = ++sessionRef.current
+        let cancelled = false
         setError(null)
-
-        const recognition = new SR()
-        recognition.continuous = true
-        recognition.interimResults = true
-        recognition.lang = language
-        recognition.maxAlternatives = 1
-
-        let fatal = false
-        let failed = false
-
-        recognition.onstart = () => setListening(true)
-        recognition.onerror = (e) => {
-            if (SILENT_ERRORS.has(e.error)) return
-            console.warn('Speech recognition error:', e.error)
-            setError(e.error)
-            if (FATAL_ERRORS.has(e.error)) fatal = true
-            else failed = true
+        invoke('speech_start', { language, deviceId })
+            .then(() => !cancelled && setListening(true))
+            .catch((e) => {
+                if (cancelled) return
+                console.warn('Speech recognition could not start:', e)
+                setError(String(e))
+                setListening(false)
+            })
+        return () => {
+            cancelled = true
         }
-        recognition.onend = () => {
-            setListening(false)
-            if (!enabledRef.current || fatal || session !== sessionRef.current) return
-            // Back off after a real failure (e.g. network) instead of spinning
-            const delay = failed ? RESTART_DELAY_MS : 0
-            failed = false
-            restartTimerRef.current = setTimeout(() => {
-                restartTimerRef.current = null
-                if (session === sessionRef.current) recognition.start()
-            }, delay)
-        }
-        recognition.onresult = (event) => {
-            setError(null)
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript.trim()
-                if (!transcript) continue
-                setHeard(transcript)
-                onTranscriptRef.current(transcript)
-            }
-        }
+    }, [enabled, language, deviceId])
 
-        recognitionRef.current = recognition
-        recognition.start()
-    }, [language])
-
-    useEffect(() => {
-        if (enabled) start()
-        else stop()
-        return () => stop()
-    }, [enabled, start, stop])
+    // Release the microphone when the app closes the hook for good
+    useEffect(() => () => void invoke('speech_stop').catch(() => {}), [])
 
     return { listening, error, heard }
 }

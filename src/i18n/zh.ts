@@ -152,6 +152,12 @@ export const zh: Messages = {
         hint: '语音识别始终使用 Windows 的默认麦克风。要换用其他麦克风，请在 Windows 中更改默认设备。',
         change: '在 Windows 中更改',
         heard: '提词器听到的内容',
+        systemDefault: '系统默认',
+    },
+
+    speechModel: {
+        downloading: (language: string, p: number) => `正在下载 ${language} 语音模型… ${p}%`,
+        failed: '无法下载语音模型。请检查网络后再次点击开始',
     },
 
     titleBar: {
@@ -185,5 +191,8 @@ export const zh: Messages = {
         'audio-capture': '未找到麦克风',
         'language-not-supported': '不支持该语言',
         network: '网络错误，正在重试…',
+        'model-missing': '该语言的语音模型尚未安装',
+        'model-unreadable': '无法加载语音模型，请删除后重新下载',
+        'microphone-unavailable': '该麦克风不可用，请选择其他麦克风',
     },
 }
