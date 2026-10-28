@@ -41,6 +41,9 @@ export const ja: Messages = {
         readingLineHint: '現在の行をカメラに近い上部に保ちます',
         clickThrough: 'クリックを透過',
         clickThroughHint: (keys: string) => `クリックが背後のアプリに届きます。${keys} かトレイアイコンで解除`,
+        countdown: 'カウントダウン',
+        countdownHint: '聞き取り開始前に準備する秒数',
+        countdownOff: 'オフ',
     },
 
     tour: {

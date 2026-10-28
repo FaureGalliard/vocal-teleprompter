@@ -41,6 +41,9 @@ export const pt: Messages = {
         readingLineHint: 'Mantém a linha atual no alto, perto da sua câmera',
         clickThrough: 'Cliques atravessam',
         clickThroughHint: (keys: string) => `Os cliques vão para o app de trás. Desative com ${keys} ou pelo ícone da bandeja`,
+        countdown: 'Contagem regressiva',
+        countdownHint: 'Segundos para se preparar antes de começar a ouvir',
+        countdownOff: 'Não',
     },
 
     tour: {

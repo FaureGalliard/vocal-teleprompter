@@ -39,6 +39,9 @@ export const en = {
         readingLineHint: 'Keeps the current line near the top, close to your camera',
         clickThrough: 'Click-through',
         clickThroughHint: (keys: string) => `Clicks go to the app behind. Turn off with ${keys} or the tray icon`,
+        countdown: 'Countdown',
+        countdownHint: 'Seconds to get ready before listening starts',
+        countdownOff: 'Off',
     },
 
     tour: {

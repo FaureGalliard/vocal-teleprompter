@@ -11,6 +11,7 @@ import {
     RotateCcw,
     Settings,
     Timer,
+    Hourglass,
     ScanLine,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
@@ -21,6 +22,7 @@ import ShortcutsSection from './ShortcutsSection'
 import type { useUpdater } from '../hooks/useUpdater'
 
 const PANEL_WIDTH = 288
+const COUNTDOWN_OPTIONS = [0, 3, 5, 10]
 
 
 interface SettingsPanelProps {
@@ -50,6 +52,8 @@ interface SettingsPanelProps {
     onShortcutChange: (action: GlobalAction, accelerator: string) => void
     onResetShortcuts: () => void
     onRecordingShortcut: (recording: boolean) => void
+    countdownSeconds: number
+    onCountdownSecondsChange: (val: number) => void
 }
 
 function Row({
@@ -102,6 +106,8 @@ export default function SettingsPanel({
     onShortcutChange,
     onResetShortcuts,
     onRecordingShortcut,
+    countdownSeconds,
+    onCountdownSecondsChange,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -232,6 +238,25 @@ export default function SettingsPanel({
                                 on={readingLine}
                                 onToggle={onToggleReadingLine}
                             />
+                        </Row>
+
+                        <Row
+                            icon={<Hourglass size={14} />}
+                            label={t.settings.countdown}
+                            hint={t.settings.countdownHint}>
+                            <select
+                                value={countdownSeconds}
+                                onChange={(e) => onCountdownSecondsChange(Number(e.target.value))}
+                                className="bg-white/10 text-white text-[11px] rounded-md px-2 py-1 outline-none cursor-pointer">
+                                {COUNTDOWN_OPTIONS.map((s) => (
+                                    <option
+                                        key={s}
+                                        value={s}
+                                        className="bg-[#242424]">
+                                        {s === 0 ? t.settings.countdownOff : `${s} s`}
+                                    </option>
+                                ))}
+                            </select>
                         </Row>
 
                         <Row

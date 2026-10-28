@@ -41,6 +41,9 @@ export const it: Messages = {
         readingLineHint: 'Tiene la riga corrente in alto, vicino alla videocamera',
         clickThrough: 'Clic passanti',
         clickThroughHint: (keys: string) => `I clic vanno all'app dietro. Disattiva con ${keys} o dall'icona nella barra`,
+        countdown: 'Conto alla rovescia',
+        countdownHint: "Secondi per prepararti prima che inizi l'ascolto",
+        countdownOff: 'No',
     },
 
     tour: {

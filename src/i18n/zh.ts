@@ -41,6 +41,9 @@ export const zh: Messages = {
         readingLineHint: '让当前行保持在上方，靠近摄像头',
         clickThrough: '点击穿透',
         clickThroughHint: (keys: string) => `点击会传到后面的应用。按 ${keys} 或通过托盘图标关闭`,
+        countdown: '倒计时',
+        countdownHint: '开始聆听前的准备秒数',
+        countdownOff: '关',
     },
 
     tour: {

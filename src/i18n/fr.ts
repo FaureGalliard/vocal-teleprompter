@@ -41,6 +41,9 @@ export const fr: Messages = {
         readingLineHint: 'Garde la ligne en cours en haut, près de votre caméra',
         clickThrough: 'Clics traversants',
         clickThroughHint: (keys: string) => `Les clics vont à l'application derrière. Désactivez avec ${keys} ou l'icône de la barre`,
+        countdown: 'Compte à rebours',
+        countdownHint: "Secondes pour vous préparer avant le début de l'écoute",
+        countdownOff: 'Non',
     },
 
     tour: {

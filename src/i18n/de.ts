@@ -41,6 +41,9 @@ export const de: Messages = {
         readingLineHint: 'Hält die aktuelle Zeile oben, nah an deiner Kamera',
         clickThrough: 'Klicks durchlassen',
         clickThroughHint: (keys: string) => `Klicks gehen an die App dahinter. Ausschalten mit ${keys} oder über das Tray-Symbol`,
+        countdown: 'Countdown',
+        countdownHint: 'Sekunden zum Bereitmachen, bevor das Zuhören beginnt',
+        countdownOff: 'Aus',
     },
 
     tour: {

@@ -80,6 +80,9 @@ interface ToolbarProps {
     onShortcutChange: (action: GlobalAction, accelerator: string) => void
     onResetShortcuts: () => void
     onRecordingShortcut: (recording: boolean) => void
+    countdownSeconds: number
+    onCountdownSecondsChange: (val: number) => void
+    isCountingDown: boolean
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -148,6 +151,9 @@ export default function Toolbar({
     onShortcutChange,
     onResetShortcuts,
     onRecordingShortcut,
+    countdownSeconds,
+    onCountdownSecondsChange,
+    isCountingDown,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -303,7 +309,7 @@ export default function Toolbar({
                             onClick={onToggleListen}
                             disabled={!content}
                             className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
-                                isSpeechActive
+                                isSpeechActive || isCountingDown
                                     ? 'bg-red-500 text-white hover:bg-red-600'
                                     : primary
                             } ${
@@ -312,8 +318,12 @@ export default function Toolbar({
                                     ? 'animate-pulse'
                                     : ''
                             }`}>
-                            {isSpeechActive ? <Square size={ICON} /> : <Play size={ICON} />}
-                            {isSpeechActive ? t.toolbar.stop : t.toolbar.start}
+                            {isSpeechActive || isCountingDown ? (
+                                <Square size={ICON} />
+                            ) : (
+                                <Play size={ICON} />
+                            )}
+                            {isSpeechActive || isCountingDown ? t.toolbar.stop : t.toolbar.start}
                         </button>
 
                         {isSpeechActive && (
@@ -560,6 +570,8 @@ export default function Toolbar({
                             onShortcutChange={onShortcutChange}
                             onResetShortcuts={onResetShortcuts}
                             onRecordingShortcut={onRecordingShortcut}
+                            countdownSeconds={countdownSeconds}
+                            onCountdownSecondsChange={onCountdownSecondsChange}
                         />
 
                         {error && (

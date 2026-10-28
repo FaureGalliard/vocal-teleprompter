@@ -23,6 +23,7 @@ import {
 } from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
+import CountdownOverlay from './components/CountdownOverlay'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -76,6 +77,41 @@ function App() {
     >('shortcutOverrides', {})
     const shortcutBindings = { ...GLOBAL_SHORTCUTS, ...shortcutOverrides }
     const [recordingShortcut, setRecordingShortcut] = useState(false)
+    // Seconds counted down before listening starts; 0 starts right away
+    const [countdownSeconds, setCountdownSeconds] = usePersistentState('countdownSeconds', 3)
+    const [countdown, setCountdown] = useState<number | null>(null)
+    const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    const cancelCountdown = () => {
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current)
+        countdownTimerRef.current = null
+        setCountdown(null)
+    }
+
+    // Start a fresh session, after the countdown when one is set. Resuming from
+    // a pause goes through setIsPaused instead and skips it.
+    const startListening = () => {
+        if (countdownTimerRef.current) return
+        setIsEditing(false)
+        setIsPaused(false)
+        if (countdownSeconds <= 0) {
+            setIsSpeechActive(true)
+            return
+        }
+        let left = countdownSeconds
+        setCountdown(left)
+        countdownTimerRef.current = setInterval(() => {
+            left -= 1
+            if (left > 0) {
+                setCountdown(left)
+                return
+            }
+            cancelCountdown()
+            setIsSpeechActive(true)
+        }, 1000)
+    }
+
+    useEffect(() => cancelCountdown, [])
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -140,7 +176,8 @@ function App() {
             toggleListening: () => {
                 if (!content || isEditing) return
                 if (isSpeechActive) setIsPaused((v) => !v)
-                else setIsSpeechActive(true)
+                else if (countdown !== null) cancelCountdown()
+                else startListening()
             },
             nextCard: () =>
                 cards.length > 1 ? goToCard(currentCard + 1) : jumpTo(currentWordIndex + 10),
@@ -235,10 +272,17 @@ function App() {
     }
 
     const handleToggleListen = () => {
-        setIsEditing(false)
-        setIsSpeechActive((v) => !v)
-        setIsPaused(false)
-        if (isSpeechActive) reset()
+        if (countdown !== null) {
+            cancelCountdown()
+            return
+        }
+        if (isSpeechActive) {
+            setIsSpeechActive(false)
+            setIsPaused(false)
+            reset()
+        } else {
+            startListening()
+        }
     }
 
     useEffect(() => {
@@ -316,9 +360,14 @@ function App() {
                 case ' ':
                     if (!content) return
                     if (isSpeechActive) setIsPaused((v) => !v)
-                    else setIsSpeechActive(true)
+                    else if (countdown !== null) cancelCountdown()
+                    else startListening()
                     break
                 case 'Escape':
+                    if (countdown !== null) {
+                        cancelCountdown()
+                        break
+                    }
                     if (!isSpeechActive) return
                     setIsSpeechActive(false)
                     setIsPaused(false)
@@ -374,6 +423,8 @@ function App() {
         setFontSize,
         cards,
         currentCard,
+        countdown,
+        countdownSeconds,
     ])
 
     // With auto contrast the chosen color is nudged until it reads well on the
@@ -476,6 +527,9 @@ function App() {
                     }
                     onResetShortcuts={() => setShortcutOverrides({})}
                     onRecordingShortcut={setRecordingShortcut}
+                    countdownSeconds={countdownSeconds}
+                    onCountdownSecondsChange={setCountdownSeconds}
+                    isCountingDown={countdown !== null}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()
@@ -545,6 +599,12 @@ function App() {
                     readingLine={readingLine}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     titleBarPosition={titleBarPosition}
+                />
+
+                <CountdownOverlay
+                    value={countdown}
+                    color={displayTextColor}
+                    halo={textHalo}
                 />
 
                 <UpdateBanner
