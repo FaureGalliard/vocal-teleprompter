@@ -1,3 +1,5 @@
+mod mcp;
+
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
@@ -30,6 +32,12 @@ fn set_tray_labels(
     Ok(())
 }
 
+/// `vocal-teleprompter --mcp`: serve AI assistants over stdio instead of
+/// opening the window
+pub fn run_mcp_server() {
+    mcp::server::run()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -39,8 +47,16 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![set_tray_labels])
+        .manage(mcp::bridge::Bridge::default())
+        .invoke_handler(tauri::generate_handler![
+            set_tray_labels,
+            mcp::bridge::mcp_respond,
+            mcp::bridge::mcp_ready
+        ])
         .setup(|app| {
+            if let Err(e) = mcp::bridge::start(app.handle()) {
+                eprintln!("AI connector bridge unavailable: {e}");
+            }
             let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
             let hide = MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?;
             // Way back out of click-through mode, since the window takes no clicks then

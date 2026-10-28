@@ -25,6 +25,8 @@ import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
 import CountdownOverlay from './components/CountdownOverlay'
 import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
+import { useMcpBridge } from './hooks/useMcpBridge'
+import { DEFAULT_WPM } from './hooks/usePace'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -197,6 +199,73 @@ function App() {
                     await win.setFocus()
                 }
             },
+        },
+    })
+
+    const stopListening = () => {
+        cancelCountdown()
+        setIsSpeechActive(false)
+        setIsPaused(false)
+    }
+
+    // Requests from AI assistants through the MCP connector
+    const minutesFor = (words: number) => Math.round((words / DEFAULT_WPM) * 10) / 10
+    const describeScript = (text: string) => {
+        const scriptCards = splitCards(text, language)
+        const words = scriptCards.reduce((sum, c) => sum + c.wordCount, 0)
+        return { slides: scriptCards.length, words, estimatedMinutes: minutesFor(words) }
+    }
+    useMcpBridge({
+        load_script: ({ text, mode }) => {
+            if (typeof text !== 'string' || !text.trim()) throw new Error('text must be a non-empty string')
+            const next =
+                mode === 'append' && content.trim() ? `${content.trimEnd()}\n\n---\n\n${text}` : text
+            stopListening()
+            setIsEditing(false)
+            setContent(next)
+            reset()
+            return { loaded: true, ...describeScript(next) }
+        },
+        get_script: () => ({ text: content, ...describeScript(content) }),
+        get_status: () => ({
+            ...describeScript(content),
+            speechLanguage: language,
+            targetMinutes: targetMinutes || null,
+            listening: isSpeechActive,
+            paused: isPaused,
+            countingDown: countdown !== null,
+            currentSlide: currentCard + 1,
+            spokenWords: currentWordIndex + 1,
+            elapsedSeconds: Math.round(pace.elapsedMs / 1000),
+            wordsPerMinute: pace.wpm === null ? null : Math.round(pace.wpm),
+            remainingMinutes: Math.round((pace.remainingMs / 60000) * 10) / 10,
+            pace: pace.status,
+        }),
+        control: ({ action }) => {
+            switch (action) {
+                case 'start':
+                    if (!content.trim()) throw new Error('There is no script to read yet')
+                    if (!isSpeechActive) startListening()
+                    break
+                case 'pause':
+                    setIsPaused(true)
+                    break
+                case 'resume':
+                    setIsPaused(false)
+                    break
+                case 'stop':
+                    stopListening()
+                    break
+                case 'next_slide':
+                    goToCard(currentCard + 1)
+                    break
+                case 'previous_slide':
+                    goToCard(currentCard - 1)
+                    break
+                default:
+                    throw new Error(`Unknown action: ${String(action)}`)
+            }
+            return { done: action }
         },
     })
 

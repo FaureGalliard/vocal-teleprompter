@@ -2,5 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    vocal_teleprompter_lib::run()
+    if std::env::args().any(|arg| arg == "--mcp") {
+        vocal_teleprompter_lib::run_mcp_server()
+    } else {
+        vocal_teleprompter_lib::run()
+    }
 }
