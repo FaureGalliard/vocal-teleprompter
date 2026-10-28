@@ -156,8 +156,12 @@ export const es: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `Descargando el modelo de voz ${language}… ${p}%`,
         failed: 'No se pudo descargar el modelo de voz. Revisa tu conexión y pulsa Iniciar otra vez',
+        title: (language: string) => `Descargando el modelo de voz: ${language}`,
+        hint: 'Hace falta una sola vez para entender este idioma. El teleprompter empieza a escuchar en cuanto esté listo.',
+        failedTitle: 'No se pudo descargar el modelo de voz',
+        retry: 'Reintentar',
+        waiting: 'Esperando el modelo de voz…',
     },
 
     titleBar: {

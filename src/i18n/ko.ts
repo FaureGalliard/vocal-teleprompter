@@ -156,8 +156,12 @@ export const ko: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `${language} 음성 모델 다운로드 중… ${p}%`,
         failed: '음성 모델을 다운로드할 수 없습니다. 연결을 확인하고 다시 시작을 누르세요',
+        title: (language: string) => `음성 모델 다운로드 중: ${language}`,
+        hint: '이 언어를 인식하려면 한 번만 필요합니다. 준비되면 바로 듣기를 시작합니다.',
+        failedTitle: '음성 모델을 다운로드하지 못했습니다',
+        retry: '다시 시도',
+        waiting: '음성 모델을 기다리는 중…',
     },
 
     titleBar: {

@@ -156,8 +156,12 @@ export const de: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `Sprachmodell ${language} wird geladen… ${p}%`,
         failed: 'Das Sprachmodell konnte nicht geladen werden. Prüfe die Verbindung und drücke erneut auf Starten',
+        title: (language: string) => `Sprachmodell wird geladen: ${language}`,
+        hint: 'Wird einmal benötigt, um diese Sprache zu verstehen. Der Prompter hört zu, sobald es bereit ist.',
+        failedTitle: 'Das Sprachmodell wurde nicht geladen',
+        retry: 'Erneut versuchen',
+        waiting: 'Warte auf das Sprachmodell…',
     },
 
     titleBar: {

@@ -156,8 +156,12 @@ export const it: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `Download del modello vocale ${language}… ${p}%`,
         failed: 'Impossibile scaricare il modello vocale. Controlla la connessione e premi di nuovo Avvia',
+        title: (language: string) => `Download del modello vocale: ${language}`,
+        hint: 'Serve una sola volta per capire questa lingua. Il gobbo inizia ad ascoltare appena è pronto.',
+        failedTitle: 'Il modello vocale non è stato scaricato',
+        retry: 'Riprova',
+        waiting: 'In attesa del modello vocale…',
     },
 
     titleBar: {

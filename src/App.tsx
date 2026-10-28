@@ -12,6 +12,7 @@ import { useScriptMatcher } from './hooks/useScriptMatcher'
 import { useMicrophones } from './hooks/useMicrophones'
 import { useMicLevel } from './hooks/useMicLevel'
 import { useSpeechModel } from './hooks/useSpeechModel'
+import ModelDownloadCard from './components/ModelDownloadCard'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -158,6 +159,11 @@ function App() {
     // A remembered microphone may have been unplugged since last time
     const activeMic = microphones.some((m) => m.id === selectedMic) ? selectedMic : null
     const speechModel = useSpeechModel(language)
+    // Fetch a missing model as soon as its language is picked, not only on Start
+    useEffect(() => {
+        if (speechModel.installed === false && !speechModel.downloading && !speechModel.failed)
+            speechModel.download()
+    }, [speechModel.installed])
     const cards = useMemo(() => splitCards(content, language), [content, language])
     const scriptWords = useMemo(
         () => cards.flatMap((c) => c.segments.filter((s) => s.word !== -1).map((s) => s.text)),
@@ -650,6 +656,7 @@ function App() {
                     onTogglePause={() => setIsPaused((v) => !v)}
                     onShowTutorial={showTutorial}
                     isCountingDown={countdown !== null}
+                    isDownloadingModel={speechModel.downloading}
                     onLanguageChange={(val) => {
                         setLanguage(val)
                         setLangMenuOpen(false)
@@ -779,6 +786,15 @@ function App() {
                     titleBarPosition={titleBarPosition}
                 />
 
+                <ModelDownloadCard
+                    language={LANGUAGES.find((l) => l.value === language)?.name ?? language}
+                    downloading={speechModel.downloading}
+                    failed={speechModel.failed}
+                    received={speechModel.received}
+                    total={speechModel.total}
+                    onRetry={() => speechModel.download()}
+                />
+
                 <CountdownOverlay
                     value={countdown}
                     color={displayTextColor}
@@ -812,16 +828,6 @@ function App() {
                         {...pace}
                         clickThrough={clickThrough}
                         heard={isSpeechActive && !isPaused ? heardText : ''}
-                        modelDownload={
-                            speechModel.downloading
-                                ? t.speechModel.downloading(
-                                      LANGUAGES.find((l) => l.value === language)?.label ?? language,
-                                      Math.round(speechModel.progress * 100),
-                                  )
-                                : speechModel.failed
-                                  ? t.speechModel.failed
-                                  : null
-                        }
                         error={error ? (t.errors[error] ?? error) : null}
                         rightInset={TOOLBAR_RAIL_WIDTH}
                     />

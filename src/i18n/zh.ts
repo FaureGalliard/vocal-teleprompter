@@ -156,8 +156,12 @@ export const zh: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `正在下载 ${language} 语音模型… ${p}%`,
         failed: '无法下载语音模型。请检查网络后再次点击开始',
+        title: (language: string) => `正在下载语音模型：${language}`,
+        hint: '识别该语言只需下载一次。准备好后提词器会立即开始聆听。',
+        failedTitle: '语音模型下载失败',
+        retry: '重试',
+        waiting: '正在等待语音模型…',
     },
 
     titleBar: {

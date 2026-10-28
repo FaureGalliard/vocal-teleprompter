@@ -154,8 +154,12 @@ export const en = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `Downloading the ${language} speech model… ${p}%`,
         failed: "Couldn't download the speech model. Check your connection and press Start again",
+        title: (language: string) => `Downloading the ${language} speech model`,
+        hint: 'Needed once to understand this language. The prompter starts listening as soon as it is ready.',
+        failedTitle: 'The speech model did not download',
+        retry: 'Try again',
+        waiting: 'Waiting for the speech model…',
     },
 
     titleBar: {

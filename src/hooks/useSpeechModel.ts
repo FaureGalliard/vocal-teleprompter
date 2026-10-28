@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -12,10 +12,16 @@ interface DownloadProgress {
 export function useSpeechModel(language: string) {
     const [installed, setInstalled] = useState<boolean | null>(null)
     const [downloading, setDownloading] = useState(false)
-    const [progress, setProgress] = useState(0)
+    const [received, setReceived] = useState(0)
+    const [total, setTotal] = useState(0)
     const [failed, setFailed] = useState(false)
+    // A download that finishes after the language changed must not mark the
+    // new language as installed
+    const languageRef = useRef(language)
 
     useEffect(() => {
+        languageRef.current = language
+        setDownloading(false)
         setInstalled(null)
         setFailed(false)
         invoke<{ installed: boolean }>('speech_model_status', { language })
@@ -25,8 +31,9 @@ export function useSpeechModel(language: string) {
 
     useEffect(() => {
         const unlisten = listen<DownloadProgress>('model-download', ({ payload }) => {
-            if (payload.language === language && payload.total > 0)
-                setProgress(payload.received / payload.total)
+            if (payload.language !== language) return
+            setReceived(payload.received)
+            setTotal(payload.total)
         })
         return () => {
             unlisten.then((off) => off())
@@ -37,19 +44,21 @@ export function useSpeechModel(language: string) {
     const download = useCallback(async () => {
         setDownloading(true)
         setFailed(false)
-        setProgress(0)
+        setReceived(0)
+        setTotal(0)
+        const current = () => languageRef.current === language
         try {
             await invoke('download_speech_model', { language })
-            setInstalled(true)
-            return true
+            if (current()) setInstalled(true)
+            return current()
         } catch (e) {
             console.error('Speech model download failed:', e)
-            setFailed(true)
+            if (current()) setFailed(true)
             return false
         } finally {
-            setDownloading(false)
+            if (current()) setDownloading(false)
         }
     }, [language])
 
-    return { installed, downloading, progress, failed, download }
+    return { installed, downloading, received, total, failed, download }
 }

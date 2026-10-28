@@ -32,6 +32,8 @@ interface ToolbarProps {
     isSpeechActive: boolean
     isPaused: boolean
     isCountingDown: boolean
+    // Start waits for the speech model of the chosen language
+    isDownloadingModel: boolean
     content: string
     isEditing: boolean
     language: string
@@ -126,6 +128,7 @@ function ToolbarRail({
     isSpeechActive,
     isPaused,
     isCountingDown,
+    isDownloadingModel,
     content,
     isEditing,
     language,
@@ -209,9 +212,15 @@ function ToolbarRail({
 
             <RailButton
                 tour="start"
-                label={running ? t.toolbar.stop : t.toolbar.start}
+                label={
+                    isDownloadingModel
+                        ? t.speechModel.waiting
+                        : running
+                          ? t.toolbar.stop
+                          : t.toolbar.start
+                }
                 onClick={onToggleListen}
-                disabled={!content}
+                disabled={!content || isDownloadingModel}
                 className={`${running ? 'bg-red-500 text-white hover:bg-red-600' : primary} ${
                     // Session on but the recognizer is (re)connecting
                     isSpeechActive && !isPaused && !isRecognizing ? 'animate-pulse' : ''

@@ -156,8 +156,12 @@ export const ja: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `${language} の音声モデルをダウンロード中… ${p}%`,
         failed: '音声モデルをダウンロードできませんでした。接続を確認して、もう一度開始を押してください',
+        title: (language: string) => `音声モデルをダウンロード中：${language}`,
+        hint: 'この言語を認識するために一度だけ必要です。準備ができるとすぐに聞き取りを始めます。',
+        failedTitle: '音声モデルをダウンロードできませんでした',
+        retry: '再試行',
+        waiting: '音声モデルを待っています…',
     },
 
     titleBar: {

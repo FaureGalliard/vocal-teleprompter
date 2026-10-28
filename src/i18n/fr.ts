@@ -156,8 +156,12 @@ export const fr: Messages = {
     },
 
     speechModel: {
-        downloading: (language: string, p: number) => `Téléchargement du modèle vocal ${language}… ${p}%`,
         failed: 'Impossible de télécharger le modèle vocal. Vérifiez la connexion et appuyez de nouveau sur Démarrer',
+        title: (language: string) => `Téléchargement du modèle vocal : ${language}`,
+        hint: "Nécessaire une seule fois pour comprendre cette langue. Le prompteur écoute dès qu'il est prêt.",
+        failedTitle: "Le modèle vocal n'a pas pu être téléchargé",
+        retry: 'Réessayer',
+        waiting: 'En attente du modèle vocal…',
     },
 
     titleBar: {
