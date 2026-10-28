@@ -141,6 +141,11 @@ export const ko: Messages = {
         restart: (app: string) => `완료. ${app}을(를) 다시 시작하면 사용할 수 있습니다`,
     },
 
+    appearance: {
+        title: '모양',
+        opacity: '배경 불투명도',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',

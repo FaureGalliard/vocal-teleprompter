@@ -141,6 +141,11 @@ export const de: Messages = {
         restart: (app: string) => `Fertig. Starte ${app} neu, um ihn zu nutzen`,
     },
 
+    appearance: {
+        title: 'Darstellung',
+        opacity: 'Deckkraft des Hintergrunds',
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',

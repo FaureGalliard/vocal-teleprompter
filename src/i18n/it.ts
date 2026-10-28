@@ -141,6 +141,11 @@ export const it: Messages = {
         restart: (app: string) => `Fatto. Riavvia ${app} per usarlo`,
     },
 
+    appearance: {
+        title: 'Aspetto',
+        opacity: 'Opacità dello sfondo',
+    },
+
     titleBar: {
         moveDown: 'Sposta in basso',
         moveUp: 'Sposta in alto',

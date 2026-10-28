@@ -141,6 +141,11 @@ export const ja: Messages = {
         restart: (app: string) => `完了しました。${app} を再起動してください`,
     },
 
+    appearance: {
+        title: '表示',
+        opacity: '背景の不透明度',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

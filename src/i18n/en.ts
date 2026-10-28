@@ -139,6 +139,11 @@ export const en = {
         restart: (app: string) => `Done. Restart ${app} to use it`,
     },
 
+    appearance: {
+        title: 'Appearance',
+        opacity: 'Background opacity',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

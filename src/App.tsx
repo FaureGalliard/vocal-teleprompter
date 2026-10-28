@@ -1,6 +1,8 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
+import AppearancePanel from './components/AppearancePanel'
+import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
 import { readText } from '@tauri-apps/plugin-clipboard-manager'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -51,6 +53,7 @@ function App() {
     const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
+    const [toolbarHeight, setToolbarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
     const [typography, setTypography] = usePersistentState<Typography>(
@@ -132,8 +135,6 @@ function App() {
         window.addEventListener('touchend', onUp)
     }
 
-    const handleColorPickerOpen = () => setIsAdjusting(true)
-    const handleColorPickerClose = () => setIsAdjusting(false)
     const [language, setLanguage] = usePersistentState('language', 'en-US')
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
@@ -347,11 +348,6 @@ function App() {
         setIsPaused(false)
     }
 
-    const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = parseInt(e.target.value)
-        if (!isNaN(val) && val >= 6 && val <= 200) setFontSize(val)
-    }
-
     // Listening and editing exclude each other: the script must hold still
     const handleToggleEdit = () => {
         setEditCaret(null)
@@ -557,22 +553,7 @@ function App() {
                     isPaused={isPaused}
                     error={error}
                     content={content}
-                    fontSize={fontSize}
-                    bgColor={bgColor}
-                    bgOpacity={bgOpacity}
-                    textColor={textColor}
-                    titleBarVisible={titleBarVisible}
-                    hiddenFromCapture={hiddenFromCapture}
                     language={language}
-                    uiLanguage={uiLanguage}
-                    onUiLanguageChange={(val) => {
-                        // Swap the welcome script along with the language, unless it was edited
-                        if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
-                            setContent(getMessages(val).sampleScript)
-                            reset()
-                        }
-                        setUiLanguage(val)
-                    }}
                     langMenuOpen={langMenuOpen}
                     micMenuOpen={micMenuOpen}
                     selectedMic={activeMic}
@@ -584,53 +565,8 @@ function App() {
                     onToggleEdit={handleToggleEdit}
                     onToggleListen={handleToggleListen}
                     onTogglePause={() => setIsPaused((v) => !v)}
-                    onFontSizeChange={handleFontSizeChange}
-                    onBgColorChange={setBgColor}
-                    onBgOpacityChange={setBgOpacity}
-                    onTextColorChange={setTextColor}
-                    onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
-                    autoContrast={autoContrast}
-                    onToggleAutoContrast={() => setAutoContrast((v) => !v)}
                     onShowTutorial={showTutorial}
-                    targetMinutes={targetMinutes}
-                    onTargetMinutesChange={setTargetMinutes}
-                    readingLine={readingLine}
-                    onToggleReadingLine={() => setReadingLine((v) => !v)}
-                    clickThrough={clickThrough}
-                    onToggleClickThrough={() => setClickThrough((v) => !v)}
-                    autoUpdate={autoUpdate}
-                    onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
-                    updater={updater}
-                    shortcutsEnabled={shortcutsEnabled}
-                    shortcutBindings={shortcutBindings}
-                    failedShortcuts={failedShortcuts}
-                    onToggleShortcuts={() => setShortcutsEnabled((v) => !v)}
-                    onShortcutChange={(action, accelerator) =>
-                        setShortcutOverrides((o) =>
-                            accelerator === GLOBAL_SHORTCUTS[action]
-                                ? Object.fromEntries(
-                                      Object.entries(o).filter(([a]) => a !== action),
-                                  )
-                                : { ...o, [action]: accelerator },
-                        )
-                    }
-                    onResetShortcuts={() => setShortcutOverrides({})}
-                    onRecordingShortcut={setRecordingShortcut}
-                    countdownSeconds={countdownSeconds}
-                    onCountdownSecondsChange={setCountdownSeconds}
                     isCountingDown={countdown !== null}
-                    typography={typography}
-                    onTypographyChange={setTypography}
-                    aiConnectorEnabled={aiConnectorEnabled}
-                    onToggleAiConnector={() => setAiConnectorEnabled((v) => !v)}
-                    onReset={() => {
-                        clearPersistentState()
-                        window.location.reload()
-                    }}
-                    onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
-                    onAdjustStart={() => handleAdjustStart()}
-                    onColorPickerOpen={() => handleColorPickerOpen()}
-                    onColorPickerClose={() => handleColorPickerClose()}
                     onLanguageChange={(val) => {
                         setLanguage(val)
                         setLangMenuOpen(false)
@@ -647,6 +583,74 @@ function App() {
                         setMicMenuOpen((v) => !v)
                         setLangMenuOpen(false)
                     }}
+                    onHeightChange={setToolbarHeight}
+                    appearance={
+                        <AppearancePanel
+                            fontSize={fontSize}
+                            bgColor={bgColor}
+                            bgOpacity={bgOpacity}
+                            textColor={textColor}
+                            onBgColorChange={setBgColor}
+                            onBgOpacityChange={setBgOpacity}
+                            onTextColorChange={setTextColor}
+                            typography={typography}
+                            onTypographyChange={setTypography}
+                            onAdjustStart={() => handleAdjustStart()}
+                            onFontSizeChange={setFontSize}
+                        />
+                    }
+                    settings={
+                        <SettingsPanel
+                            titleBarVisible={titleBarVisible}
+                            hiddenFromCapture={hiddenFromCapture}
+                            uiLanguage={uiLanguage}
+                            onUiLanguageChange={(val) => {
+                                // Swap the welcome script along with the language, unless it was edited
+                                if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
+                                    setContent(getMessages(val).sampleScript)
+                                    reset()
+                                }
+                                setUiLanguage(val)
+                            }}
+                            onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                            autoContrast={autoContrast}
+                            onToggleAutoContrast={() => setAutoContrast((v) => !v)}
+                            onShowTutorial={showTutorial}
+                            targetMinutes={targetMinutes}
+                            onTargetMinutesChange={setTargetMinutes}
+                            readingLine={readingLine}
+                            onToggleReadingLine={() => setReadingLine((v) => !v)}
+                            clickThrough={clickThrough}
+                            onToggleClickThrough={() => setClickThrough((v) => !v)}
+                            autoUpdate={autoUpdate}
+                            onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
+                            updater={updater}
+                            shortcutsEnabled={shortcutsEnabled}
+                            shortcutBindings={shortcutBindings}
+                            failedShortcuts={failedShortcuts}
+                            onToggleShortcuts={() => setShortcutsEnabled((v) => !v)}
+                            onShortcutChange={(action, accelerator) =>
+                                setShortcutOverrides((o) =>
+                                    accelerator === GLOBAL_SHORTCUTS[action]
+                                        ? Object.fromEntries(
+                                              Object.entries(o).filter(([a]) => a !== action),
+                                          )
+                                        : { ...o, [action]: accelerator },
+                                )
+                            }
+                            onResetShortcuts={() => setShortcutOverrides({})}
+                            onRecordingShortcut={setRecordingShortcut}
+                            countdownSeconds={countdownSeconds}
+                            onCountdownSecondsChange={setCountdownSeconds}
+                            aiConnectorEnabled={aiConnectorEnabled}
+                            onToggleAiConnector={() => setAiConnectorEnabled((v) => !v)}
+                            onReset={() => {
+                                clearPersistentState()
+                                window.location.reload()
+                            }}
+                            onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
+                        />
+                    }
                 />
 
                 <button
@@ -692,6 +696,7 @@ function App() {
                     readingLine={readingLine}
                     typography={typography}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
+                    toolbarHeight={toolbarHeight}
                     titleBarPosition={titleBarPosition}
                 />
 

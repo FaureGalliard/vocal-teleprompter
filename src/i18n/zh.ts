@@ -141,6 +141,11 @@ export const zh: Messages = {
         restart: (app: string) => `完成。重启 ${app} 后即可使用`,
     },
 
+    appearance: {
+        title: '外观',
+        opacity: '背景不透明度',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

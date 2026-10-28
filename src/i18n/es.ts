@@ -141,6 +141,11 @@ export const es: Messages = {
         restart: (app: string) => `Listo. Reinicia ${app} para usarlo`,
     },
 
+    appearance: {
+        title: 'Apariencia',
+        opacity: 'Opacidad del fondo',
+    },
+
     titleBar: {
         moveDown: 'Mover abajo',
         moveUp: 'Mover arriba',
