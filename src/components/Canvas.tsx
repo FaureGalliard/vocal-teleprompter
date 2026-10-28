@@ -2,6 +2,9 @@ import { useRef, useEffect } from 'react'
 import type { Card, CardSegment } from '../lib/cards'
 import { FONTS, type Typography } from '../lib/typography'
 import { scrollTarget, type Scrolling } from '../lib/scrolling'
+
+// How many of the words already read keep nearly full strength
+const RECENT_WORDS = 15
 import { useT } from '../i18n'
 
 
@@ -97,6 +100,10 @@ export default function Canvas({
     }, [currentWordIndex, heard, scrolling, fontSize, typography.lineHeight])
 
     let prevWord = -1
+    // Words just read stay almost as bright, so the speaker can glance back
+    // (or find their place if the marker ran ahead); older ones fade
+    const pastColor = (word: number) =>
+        currentWordIndex - word <= RECENT_WORDS ? `${textColor}d9` : `${textColor}73`
     // The reading line marks where fixed scrolling holds the current line
     const showReadingLine = readingLine && scrolling.mode === 'fixed'
     const readingLineAt = scrolling.anchor
@@ -121,10 +128,7 @@ export default function Canvas({
                 <span
                     key={s}
                     style={{
-                        color:
-                            prevWord < currentWordIndex
-                                ? `${textColor}50`
-                                : textColor,
+                        color: prevWord < currentWordIndex ? pastColor(prevWord) : textColor,
                         backgroundColor:
                             prevWord >= currentWordIndex &&
                             prevWord < currentWordIndex + 8
@@ -158,7 +162,7 @@ export default function Canvas({
                     color: isCurrentWord
                         ? '#1a1a1a'
                         : isPast
-                          ? `${textColor}50`
+                          ? pastColor(i)
                           : textColor,
                     backgroundColor: isCurrentWord
                         ? '#facc15'
