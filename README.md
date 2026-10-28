@@ -124,7 +124,8 @@ like *"Prepare a 10-minute presentation about my thesis, one card per slide"* an
 shows up ready to read, already split into slide cards and sized to your time.
 
 **Connect it:** open **Settings → AI connector** and click **Connect** next to Claude
-Desktop, Cursor or VS Code, then restart that app. For any other MCP client, use
+Desktop, Claude Code, Cursor or VS Code, then restart that app (or open a new Claude Code
+session). For any other MCP client, use
 **Copy the config**, or add this by hand:
 
 ```json
@@ -141,18 +142,27 @@ Desktop, Cursor or VS Code, then restart that app. For any other MCP client, use
 Use the path where the app is installed: `C:\Program Files\vocal-teleprompter` for the
 `.msi`, `%LOCALAPPDATA%\vocal-teleprompter` for the `.exe` installer.
 
-**Claude Code:** from Git Bash, `cmd` or PowerShell 7, run
+**Claude Code by hand:** register it in the **user scope**, so every session in every
+folder gets it (without `-s user` it only works in the folder where you ran the command):
 
 ```bash
-claude mcp add vocal-teleprompter -- "C:\Program Files\vocal-teleprompter\vocal-teleprompter.exe" --mcp
+claude mcp add -s user vocal-teleprompter -- "C:\Program Files\vocal-teleprompter\vocal-teleprompter.exe" --mcp
 ```
 
-then `claude mcp list` should show it as connected, and new sessions get its tools. In
-Windows PowerShell 5.1, add `--%` right after `claude` (`claude --% mcp add ...`): that shell
-drops the `--` otherwise, and `claude` then rejects `--mcp`.
+```bash
+claude mcp list
+```
 
-> Testing the connector by piping JSON into it from Windows PowerShell 5.1 prints nothing,
-> because that shell does not connect pipes to Windows GUI apps. MCP clients and Git Bash do.
+It should show `vocal-teleprompter ... ✓ Connected`; open a new session to get its tools.
+To check the connector itself, ask it for the prompter's status (the app opens if closed):
+
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_status","arguments":{}}}' | "/c/Program Files/vocal-teleprompter/vocal-teleprompter.exe" --mcp
+```
+
+> These are bash commands (Git Bash on Windows). Windows PowerShell 5.1 drops the `--` in
+> `claude mcp add` (put `--%` right after `claude`) and does not pipe input into GUI apps, so
+> the check above prints nothing there.
 
 What the assistant can do:
 
