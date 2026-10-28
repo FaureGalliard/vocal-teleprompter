@@ -164,6 +164,16 @@ export const pt: Messages = {
         waiting: 'Aguardando o modelo de voz…',
     },
 
+    scrolling: {
+        title: 'Rolagem',
+        ahead: 'Linhas abaixo',
+        fixed: 'Linha fixa',
+        aheadHint: 'O texto fica parado e só avança para manter algumas linhas visíveis abaixo',
+        fixedHint: 'A linha que você lê fica na mesma altura',
+        linesBelow: 'Linhas mantidas abaixo',
+        position: 'Posição da linha',
+    },
+
     titleBar: {
         moveDown: 'Mover para baixo',
         moveUp: 'Mover para cima',

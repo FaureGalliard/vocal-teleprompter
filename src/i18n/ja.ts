@@ -164,6 +164,16 @@ export const ja: Messages = {
         waiting: '音声モデルを待っています…',
     },
 
+    scrolling: {
+        title: 'スクロール',
+        ahead: '下に行を残す',
+        fixed: '行を固定',
+        aheadHint: 'テキストは止まったままで、下に数行見えるように必要なときだけ進みます',
+        fixedHint: '読んでいる行を同じ高さに保ちます',
+        linesBelow: '下に残す行数',
+        position: '行の位置',
+    },
+
     titleBar: {
         moveDown: '下に移動',
         moveUp: '上に移動',

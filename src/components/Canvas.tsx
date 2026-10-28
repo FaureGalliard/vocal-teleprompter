@@ -1,10 +1,9 @@
 import { useRef, useEffect } from 'react'
 import type { Card, CardSegment } from '../lib/cards'
 import { FONTS, type Typography } from '../lib/typography'
+import { scrollTarget, type Scrolling } from '../lib/scrolling'
 import { useT } from '../i18n'
 
-// Height of the reading line, as a share of the canvas
-const READING_LINE = 0.35
 
 interface CanvasProps {
     cards: Card[]
@@ -31,6 +30,7 @@ interface CanvasProps {
     textHalo?: string
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
+    scrolling: Scrolling
     typography: Typography
     titleBarHeight: number
     // Room kept free on the right for the toolbar
@@ -56,6 +56,7 @@ export default function Canvas({
     textColor,
     textHalo,
     readingLine,
+    scrolling,
     typography,
     titleBarHeight,
     rightInset,
@@ -86,15 +87,19 @@ export default function Canvas({
         const container = containerRef.current
         const word = activeWordRef.current
         if (!container || !word) return
-        const anchor = readingLine ? READING_LINE : 0.5
-        container.scrollTo({
-            top: word.offsetTop - container.clientHeight * anchor + word.offsetHeight / 2,
-            left: 0,
-            behavior: 'smooth',
-        })
-    }, [currentWordIndex, heard, readingLine])
+        const top = scrollTarget(
+            scrolling,
+            { top: container.scrollTop, height: container.clientHeight },
+            { top: word.offsetTop, height: word.offsetHeight },
+            fontSize * typography.lineHeight,
+        )
+        if (top !== null) container.scrollTo({ top, left: 0, behavior: 'smooth' })
+    }, [currentWordIndex, heard, scrolling, fontSize, typography.lineHeight])
 
     let prevWord = -1
+    // The reading line marks where fixed scrolling holds the current line
+    const showReadingLine = readingLine && scrolling.mode === 'fixed'
+    const readingLineAt = scrolling.anchor
     // Shared by the prompter text and the editor so editing looks the same
     const textStyle: React.CSSProperties = {
         fontFamily: FONTS[typography.font],
@@ -196,8 +201,8 @@ export default function Canvas({
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
                         // Fade the text away from the reading line
-                        maskImage: readingLine
-                            ? `linear-gradient(to bottom, rgb(0 0 0 / 0.2), #000 ${READING_LINE * 60}%, #000 ${READING_LINE * 140}%, rgb(0 0 0 / 0.2))`
+                        maskImage: showReadingLine
+                            ? `linear-gradient(to bottom, rgb(0 0 0 / 0.2), #000 ${readingLineAt * 60}%, #000 ${readingLineAt * 140}%, rgb(0 0 0 / 0.2))`
                             : undefined,
                     } as React.CSSProperties
                 }
@@ -207,9 +212,9 @@ export default function Canvas({
                     // Start the text on the reading line and leave room to bring
                     // the last lines up to it
                     style={
-                        readingLine
+                        showReadingLine
                             ? {
-                                  paddingTop: `calc((100vh - ${top + bottom}px) * ${READING_LINE} - ${fontSize}px)`,
+                                  paddingTop: `calc((100vh - ${top + bottom}px) * ${readingLineAt} - ${fontSize}px)`,
                                   paddingBottom: '60vh',
                               }
                             : undefined
@@ -286,13 +291,13 @@ export default function Canvas({
                     )}
                 </div>
             </div>
-            {readingLine && !isEditing && (
+            {showReadingLine && !isEditing && (
                 <div
                     className="fixed pointer-events-none rounded-md"
                     style={{
                         left: 12,
                         right: 12,
-                        top: `calc(${top}px + (100vh - ${top + bottom}px) * ${READING_LINE})`,
+                        top: `calc(${top}px + (100vh - ${top + bottom}px) * ${readingLineAt})`,
                         height: fontSize * typography.lineHeight + 8,
                         transform: 'translateY(-50%)',
                         backgroundColor: `${textColor}14`,

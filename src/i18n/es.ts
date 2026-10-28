@@ -164,6 +164,16 @@ export const es: Messages = {
         waiting: 'Esperando el modelo de voz…',
     },
 
+    scrolling: {
+        title: 'Desplazamiento',
+        ahead: 'Líneas abajo',
+        fixed: 'Línea fija',
+        aheadHint: 'El texto se queda quieto y solo avanza para mantener unas líneas visibles debajo',
+        fixedHint: 'La línea que lees se mantiene a la misma altura',
+        linesBelow: 'Líneas que se mantienen abajo',
+        position: 'Posición de la línea',
+    },
+
     titleBar: {
         moveDown: 'Mover abajo',
         moveUp: 'Mover arriba',

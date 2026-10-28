@@ -164,6 +164,16 @@ export const zh: Messages = {
         waiting: '正在等待语音模型…',
     },
 
+    scrolling: {
+        title: '滚动',
+        ahead: '保留下方行',
+        fixed: '固定行',
+        aheadHint: '文字保持不动，只在需要时前进，让下方始终可见几行',
+        fixedHint: '正在读的行保持在同一高度',
+        linesBelow: '下方保留的行数',
+        position: '行的位置',
+    },
+
     titleBar: {
         moveDown: '移到底部',
         moveUp: '移到顶部',

@@ -164,6 +164,16 @@ export const fr: Messages = {
         waiting: 'En attente du modèle vocal…',
     },
 
+    scrolling: {
+        title: 'Défilement',
+        ahead: 'Lignes en dessous',
+        fixed: 'Ligne fixe',
+        aheadHint: 'Le texte reste en place et ne bouge que pour garder quelques lignes visibles dessous',
+        fixedHint: 'La ligne lue reste à la même hauteur',
+        linesBelow: 'Lignes gardées dessous',
+        position: 'Position de la ligne',
+    },
+
     titleBar: {
         moveDown: 'Déplacer en bas',
         moveUp: 'Déplacer en haut',

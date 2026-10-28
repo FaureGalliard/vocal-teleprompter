@@ -164,6 +164,16 @@ export const it: Messages = {
         waiting: 'In attesa del modello vocale…',
     },
 
+    scrolling: {
+        title: 'Scorrimento',
+        ahead: 'Righe sotto',
+        fixed: 'Riga fissa',
+        aheadHint: 'Il testo resta fermo e scorre solo per tenere visibili alcune righe sotto',
+        fixedHint: 'La riga che leggi resta alla stessa altezza',
+        linesBelow: 'Righe tenute sotto',
+        position: 'Posizione della riga',
+    },
+
     titleBar: {
         moveDown: 'Sposta in basso',
         moveUp: 'Sposta in alto',

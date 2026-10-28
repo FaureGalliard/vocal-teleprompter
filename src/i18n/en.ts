@@ -162,6 +162,16 @@ export const en = {
         waiting: 'Waiting for the speech model…',
     },
 
+    scrolling: {
+        title: 'Scrolling',
+        ahead: 'Lines below',
+        fixed: 'Fixed line',
+        aheadHint: 'The text stays put and only moves to keep a few lines visible below you',
+        fixedHint: 'The line you are reading stays at the same height',
+        linesBelow: 'Lines kept below',
+        position: 'Line position',
+    },
+
     titleBar: {
         moveDown: 'Move to the bottom',
         moveUp: 'Move to the top',

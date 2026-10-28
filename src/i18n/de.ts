@@ -164,6 +164,16 @@ export const de: Messages = {
         waiting: 'Warte auf das Sprachmodell…',
     },
 
+    scrolling: {
+        title: 'Bildlauf',
+        ahead: 'Zeilen darunter',
+        fixed: 'Feste Zeile',
+        aheadHint: 'Der Text bleibt stehen und rückt nur nach, damit unten einige Zeilen sichtbar bleiben',
+        fixedHint: 'Die gelesene Zeile bleibt auf gleicher Höhe',
+        linesBelow: 'Zeilen darunter',
+        position: 'Position der Zeile',
+    },
+
     titleBar: {
         moveDown: 'Nach unten verschieben',
         moveUp: 'Nach oben verschieben',

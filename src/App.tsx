@@ -30,6 +30,7 @@ import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
 import CountdownOverlay from './components/CountdownOverlay'
 import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
+import { DEFAULT_SCROLLING, type Scrolling } from './lib/scrolling'
 import { useMcpBridge } from './hooks/useMcpBridge'
 import { DEFAULT_WPM } from './hooks/usePace'
 import { LANGUAGES } from './constants/languages'
@@ -84,6 +85,7 @@ function App() {
     // Minutes the speaker wants the presentation to last; 0 means no target
     const [targetMinutes, setTargetMinutes] = usePersistentState('targetMinutes', 0)
     const [readingLine, setReadingLine] = usePersistentState('readingLine', false)
+    const [scrolling, setScrolling] = usePersistentState<Scrolling>('scrolling', DEFAULT_SCROLLING)
     // Clicks go to whatever is behind the window. Not saved, so a restart
     // always brings the window back to normal
     const [clickThrough, setClickThrough] = useState(false)
@@ -706,6 +708,8 @@ function App() {
                             onTargetMinutesChange={setTargetMinutes}
                             readingLine={readingLine}
                             onToggleReadingLine={() => setReadingLine((v) => !v)}
+                            scrolling={scrolling}
+                            onScrollingChange={setScrolling}
                             clickThrough={clickThrough}
                             onToggleClickThrough={() => setClickThrough((v) => !v)}
                             autoUpdate={autoUpdate}
@@ -780,6 +784,7 @@ function App() {
                     textColor={displayTextColor}
                     textHalo={textHalo}
                     readingLine={readingLine}
+                    scrolling={scrolling}
                     typography={typography}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
                     rightInset={TOOLBAR_RAIL_WIDTH}

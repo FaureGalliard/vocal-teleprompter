@@ -164,6 +164,16 @@ export const ko: Messages = {
         waiting: '음성 모델을 기다리는 중…',
     },
 
+    scrolling: {
+        title: '스크롤',
+        ahead: '아래 줄 유지',
+        fixed: '고정 줄',
+        aheadHint: '텍스트는 그대로 있다가 아래에 몇 줄이 보이도록 필요할 때만 올라갑니다',
+        fixedHint: '읽고 있는 줄을 같은 높이에 유지합니다',
+        linesBelow: '아래에 유지할 줄 수',
+        position: '줄 위치',
+    },
+
     titleBar: {
         moveDown: '아래로 이동',
         moveUp: '위로 이동',
