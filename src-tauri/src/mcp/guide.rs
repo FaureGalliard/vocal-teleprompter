@@ -15,15 +15,18 @@ pub const APP_GUIDE: &str = "\
 # Vocal Teleprompter: features and where to find them
 
 A small always-on-top window, usually placed under the webcam. The round \
-button at its top right opens and closes the toolbar; holding it drags the \
-window. While the toolbar is open the script moves below it.
+button at its top right opens and closes the toolbar, a column of icons \
+down the right edge that shows each icon's name on hover; holding the round \
+button drags the window.
 
-## Toolbar, left to right
+## Toolbar, top to bottom
 - Script: Paste (clipboard), Import (.txt file), Clear, Edit (write in place; \
 Done or Esc to finish).
 - Start / Stop: listening starts after a short countdown. Pause / Resume \
 appears while listening.
-- Speech language (EN, ES...) and microphone pickers.
+- Speech language (EN, ES...). Microphone: shows the Windows default input, \
+which is the one speech recognition always uses, with a live level meter and \
+a button to change it in the Windows sound settings.
 - Appearance (palette icon): text size, background color and opacity, text \
 color, and typography (font, weight, line spacing, text width, alignment).
 - Tutorial (?) replays the guided tour. Settings (gear) holds the rest.
