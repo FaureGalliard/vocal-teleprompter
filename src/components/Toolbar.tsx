@@ -28,6 +28,9 @@ interface ToolbarProps {
     isAdjusting: boolean
     // Distance from the top of the window to the toolbar button
     topOffset: number
+    // Horizontal position when the toolbar sits outside the teleprompter,
+    // in the room the window made for it; otherwise it hugs the right edge
+    left: number | null
     isRecognizing: boolean
     isSpeechActive: boolean
     isPaused: boolean
@@ -124,6 +127,7 @@ export default function Toolbar(props: ToolbarProps) {
 function ToolbarRail({
     isAdjusting,
     topOffset,
+    left,
     isRecognizing,
     isSpeechActive,
     isPaused,
@@ -176,8 +180,12 @@ function ToolbarRail({
             animate={{ opacity: isAdjusting ? 0 : 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-            // Right under the round toolbar button
-            style={{ top: topOffset + 52, width: 40, right: 10 }}
+            // Right under the round toolbar button, or beside the teleprompter
+            style={
+                left === null
+                    ? { top: topOffset + 52, width: 40, right: 10 }
+                    : { top: topOffset + 52, width: 40, left }
+            }
             className="fixed z-40 flex flex-col items-center gap-1 py-1.5 rounded-full bg-[#1a1a1a] border border-white/10 shadow-lg">
             <div
                 data-tour="script"

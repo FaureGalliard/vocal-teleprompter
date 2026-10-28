@@ -1,6 +1,7 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
 import Toolbar, { TOOLBAR_RAIL_WIDTH } from './components/Toolbar'
+import { TOOLBAR_GUTTER, useWindowExpansion } from './hooks/useWindowExpansion'
 import AppearancePanel from './components/AppearancePanel'
 import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
@@ -612,30 +613,154 @@ function App() {
     const toolbarTopOffset =
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
 
+    // While the toolbar is open the window grows beside the teleprompter, so
+    // the toolbar and its panels never cover the text or get cut off. When it
+    // cannot grow (maximized) the toolbar sits over the right edge instead.
+    const expansion = useWindowExpansion(toolbarVisible)
+    const frameLeft = expansion?.side === 'left' ? TOOLBAR_GUTTER : 0
+    const toolbarLeft = expansion
+        ? expansion.side === 'right'
+            ? expansion.frame.width + (TOOLBAR_GUTTER - 40) / 2
+            : (TOOLBAR_GUTTER - 40) / 2
+        : null
+    // Room kept for the toolbar over the text only in that fallback
+    const rightInset = toolbarVisible && !expansion ? TOOLBAR_RAIL_WIDTH : 0
+
     return (
         <I18nProvider language={uiLanguage}>
             <div
                 className="font-sans"
-                style={{
-                    height: '100vh',
-                    overflow: 'hidden',
-                    backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
-                    outline: `1px solid ${displayTextColor}`,
-                    outlineOffset: '-1px',
-                    boxSizing: 'border-box',
-                }}>
-                {titleBarVisible && (
-                    <TitleBar
-                        ref={titleBarRef}
-                        position={titleBarPosition}
-                        onPositionChange={setTitleBarPosition}
+                style={{ height: '100vh', overflow: 'hidden' }}>
+                <div
+                    // The teleprompter frame. Its transform makes it the box that
+                    // the fixed-position pieces inside are laid out in, so they
+                    // stay put while the window grows around it.
+                    style={
+                        {
+                            position: 'fixed',
+                            top: 0,
+                            left: frameLeft,
+                            width: expansion ? expansion.frame.width : '100vw',
+                            height: expansion ? expansion.frame.height : '100vh',
+                            '--frame-h': expansion ? `${expansion.frame.height}px` : '100vh',
+                            transform: 'translateZ(0)',
+                            overflow: 'hidden',
+                            backgroundColor: `color-mix(in srgb, ${bgColor} ${bgOpacity * 100}%, transparent)`,
+                            outline: `1px solid ${displayTextColor}`,
+                            outlineOffset: '-1px',
+                            boxSizing: 'border-box',
+                        } as React.CSSProperties
+                    }>
+                    {titleBarVisible && (
+                        <TitleBar
+                            ref={titleBarRef}
+                            position={titleBarPosition}
+                            onPositionChange={setTitleBarPosition}
+                        />
+                    )}
+
+
+                    <button
+                        data-tour="menu"
+                        onMouseDown={handleMouseDown}
+                        onMouseUp={handleMouseUp}
+                        onClick={handleClick}
+                        className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
+                        style={{
+                            top:
+                                (titleBarVisible && titleBarPosition === 'top'
+                                    ? titleBarHeight
+                                    : 0) + 8,
+                            right: 12,
+                        }}>
+                        {toolbarVisible ? <X size={16} /> : <Menu size={16} />}
+                    </button>
+
+                    <Canvas
+                        cards={cards}
+                        currentCard={currentCard}
+                        currentWordIndex={currentWordIndex}
+                        heard={heard}
+                        // The clicked word becomes the next one to read
+                        onContinueFrom={(index) => jumpTo(index - 1)}
+                        onEditAt={(offset) => {
+                            setEditCaret(offset)
+                            setIsEditing(true)
+                        }}
+                        isListening={isSpeechActive}
+                        editCaret={editCaret}
+                        content={content}
+                        isEditing={isEditing}
+                        onContentChange={setContent}
+                        onEditStart={() => {
+                            setEditCaret(null)
+                            setIsEditing(true)
+                        }}
+                        onEditEnd={() => setIsEditing(false)}
+                        fontSize={fontSize}
+                        textColor={displayTextColor}
+                        textHalo={textHalo}
+                        readingLine={readingLine}
+                        scrolling={scrolling}
+                        typography={typography}
+                        titleBarHeight={titleBarVisible ? titleBarHeight : 0}
+                        rightInset={rightInset}
+                        titleBarPosition={titleBarPosition}
                     />
-                )}
+
+                    <ModelDownloadCard
+                        language={LANGUAGES.find((l) => l.value === language)?.name ?? language}
+                        downloading={speechModel.downloading}
+                        failed={speechModel.failed}
+                        received={speechModel.received}
+                        total={speechModel.total}
+                        onRetry={() => speechModel.download()}
+                    />
+
+                    <CountdownOverlay
+                        value={countdown}
+                        color={displayTextColor}
+                        halo={textHalo}
+                    />
+
+                    <UpdateBanner
+                        // Out of the way while the toolbar is open; Settings can install too
+                        visible={updater.showBanner && !toolbarVisible}
+                        top={toolbarTopOffset + 8}
+                        version={updater.newVersion}
+                        downloading={updater.status === 'downloading'}
+                        progress={updater.progress}
+                        onInstall={updater.install}
+                        onDismiss={updater.dismiss}
+                    />
+
+                    {!isEditing && (
+                        <StatusBar
+                            bottom={
+                                (titleBarVisible && titleBarPosition === 'bottom'
+                                    ? titleBarHeight
+                                    : 0) + 6
+                            }
+                            cardCount={cards.length}
+                            currentCard={currentCard}
+                            onPreviousCard={() => goToCard(currentCard - 1)}
+                            onNextCard={() => goToCard(currentCard + 1)}
+                            sessionActive={isSpeechActive}
+                            targetMinutes={targetMinutes}
+                            {...pace}
+                            clickThrough={clickThrough}
+                            heard={isSpeechActive && !isPaused ? heardText : ''}
+                            error={error ? (t.errors[error] ?? error) : null}
+                            rightInset={rightInset}
+                        />
+                    )}
+                </div>
 
                 <Toolbar
                     visible={toolbarVisible}
                     isAdjusting={isAdjusting}
                     topOffset={toolbarTopOffset}
+                    left={toolbarLeft}
                     isRecognizing={isRecognizing}
                     isSpeechActive={isSpeechActive}
                     isPaused={isPaused}
@@ -743,101 +868,6 @@ function App() {
                         />
                     }
                 />
-
-                <button
-                    data-tour="menu"
-                    onMouseDown={handleMouseDown}
-                    onMouseUp={handleMouseUp}
-                    onClick={handleClick}
-                    className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
-                    style={{
-                        top:
-                            (titleBarVisible && titleBarPosition === 'top'
-                                ? titleBarHeight
-                                : 0) + 8,
-                        right: 12,
-                    }}>
-                    {toolbarVisible ? <X size={16} /> : <Menu size={16} />}
-                </button>
-
-                <Canvas
-                    cards={cards}
-                    currentCard={currentCard}
-                    currentWordIndex={currentWordIndex}
-                    heard={heard}
-                    // The clicked word becomes the next one to read
-                    onContinueFrom={(index) => jumpTo(index - 1)}
-                    onEditAt={(offset) => {
-                        setEditCaret(offset)
-                        setIsEditing(true)
-                    }}
-                    isListening={isSpeechActive}
-                    editCaret={editCaret}
-                    content={content}
-                    isEditing={isEditing}
-                    onContentChange={setContent}
-                    onEditStart={() => {
-                        setEditCaret(null)
-                        setIsEditing(true)
-                    }}
-                    onEditEnd={() => setIsEditing(false)}
-                    fontSize={fontSize}
-                    textColor={displayTextColor}
-                    textHalo={textHalo}
-                    readingLine={readingLine}
-                    scrolling={scrolling}
-                    typography={typography}
-                    titleBarHeight={titleBarVisible ? titleBarHeight : 0}
-                    rightInset={TOOLBAR_RAIL_WIDTH}
-                    titleBarPosition={titleBarPosition}
-                />
-
-                <ModelDownloadCard
-                    language={LANGUAGES.find((l) => l.value === language)?.name ?? language}
-                    downloading={speechModel.downloading}
-                    failed={speechModel.failed}
-                    received={speechModel.received}
-                    total={speechModel.total}
-                    onRetry={() => speechModel.download()}
-                />
-
-                <CountdownOverlay
-                    value={countdown}
-                    color={displayTextColor}
-                    halo={textHalo}
-                />
-
-                <UpdateBanner
-                    // Out of the way while the toolbar is open; Settings can install too
-                    visible={updater.showBanner && !toolbarVisible}
-                    top={toolbarTopOffset + 8}
-                    version={updater.newVersion}
-                    downloading={updater.status === 'downloading'}
-                    progress={updater.progress}
-                    onInstall={updater.install}
-                    onDismiss={updater.dismiss}
-                />
-
-                {!isEditing && (
-                    <StatusBar
-                        bottom={
-                            (titleBarVisible && titleBarPosition === 'bottom'
-                                ? titleBarHeight
-                                : 0) + 6
-                        }
-                        cardCount={cards.length}
-                        currentCard={currentCard}
-                        onPreviousCard={() => goToCard(currentCard - 1)}
-                        onNextCard={() => goToCard(currentCard + 1)}
-                        sessionActive={isSpeechActive}
-                        targetMinutes={targetMinutes}
-                        {...pace}
-                        clickThrough={clickThrough}
-                        heard={isSpeechActive && !isPaused ? heardText : ''}
-                        error={error ? (t.errors[error] ?? error) : null}
-                        rightInset={TOOLBAR_RAIL_WIDTH}
-                    />
-                )}
             </div>
         </I18nProvider>
     )

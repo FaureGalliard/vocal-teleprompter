@@ -218,8 +218,8 @@ export default function Canvas({
                     style={
                         showReadingLine
                             ? {
-                                  paddingTop: `calc((100vh - ${top + bottom}px) * ${readingLineAt} - ${fontSize}px)`,
-                                  paddingBottom: '60vh',
+                                  paddingTop: `calc((var(--frame-h) - ${top + bottom}px) * ${readingLineAt} - ${fontSize}px)`,
+                                  paddingBottom: 'calc(var(--frame-h) * 0.6)',
                               }
                             : undefined
                     }>
@@ -301,7 +301,7 @@ export default function Canvas({
                     style={{
                         left: 12,
                         right: 12,
-                        top: `calc(${top}px + (100vh - ${top + bottom}px) * ${readingLineAt})`,
+                        top: `calc(${top}px + (var(--frame-h) - ${top + bottom}px) * ${readingLineAt})`,
                         height: fontSize * typography.lineHeight + 8,
                         transform: 'translateY(-50%)',
                         backgroundColor: `${textColor}14`,
