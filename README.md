@@ -43,7 +43,12 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - ⏱️ **Pace and time**: see how long the script takes before you start, then the elapsed
   time, words per minute and time left. Set a **target duration** (say 10 minutes) and it
   tells you to speed up or slow down.
-- ⌨️ **Global shortcuts** that work while Zoom, Meet or your slides have the focus.
+- 🤖 **Works with Claude and other AI assistants** through MCP: ask for your presentation
+  and it lands in the prompter, already split into slide cards and sized to your time.
+- ⌨️ **Global shortcuts** that work while Zoom, Meet or your slides have the focus. Rebind
+  any of them in Settings, or turn them off.
+- ⏳ **Countdown** (3, 2, 1) before listening starts, so you can settle and look at the camera.
+- 🔤 **Typography**: font, weight, line spacing, text width and alignment.
 - 🖱️ **Click-through mode**: clicks pass through the window to the app behind it.
 - 📏 **Reading line** (optional): the current line stays at a fixed height near your
   camera, with the text around it faded.
@@ -74,7 +79,7 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 
 ## ⌨️ Keyboard shortcuts
 
-**Global** (work from any app):
+**Global** (work from any app; rebind them or turn them off in Settings):
 
 | Keys | Action |
 |---|---|
@@ -105,6 +110,45 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 | Toolbar | Microphone selector | Language selector |
 |---|---|---|
 | ![Toolbar](docs/screenshot-toolbar.png) | ![Microphone](docs/screenshot-microphone.png) | ![Language](docs/screenshot-language.png) |
+
+---
+
+## 🤖 Use it with Claude and other AI assistants
+
+Vocal Teleprompter includes an [MCP](https://modelcontextprotocol.io) server, so AI
+assistants can write your script and load it straight into the prompter. Ask something
+like *"Prepare a 10-minute presentation about my thesis, one card per slide"* and the script
+shows up ready to read, already split into slide cards and sized to your time.
+
+**Connect it:** open **Settings → AI connector** and click **Connect** next to Claude
+Desktop, Cursor or VS Code, then restart that app. For any other MCP client, use
+**Copy the config**, or add this by hand:
+
+```json
+{
+  "mcpServers": {
+    "vocal-teleprompter": {
+      "command": "C:\\Users\\you\\AppData\\Local\\vocal-teleprompter\\vocal-teleprompter.exe",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+What the assistant can do:
+
+| Tool | What it does |
+|---|---|
+| `load_script` | Puts a script in the prompter (replace or append slides) |
+| `get_script` | Reads the current script, to review or improve it |
+| `get_status` | Slides, words, estimated time, target duration, language and live pace |
+| `control` | Start, pause, resume, stop, next or previous slide |
+
+It also ships a **format guide** (plain spoken text, `---` between slides, about 130
+words per minute) and a **Prepare a presentation** prompt. Everything stays on your
+computer: the connector talks to the open app over localhost with a private token, and
+opens the app if it is closed. MCP clients that run local servers are supported; web
+versions such as claude.ai in the browser cannot reach a desktop app.
 
 ---
 
@@ -186,8 +230,6 @@ the Web Speech API.
 
 Ideas for upcoming versions:
 
-- ⏳ **Countdown** (3, 2, 1) before listening starts, to settle and look at the camera.
-- 🔤 **Typography**: font, line spacing and text width.
 - 📚 **Script library**: keep several scripts and switch between recent ones.
 - ⏭️ **Advance your slides by voice**: send the next-slide key to PowerPoint, Google Slides
   or Keynote when a card is finished.
