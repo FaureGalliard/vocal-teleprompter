@@ -92,6 +92,11 @@ export const fr: Messages = {
         previousCard: 'Diapo précédente',
         toggleWindow: 'Afficher / masquer la fenêtre',
         toggleClickThrough: 'Clics traversants oui / non',
+        change: 'Cliquez puis appuyez sur la nouvelle combinaison',
+        pressKeys: 'Appuyez…',
+        taken: (action: string) => `Déjà utilisé par « ${action} »`,
+        unavailable: 'Une autre application utilise cette combinaison ; choisissez-en une autre',
+        resetDefaults: 'Rétablir les raccourcis par défaut',
     },
 
     statusBar: {

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useT } from '../i18n'
 import SettingsPanel from './SettingsPanel'
 import type { useUpdater } from '../hooks/useUpdater'
+import type { GlobalAction, ShortcutBindings } from '../hooks/useGlobalShortcuts'
 import {
     Check,
     CircleHelp,
@@ -72,6 +73,13 @@ interface ToolbarProps {
     autoUpdate: boolean
     onToggleAutoUpdate: () => void
     updater: ReturnType<typeof useUpdater>
+    shortcutsEnabled: boolean
+    shortcutBindings: ShortcutBindings
+    failedShortcuts: GlobalAction[]
+    onToggleShortcuts: () => void
+    onShortcutChange: (action: GlobalAction, accelerator: string) => void
+    onResetShortcuts: () => void
+    onRecordingShortcut: (recording: boolean) => void
     onLanguageChange: (val: string) => void
     onUiLanguageChange: (val: string) => void
     onMicChange: (val: string) => void
@@ -133,6 +141,13 @@ export default function Toolbar({
     autoUpdate,
     onToggleAutoUpdate,
     updater,
+    shortcutsEnabled,
+    shortcutBindings,
+    failedShortcuts,
+    onToggleShortcuts,
+    onShortcutChange,
+    onResetShortcuts,
+    onRecordingShortcut,
     onLanguageChange,
     onUiLanguageChange,
     onMicChange,
@@ -538,6 +553,13 @@ export default function Toolbar({
                             autoUpdate={autoUpdate}
                             onToggleAutoUpdate={onToggleAutoUpdate}
                             updater={updater}
+                            shortcutsEnabled={shortcutsEnabled}
+                            shortcutBindings={shortcutBindings}
+                            failedShortcuts={failedShortcuts}
+                            onToggleShortcuts={onToggleShortcuts}
+                            onShortcutChange={onShortcutChange}
+                            onResetShortcuts={onResetShortcuts}
+                            onRecordingShortcut={onRecordingShortcut}
                         />
 
                         {error && (

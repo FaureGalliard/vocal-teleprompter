@@ -90,6 +90,11 @@ export const en = {
         previousCard: 'Previous slide',
         toggleWindow: 'Show / hide window',
         toggleClickThrough: 'Click-through on / off',
+        change: 'Click, then press the new combination',
+        pressKeys: 'Press keys…',
+        taken: (action: string) => `Already used by “${action}”`,
+        unavailable: 'Another app is using this combination; pick a different one',
+        resetDefaults: 'Restore default shortcuts',
     },
 
     statusBar: {

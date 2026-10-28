@@ -92,6 +92,11 @@ export const de: Messages = {
         previousCard: 'Vorherige Folie',
         toggleWindow: 'Fenster ein- / ausblenden',
         toggleClickThrough: 'Klicks durchlassen ein / aus',
+        change: 'Klicken, dann die neue Kombination drücken',
+        pressKeys: 'Tasten drücken…',
+        taken: (action: string) => `Bereits belegt durch „${action}“`,
+        unavailable: 'Eine andere App nutzt diese Kombination; wähle eine andere',
+        resetDefaults: 'Standard-Tastenkürzel wiederherstellen',
     },
 
     statusBar: {

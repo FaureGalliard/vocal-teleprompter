@@ -92,6 +92,11 @@ export const ko: Messages = {
         previousCard: '이전 슬라이드',
         toggleWindow: '창 표시 / 숨기기',
         toggleClickThrough: '클릭 통과 켜기 / 끄기',
+        change: '클릭한 다음 새 조합을 누르세요',
+        pressKeys: '키를 누르세요…',
+        taken: (action: string) => `이미 “${action}”에서 사용 중`,
+        unavailable: '다른 앱이 이 조합을 사용 중입니다. 다른 조합을 고르세요',
+        resetDefaults: '기본 단축키로 복원',
     },
 
     statusBar: {

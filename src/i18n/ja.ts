@@ -92,6 +92,11 @@ export const ja: Messages = {
         previousCard: '前のスライド',
         toggleWindow: 'ウィンドウの表示 / 非表示',
         toggleClickThrough: 'クリック透過 オン / オフ',
+        change: 'クリックして新しい組み合わせを押してください',
+        pressKeys: 'キーを押してください…',
+        taken: (action: string) => `「${action}」で使用中です`,
+        unavailable: '別のアプリがこの組み合わせを使っています。別のものを選んでください',
+        resetDefaults: '既定のショートカットに戻す',
     },
 
     statusBar: {

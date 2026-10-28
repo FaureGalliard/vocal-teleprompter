@@ -16,7 +16,11 @@ import { startTour } from './lib/tour'
 import { splitCards, currentCardIndex } from './lib/cards'
 import StatusBar from './components/StatusBar'
 import { usePace } from './hooks/usePace'
-import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import {
+    GLOBAL_SHORTCUTS,
+    useGlobalShortcuts,
+    type GlobalAction,
+} from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
@@ -65,6 +69,13 @@ function App() {
     const [clickThrough, setClickThrough] = useState(false)
     const [autoUpdate, setAutoUpdate] = usePersistentState('autoUpdate', true)
     const updater = useUpdater(autoUpdate)
+    const [shortcutsEnabled, setShortcutsEnabled] = usePersistentState('shortcutsEnabled', true)
+    // Only the rebound ones are saved, so new defaults reach everyone else
+    const [shortcutOverrides, setShortcutOverrides] = usePersistentState<
+        Partial<Record<GlobalAction, string>>
+    >('shortcutOverrides', {})
+    const shortcutBindings = { ...GLOBAL_SHORTCUTS, ...shortcutOverrides }
+    const [recordingShortcut, setRecordingShortcut] = useState(false)
 
     const handleAdjustStart = () => {
         setIsAdjusting(true)
@@ -122,24 +133,28 @@ function App() {
         if (card) jumpTo(card.firstWord - 1)
     }
 
-    useGlobalShortcuts({
-        toggleListening: () => {
-            if (!content || isEditing) return
-            if (isSpeechActive) setIsPaused((v) => !v)
-            else setIsSpeechActive(true)
-        },
-        nextCard: () =>
-            cards.length > 1 ? goToCard(currentCard + 1) : jumpTo(currentWordIndex + 10),
-        previousCard: () =>
-            cards.length > 1 ? goToCard(currentCard - 1) : jumpTo(currentWordIndex - 10),
-        toggleClickThrough: () => setClickThrough((v) => !v),
-        toggleWindow: async () => {
-            const win = getCurrentWindow()
-            if (await win.isVisible()) await win.hide()
-            else {
-                await win.show()
-                await win.setFocus()
-            }
+    const { failed: failedShortcuts } = useGlobalShortcuts({
+        enabled: shortcutsEnabled && !recordingShortcut,
+        bindings: shortcutBindings,
+        handlers: {
+            toggleListening: () => {
+                if (!content || isEditing) return
+                if (isSpeechActive) setIsPaused((v) => !v)
+                else setIsSpeechActive(true)
+            },
+            nextCard: () =>
+                cards.length > 1 ? goToCard(currentCard + 1) : jumpTo(currentWordIndex + 10),
+            previousCard: () =>
+                cards.length > 1 ? goToCard(currentCard - 1) : jumpTo(currentWordIndex - 10),
+            toggleClickThrough: () => setClickThrough((v) => !v),
+            toggleWindow: async () => {
+                const win = getCurrentWindow()
+                if (await win.isVisible()) await win.hide()
+                else {
+                    await win.show()
+                    await win.setFocus()
+                }
+            },
         },
     })
 
@@ -446,6 +461,21 @@ function App() {
                     autoUpdate={autoUpdate}
                     onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
                     updater={updater}
+                    shortcutsEnabled={shortcutsEnabled}
+                    shortcutBindings={shortcutBindings}
+                    failedShortcuts={failedShortcuts}
+                    onToggleShortcuts={() => setShortcutsEnabled((v) => !v)}
+                    onShortcutChange={(action, accelerator) =>
+                        setShortcutOverrides((o) =>
+                            accelerator === GLOBAL_SHORTCUTS[action]
+                                ? Object.fromEntries(
+                                      Object.entries(o).filter(([a]) => a !== action),
+                                  )
+                                : { ...o, [action]: accelerator },
+                        )
+                    }
+                    onResetShortcuts={() => setShortcutOverrides({})}
+                    onRecordingShortcut={setRecordingShortcut}
                     onReset={() => {
                         clearPersistentState()
                         window.location.reload()

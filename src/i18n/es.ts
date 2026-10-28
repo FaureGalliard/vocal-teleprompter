@@ -92,6 +92,11 @@ export const es: Messages = {
         previousCard: 'Diapositiva anterior',
         toggleWindow: 'Mostrar / ocultar ventana',
         toggleClickThrough: 'Clicks a través sí / no',
+        change: 'Haz click y presiona la nueva combinación',
+        pressKeys: 'Presiona teclas…',
+        taken: (action: string) => `Ya la usa “${action}”`,
+        unavailable: 'Otra app usa esta combinación; elige otra',
+        resetDefaults: 'Restaurar atajos por defecto',
     },
 
     statusBar: {

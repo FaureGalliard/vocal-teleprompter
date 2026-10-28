@@ -92,6 +92,11 @@ export const pt: Messages = {
         previousCard: 'Slide anterior',
         toggleWindow: 'Mostrar / ocultar janela',
         toggleClickThrough: 'Cliques atravessam sim / não',
+        change: 'Clique e pressione a nova combinação',
+        pressKeys: 'Pressione as teclas…',
+        taken: (action: string) => `Já usada por “${action}”`,
+        unavailable: 'Outro app usa esta combinação; escolha outra',
+        resetDefaults: 'Restaurar atalhos padrão',
     },
 
     statusBar: {

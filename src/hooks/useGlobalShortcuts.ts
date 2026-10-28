@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut'
 
 // System-wide shortcuts, so the prompter can be driven while Zoom, Meet or
-// the slides have the focus
+// the slides have the focus. These are the defaults; each can be rebound.
 export const GLOBAL_SHORTCUTS = {
     toggleListening: 'CommandOrControl+Alt+Space',
     nextCard: 'CommandOrControl+Alt+Right',
@@ -12,30 +12,52 @@ export const GLOBAL_SHORTCUTS = {
 } as const
 
 export type GlobalAction = keyof typeof GLOBAL_SHORTCUTS
+export type ShortcutBindings = Record<GlobalAction, string>
 
-export function useGlobalShortcuts(handlers: Record<GlobalAction, () => void>) {
-    // Registered once; the latest handlers are read through the ref
+interface UseGlobalShortcutsProps {
+    handlers: Record<GlobalAction, () => void>
+    bindings: ShortcutBindings
+    enabled: boolean
+}
+
+// Registers the bindings while enabled and reports the ones the system
+// refused, usually because another app already owns that combination
+export function useGlobalShortcuts({ handlers, bindings, enabled }: UseGlobalShortcutsProps) {
+    const [failed, setFailed] = useState<GlobalAction[]>([])
+    // The latest handlers are read through the ref, so changing them does
+    // not re-register anything
     const handlersRef = useRef(handlers)
     useEffect(() => {
         handlersRef.current = handlers
     })
 
+    const key = enabled ? JSON.stringify(bindings) : ''
+
     useEffect(() => {
-        const entries = Object.entries(GLOBAL_SHORTCUTS) as [GlobalAction, string][]
+        if (!enabled) {
+            setFailed([])
+            return
+        }
+        const entries = Object.entries(bindings) as [GlobalAction, string][]
         const accelerators = entries.map(([, accelerator]) => accelerator)
         let cancelled = false
 
         const setup = async () => {
-            // A previous mount (StrictMode, hot reload) may still hold them
+            // A previous run (other bindings, StrictMode, hot reload) may still hold them
             await unregister(accelerators).catch(() => {})
             if (cancelled) return
+            const refused: GlobalAction[] = []
             // One registration per shortcut: the event reports the shortcut in a
             // normalized form that may not match the string registered
             for (const [action, accelerator] of entries) {
                 await register(accelerator, (event) => {
                     if (event.state === 'Pressed') handlersRef.current[action]()
-                }).catch((e) => console.error(`Could not register ${accelerator}:`, e))
+                }).catch((e) => {
+                    console.error(`Could not register ${accelerator}:`, e)
+                    refused.push(action)
+                })
             }
+            if (!cancelled) setFailed(refused)
         }
         setup()
 
@@ -43,5 +65,8 @@ export function useGlobalShortcuts(handlers: Record<GlobalAction, () => void>) {
             cancelled = true
             unregister(accelerators).catch(() => {})
         }
-    }, [])
+        // Re-register only when the bindings or the switch actually change
+    }, [key])
+
+    return { failed }
 }

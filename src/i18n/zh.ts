@@ -92,6 +92,11 @@ export const zh: Messages = {
         previousCard: '上一张幻灯片',
         toggleWindow: '显示 / 隐藏窗口',
         toggleClickThrough: '点击穿透 开 / 关',
+        change: '点击后按下新的组合键',
+        pressKeys: '请按键…',
+        taken: (action: string) => `已被“${action}”使用`,
+        unavailable: '其他应用正在使用这个组合键，请换一个',
+        resetDefaults: '恢复默认快捷键',
     },
 
     statusBar: {

@@ -92,6 +92,11 @@ export const it: Messages = {
         previousCard: 'Slide precedente',
         toggleWindow: 'Mostra / nascondi finestra',
         toggleClickThrough: 'Clic passanti sì / no',
+        change: 'Fai clic, poi premi la nuova combinazione',
+        pressKeys: 'Premi i tasti…',
+        taken: (action: string) => `Già usata da “${action}”`,
+        unavailable: "Un'altra app usa questa combinazione; scegline un'altra",
+        resetDefaults: 'Ripristina le scorciatoie predefinite',
     },
 
     statusBar: {

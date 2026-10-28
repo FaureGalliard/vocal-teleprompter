@@ -5,7 +5,6 @@ import {
     EyeOff,
     Globe,
     GraduationCap,
-    Keyboard,
     MousePointerClick,
     RefreshCw,
     PanelTop,
@@ -15,21 +14,14 @@ import {
     ScanLine,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
-import { GLOBAL_SHORTCUTS, type GlobalAction } from '../hooks/useGlobalShortcuts'
+import type { GlobalAction, ShortcutBindings } from '../hooks/useGlobalShortcuts'
+import { displayShortcut } from '../lib/shortcuts'
+import Switch from './Switch'
+import ShortcutsSection from './ShortcutsSection'
 import type { useUpdater } from '../hooks/useUpdater'
 
 const PANEL_WIDTH = 288
 
-const IS_MAC = navigator.userAgent.includes('Mac')
-
-// "CommandOrControl+Alt+Right" -> "Ctrl+Alt+→" (or ⌘ on macOS)
-function displayShortcut(accelerator: string): string {
-    return accelerator
-        .replace('CommandOrControl', IS_MAC ? '⌘' : 'Ctrl')
-        .replace('Alt', IS_MAC ? '⌥' : 'Alt')
-        .replace('Right', '→')
-        .replace('Left', '←')
-}
 
 interface SettingsPanelProps {
     uiLanguage: string
@@ -51,24 +43,13 @@ interface SettingsPanelProps {
     autoUpdate: boolean
     onToggleAutoUpdate: () => void
     updater: ReturnType<typeof useUpdater>
-}
-
-function Switch({ on, onToggle }: { on: boolean; onToggle: () => void }) {
-    return (
-        <button
-            role="switch"
-            aria-checked={on}
-            onClick={onToggle}
-            className={`relative w-8 h-[18px] flex-shrink-0 rounded-full transition-colors ${
-                on ? 'bg-[#445ade]' : 'bg-white/15'
-            }`}>
-            <span
-                className={`absolute top-[3px] left-[3px] w-3 h-3 rounded-full bg-white transition-transform ${
-                    on ? 'translate-x-[14px]' : ''
-                }`}
-            />
-        </button>
-    )
+    shortcutsEnabled: boolean
+    shortcutBindings: ShortcutBindings
+    failedShortcuts: GlobalAction[]
+    onToggleShortcuts: () => void
+    onShortcutChange: (action: GlobalAction, accelerator: string) => void
+    onResetShortcuts: () => void
+    onRecordingShortcut: (recording: boolean) => void
 }
 
 function Row({
@@ -114,6 +95,13 @@ export default function SettingsPanel({
     autoUpdate,
     onToggleAutoUpdate,
     updater,
+    shortcutsEnabled,
+    shortcutBindings,
+    failedShortcuts,
+    onToggleShortcuts,
+    onShortcutChange,
+    onResetShortcuts,
+    onRecordingShortcut,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -225,7 +213,7 @@ export default function SettingsPanel({
                             icon={<MousePointerClick size={14} />}
                             label={t.settings.clickThrough}
                             hint={t.settings.clickThroughHint(
-                                displayShortcut(GLOBAL_SHORTCUTS.toggleClickThrough),
+                                displayShortcut(shortcutBindings.toggleClickThrough),
                             )}>
                             <Switch
                                 on={clickThrough}
@@ -277,22 +265,15 @@ export default function SettingsPanel({
                             />
                         </Row>
 
-                        <div className="border-t border-white/10 mt-1 px-4 py-2.5">
-                            <div className="flex items-center gap-2 mb-1.5 text-[10px] font-medium uppercase tracking-wide text-white/40">
-                                <Keyboard size={12} />
-                                {t.shortcuts.title}
-                            </div>
-                            {(Object.keys(GLOBAL_SHORTCUTS) as GlobalAction[]).map((action) => (
-                                <div
-                                    key={action}
-                                    className="flex items-center justify-between py-0.5 text-[11px]">
-                                    <span className="text-white/70">{t.shortcuts[action]}</span>
-                                    <kbd className="font-mono text-[10px] text-white/60 bg-white/10 rounded px-1.5 py-0.5">
-                                        {displayShortcut(GLOBAL_SHORTCUTS[action])}
-                                    </kbd>
-                                </div>
-                            ))}
-                        </div>
+                        <ShortcutsSection
+                            enabled={shortcutsEnabled}
+                            bindings={shortcutBindings}
+                            failed={failedShortcuts}
+                            onToggleEnabled={onToggleShortcuts}
+                            onChange={onShortcutChange}
+                            onReset={onResetShortcuts}
+                            onRecordingChange={onRecordingShortcut}
+                        />
 
                         <div className="border-t border-white/10">
                             <Row
