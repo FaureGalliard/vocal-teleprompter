@@ -31,6 +31,10 @@ export function useSpeechRecognition({
     const enabledRef = useRef(enabled)
     const sessionRef = useRef(0)
     const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    // Some WebView2 builds answer a recognizer fed from a MediaStreamTrack with
+    // a network error. Once that happens, fall back to the default input for
+    // the rest of the run instead of failing forever.
+    const trackRejectedRef = useRef(false)
 
     // The recognizer lives across renders, so read the latest callback
     // instead of the one captured when it started
@@ -96,10 +100,17 @@ export function useSpeechRecognition({
 
         let fatal = false
         let failed = false
+        // Passing undefined makes the engine use the system's default microphone
+        const input = () => (trackRejectedRef.current ? undefined : track)
 
         recognition.onstart = () => setListening(true)
         recognition.onerror = (e) => {
             if (SILENT_ERRORS.has(e.error)) return
+            if (e.error === 'network' && track && !trackRejectedRef.current) {
+                console.warn('Speech recognition rejected the selected microphone; using the default one')
+                trackRejectedRef.current = true
+                return
+            }
             setError(e.error)
             if (FATAL_ERRORS.has(e.error)) fatal = true
             else failed = true
@@ -112,7 +123,7 @@ export function useSpeechRecognition({
             failed = false
             restartTimerRef.current = setTimeout(() => {
                 restartTimerRef.current = null
-                if (session === sessionRef.current) recognition.start(track)
+                if (session === sessionRef.current) recognition.start(input())
             }, delay)
         }
         recognition.onresult = (event) => {
@@ -126,7 +137,7 @@ export function useSpeechRecognition({
         recognitionRef.current = recognition
         // Chromium feeds the recognizer from the given track; older engines
         // ignore the argument and fall back to the default microphone.
-        recognition.start(track)
+        recognition.start(input())
     }, [language, deviceId])
 
     useEffect(() => {
