@@ -170,8 +170,11 @@ From v1.2.0 on, the app updates itself: you only install it once.
 
 **Good to know**
 
-- Speech recognition uses the engine built into Windows' WebView2 (the Web Speech API).
-  It is free and needs no account, but it **needs an internet connection**.
+- Speech recognition runs **on your computer** with [Vosk](https://alphacephei.com/vosk/):
+  no account and no internet while you speak. The first time you press Start in a language,
+  its speech model (30 to 90 MB) is downloaded once.
+- It listens to **any microphone** you pick in the microphone menu, which also has a level
+  meter to test it.
 - Hiding from screen capture needs **Windows 10 version 2004 or newer**. On older builds the
   window shows up black instead of disappearing. You can turn it off in **Settings** if
   you want to record the app itself.
@@ -181,7 +184,7 @@ From v1.2.0 on, the app updates itself: you only install it once.
 ## ⚙️ How it works
 
 ```
-Microphone → Web Speech API → transcript
+Any microphone → Vosk (offline, streaming) → words as you say them
                                   ↓
              Intl.Segmenter → words, normalized (case, accents, punctuation)
                                   ↓
@@ -228,8 +231,20 @@ bundler also signs the updater artifacts, so a local build needs the signing key
 a draft release with `latest.json`; publishing the draft is what makes installed apps see
 the update. The workflow reads the key from the `TAURI_SIGNING_PRIVATE_KEY` secret.
 
+**Tests**: `pnpm test` runs the unit tests (matcher, slide cards, contrast). The speech
+recognition tests transcribe recorded scripts in `src-tauri/tests/fixtures` and need the
+models first:
+
+```powershell
+./scripts/fetch-speech-models.ps1
+$env:VOSK_MODELS_DIR = "$PWD\.speech-models"
+cargo test --manifest-path src-tauri/Cargo.toml
+```
+
+CI runs all of them on every push, and a release is only built when they pass.
+
 **Stack**: React 19 + TypeScript, Vite, Tailwind CSS v4, Framer Motion, Tauri 2 (Rust), and
-the Web Speech API.
+Vosk for offline speech recognition, cpal for audio capture.
 
 ---
 

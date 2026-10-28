@@ -24,9 +24,8 @@ button drags the window.
 Done or Esc to finish).
 - Start / Stop: listening starts after a short countdown. Pause / Resume \
 appears while listening.
-- Speech language (EN, ES...). Microphone: shows the Windows default input, \
-which is the one speech recognition always uses, with a live level meter and \
-a button to change it in the Windows sound settings.
+- Speech language (EN, ES...) and microphone: any input device, with a live \
+level meter to test it.
 - Appearance (palette icon): text size, background color and opacity, text \
 color, and typography (font, weight, line spacing, text width, alignment).
 - Tutorial (?) replays the guided tour. Settings (gear) holds the rest.
@@ -62,7 +61,9 @@ Ctrl+Alt+Left/Right previous/next slide, Ctrl+Alt+H show/hide the window, \
 Ctrl+Alt+K click-through.
 
 ## Good to know
-Speech recognition uses the Windows WebView2 engine and needs internet. \
+Speech recognition runs offline with Vosk on the microphone picked in the \
+microphone menu; each speech language's model is downloaded once, the first \
+time Start is pressed in it. \
 Hiding from capture needs Windows 10 version 2004 or newer.";
 
 pub const FORMAT_GUIDE: &str = "\

@@ -59,7 +59,7 @@ export const es: Messages = {
         languageTitle: 'Idioma de voz',
         language: 'Elige el idioma en el que vas a hablar.',
         micTitle: 'Micrófono',
-        mic: 'Mira qué micrófono escucha y comprueba que te oye.',
+        mic: 'Elige qué micrófono escucha y revisa su nivel.',
         lookTitle: 'Hazlo tuyo',
         look: 'Tamaño del texto, color y opacidad del fondo, y color del texto.',
         settingsTitle: 'Ajustes',
