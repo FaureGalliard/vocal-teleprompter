@@ -33,8 +33,8 @@ interface CanvasProps {
     readingLine: boolean
     typography: Typography
     titleBarHeight: number
-    // Height of the open toolbar, which the script moves below
-    toolbarHeight: number
+    // Room kept free on the right for the toolbar
+    rightInset: number
     titleBarPosition: 'top' | 'bottom'
 }
 
@@ -58,7 +58,7 @@ export default function Canvas({
     readingLine,
     typography,
     titleBarHeight,
-    toolbarHeight,
+    rightInset,
     titleBarPosition,
 }: CanvasProps) {
     const t = useT()
@@ -175,7 +175,7 @@ export default function Canvas({
         )
     }
 
-    const top = (titleBarPosition === 'top' ? titleBarHeight + 15 : 20) + toolbarHeight
+    const top = titleBarPosition === 'top' ? titleBarHeight + 15 : 20
     // Leave room for the status bar along the bottom edge
     const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 34 : 36
 
@@ -190,7 +190,7 @@ export default function Canvas({
                         top,
                         bottom,
                         left: 20,
-                        right: 20,
+                        right: 20 + rightInset,
                         overflowY: 'scroll',
                         overflowX: 'hidden',
                         scrollbarWidth: 'none',

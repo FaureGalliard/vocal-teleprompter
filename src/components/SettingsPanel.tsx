@@ -20,6 +20,7 @@ import { displayShortcut } from '../lib/shortcuts'
 import Switch from './Switch'
 import ShortcutsSection from './ShortcutsSection'
 import AiConnectorSection from './AiConnectorSection'
+import { RailTooltip } from './Toolbar'
 import type { useUpdater } from '../hooks/useUpdater'
 
 const PANEL_WIDTH = 288
@@ -117,10 +118,10 @@ export default function SettingsPanel({
     const t = useT()
     const [open, setOpen] = useState(false)
     const [confirmReset, setConfirmReset] = useState(false)
-    // Open toward whichever side has room; the gear may wrap to the left
-    const [alignLeft, setAlignLeft] = useState(false)
-    // Fit the panel between the button and the bottom of the window; it
+    // Opens to the left of the toolbar, growing down from the button, or up
+    // from it when the button sits in the lower half of the window; it
     // scrolls when the window is shorter than the panel
+    const [growUp, setGrowUp] = useState(false)
     const [maxHeight, setMaxHeight] = useState<number>()
     const ref = useRef<HTMLDivElement>(null)
 
@@ -152,32 +153,37 @@ export default function SettingsPanel({
         <div
             ref={ref}
             data-tour="settings"
-            className="relative">
+            className="relative group">
             <button
                 onClick={() => {
                     const rect = ref.current?.getBoundingClientRect()
                     if (rect) {
-                        setAlignLeft(rect.right < PANEL_WIDTH + 8)
-                        setMaxHeight(Math.max(160, window.innerHeight - rect.bottom - 16))
+                        const up = rect.top > window.innerHeight / 2
+                        setGrowUp(up)
+                        setMaxHeight(up ? rect.bottom - 8 : window.innerHeight - rect.top - 8)
                     }
                     setOpen((v) => !v)
                 }}
-                title={t.settings.title}
-                className={`flex items-center justify-center w-7 h-7 rounded-full transition-colors ${
+                aria-label={t.settings.title}
+                className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
                     open ? 'bg-[#445ade] text-white' : 'bg-white/10 text-white hover:bg-white/20'
                 }`}>
                 <Settings size={14} />
             </button>
+            <RailTooltip
+                label={t.settings.title}
+                hidden={open}
+            />
 
             <AnimatePresence>
                 {open && (
                     <motion.div
-                        initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                        initial={{ opacity: 0, x: 6, scale: 0.97 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 6, scale: 0.97 }}
                         transition={{ duration: 0.14, ease: 'easeOut' }}
                         style={{ width: PANEL_WIDTH, maxHeight }}
-                        className={`absolute top-full mt-2 z-50 ${alignLeft ? 'left-0' : 'right-0'} bg-[#242424] border border-white/10 rounded-xl shadow-xl overflow-y-auto`}>
+                        className={`absolute right-full mr-2 z-50 ${growUp ? 'bottom-0' : 'top-0'} bg-[#242424] border border-white/10 rounded-xl shadow-xl overflow-y-auto`}>
                         <div className="px-4 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
                             {t.settings.title}
                         </div>

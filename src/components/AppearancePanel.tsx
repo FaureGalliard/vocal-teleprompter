@@ -5,6 +5,7 @@ import { HexColorPicker } from 'react-colorful'
 import { Minus, Palette, Plus } from 'lucide-react'
 import { useT } from '../i18n'
 import TypographyControls from './TypographyControls'
+import { RailTooltip } from './Toolbar'
 import type { Typography } from '../lib/typography'
 
 interface AppearancePanelProps {
@@ -61,12 +62,14 @@ export default function AppearancePanel({
     }, [open])
 
     const toggle = () => {
+        // Opens to the left of the toolbar, as high as fits
         const rect = buttonRef.current?.getBoundingClientRect()
         if (rect) {
+            const top = Math.max(8, Math.min(rect.top, window.innerHeight - 420))
             setPosition({
-                top: rect.bottom + 8,
-                left: Math.max(8, Math.min(rect.left, window.innerWidth - PANEL_WIDTH - 8)),
-                maxHeight: Math.max(160, window.innerHeight - rect.bottom - 16),
+                top,
+                left: Math.max(8, rect.left - PANEL_WIDTH - 8),
+                maxHeight: window.innerHeight - top - 8,
             })
         }
         setOpen((v) => !v)
@@ -75,16 +78,20 @@ export default function AppearancePanel({
     const setSize = (value: number) => onFontSizeChange(Math.max(6, Math.min(200, value)))
 
     return (
-        <>
+        <div className="relative group">
             <button
                 ref={buttonRef}
                 onClick={toggle}
-                title={t.appearance.title}
-                className={`flex items-center justify-center w-7 h-7 rounded-full transition-colors ${
+                aria-label={t.appearance.title}
+                className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
                     open ? 'bg-[#445ade] text-white' : 'bg-white/10 text-white hover:bg-white/20'
                 }`}>
                 <Palette size={14} />
             </button>
+            <RailTooltip
+                label={t.appearance.title}
+                hidden={open}
+            />
 
             {createPortal(
                 <AnimatePresence>
@@ -183,6 +190,6 @@ export default function AppearancePanel({
                 </AnimatePresence>,
                 document.body,
             )}
-        </>
+        </div>
     )
 }

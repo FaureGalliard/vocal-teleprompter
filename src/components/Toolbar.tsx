@@ -2,12 +2,10 @@ import { useRef, useEffect, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Check,
-    ChevronDown,
     CircleHelp,
     ClipboardPaste,
-    FileUp,
-    Languages,
     ExternalLink,
+    FileUp,
     Mic,
     Pause,
     Pencil,
@@ -18,19 +16,21 @@ import {
 import { LANGUAGES } from '../constants/languages'
 import { useT } from '../i18n'
 
-const ICON = 13
+const ICON = 14
+
+// Width kept free on the right of the script for the toolbar, whether it is
+// open or not, so opening it never reflows the text
+export const TOOLBAR_RAIL_WIDTH = 52
 
 interface ToolbarProps {
     visible: boolean
     isAdjusting: boolean
+    // Distance from the top of the window to the toolbar button
     topOffset: number
-    // Reports the bar's height so the script can move down instead of hiding under it
-    onHeightChange: (height: number) => void
     isRecognizing: boolean
     isSpeechActive: boolean
     isPaused: boolean
     isCountingDown: boolean
-    error: string | null
     content: string
     isEditing: boolean
     language: string
@@ -55,42 +55,75 @@ interface ToolbarProps {
     settings: ReactNode
 }
 
-const btn = 'flex items-center gap-1.5 h-7 px-3 text-[11px] font-medium rounded-full transition-colors'
-const iconBtn = 'flex items-center justify-center w-7 h-7 rounded-full transition-colors'
+const iconBtn = 'flex items-center justify-center w-8 h-8 rounded-full transition-colors'
 const primary = 'bg-[#445ade] text-white hover:bg-[#3448c5]'
 const ghost = 'bg-white/10 text-white hover:bg-white/20'
 const menu =
-    'absolute top-full left-0 mt-2 z-50 bg-[#242424] border border-white/10 rounded-xl overflow-hidden shadow-xl flex flex-col'
-const menuItem = (active: boolean) =>
-    `px-4 py-1.5 text-[11px] font-medium text-left transition-colors truncate ${
-        active ? 'bg-[#445ade] text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-    }`
-const divider = <div className="w-px h-5 mx-0.5 bg-white/15" />
+    'absolute right-full top-0 mr-2 z-50 bg-[#242424] border border-white/10 rounded-xl overflow-hidden shadow-xl flex flex-col'
+const divider = <div className="w-5 h-px my-0.5 bg-white/15" />
 
 const menuMotion = {
-    initial: { opacity: 0, y: -6, scale: 0.97 },
-    animate: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: -6, scale: 0.97 },
+    initial: { opacity: 0, x: 6, scale: 0.97 },
+    animate: { opacity: 1, x: 0, scale: 1 },
+    exit: { opacity: 0, x: 6, scale: 0.97 },
     transition: { duration: 0.14, ease: 'easeOut' as const },
 }
 
-export default function Toolbar(props: ToolbarProps) {
+const speechLanguageLabel = (code: string) => LANGUAGES.find((l) => l.value === code)?.label ?? code
+
+// Label that appears to the left of a toolbar control on hover; the control's
+// wrapper needs the `group` class
+export function RailTooltip({ label, hidden }: { label: string; hidden?: boolean }) {
+    if (hidden) return null
     return (
-        <AnimatePresence>
-            {props.visible && <ToolbarBar {...props} />}
-        </AnimatePresence>
+        <span className="absolute right-full top-1/2 -translate-y-1/2 mr-2 z-50 px-2 py-1 rounded-md bg-[#0d0d0d] border border-white/10 text-[11px] text-white whitespace-nowrap shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            {label}
+        </span>
     )
 }
 
-function ToolbarBar({
+function RailButton({
+    label,
+    onClick,
+    className,
+    disabled,
+    children,
+    tour,
+}: {
+    label: string
+    onClick: () => void
+    className: string
+    disabled?: boolean
+    children: ReactNode
+    tour?: string
+}) {
+    return (
+        <div
+            className="relative group"
+            data-tour={tour}>
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                aria-label={label}
+                className={`${iconBtn} ${className} disabled:opacity-30 disabled:cursor-not-allowed`}>
+                {children}
+            </button>
+            <RailTooltip label={label} />
+        </div>
+    )
+}
+
+export default function Toolbar(props: ToolbarProps) {
+    return <AnimatePresence>{props.visible && <ToolbarRail {...props} />}</AnimatePresence>
+}
+
+function ToolbarRail({
     isAdjusting,
     topOffset,
-    onHeightChange,
     isRecognizing,
     isSpeechActive,
     isPaused,
     isCountingDown,
-    error,
     content,
     isEditing,
     language,
@@ -113,23 +146,9 @@ function ToolbarBar({
     settings,
 }: ToolbarProps) {
     const t = useT()
-    const barRef = useRef<HTMLDivElement>(null)
     const langMenuRef = useRef<HTMLDivElement>(null)
     const micMenuRef = useRef<HTMLDivElement>(null)
     const running = isSpeechActive || isCountingDown
-
-
-    useEffect(() => {
-        const bar = barRef.current
-        if (!bar) return
-        const observer = new ResizeObserver(() => onHeightChange(bar.offsetHeight))
-        observer.observe(bar)
-        return () => {
-            observer.disconnect()
-            onHeightChange(0)
-        }
-        // onHeightChange is a state setter
-    }, [])
 
     // Close the language and microphone menus on outside click
     useEffect(() => {
@@ -145,66 +164,63 @@ function ToolbarBar({
 
     return (
         <motion.div
-            ref={barRef}
-            initial={{ opacity: 0, y: '-100%' }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: isAdjusting ? 0 : 1, y: 0 }}
-            exit={{ opacity: 0, y: '-100%' }}
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            style={{ top: topOffset }}
-            // Room on the right for the floating toolbar button
-            className="fixed left-0 right-0 z-40 flex flex-wrap items-center gap-1.5 pl-4 pr-14 py-2 bg-[#1a1a1a] border-b border-white/10">
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+            // Right under the round toolbar button
+            style={{ top: topOffset + 52, width: 40, right: 10 }}
+            className="fixed z-40 flex flex-col items-center gap-1 py-1.5 rounded-full bg-[#1a1a1a] border border-white/10 shadow-lg">
             <div
                 data-tour="script"
-                className="flex items-center gap-1.5">
-                <button
+                className="flex flex-col items-center gap-1">
+                <RailButton
+                    label={t.toolbar.paste}
                     onClick={onPasteText}
-                    title={t.toolbar.paste}
-                    className={`${iconBtn} ${primary}`}>
+                    className={primary}>
                     <ClipboardPaste size={ICON} />
-                </button>
-                <button
+                </RailButton>
+                <RailButton
+                    label={t.toolbar.import}
                     onClick={onImport}
-                    title={t.toolbar.import}
-                    className={`${iconBtn} ${ghost}`}>
+                    className={ghost}>
                     <FileUp size={ICON} />
-                </button>
-                <button
+                </RailButton>
+                <RailButton
+                    label={t.toolbar.clear}
                     onClick={onClear}
-                    title={t.toolbar.clear}
-                    className={`${iconBtn} bg-white/10 text-white hover:bg-red-500/80`}>
+                    className="bg-white/10 text-white hover:bg-red-500/80">
                     <Trash2 size={ICON} />
-                </button>
-                <button
+                </RailButton>
+                <RailButton
+                    label={isEditing ? t.toolbar.done : t.toolbar.edit}
                     onClick={onToggleEdit}
-                    title={isEditing ? t.toolbar.done : t.toolbar.edit}
-                    className={`${iconBtn} ${isEditing ? primary : ghost}`}>
+                    className={isEditing ? primary : ghost}>
                     {isEditing ? <Check size={ICON} /> : <Pencil size={ICON} />}
-                </button>
+                </RailButton>
             </div>
 
             {divider}
 
-            <button
-                data-tour="start"
+            <RailButton
+                tour="start"
+                label={running ? t.toolbar.stop : t.toolbar.start}
                 onClick={onToggleListen}
                 disabled={!content}
-                className={`${btn} disabled:opacity-30 disabled:cursor-not-allowed ${
-                    running ? 'bg-red-500 text-white hover:bg-red-600' : primary
-                } ${
+                className={`${running ? 'bg-red-500 text-white hover:bg-red-600' : primary} ${
                     // Session on but the recognizer is (re)connecting
                     isSpeechActive && !isPaused && !isRecognizing ? 'animate-pulse' : ''
                 }`}>
                 {running ? <Square size={ICON} /> : <Play size={ICON} />}
-                {running ? t.toolbar.stop : t.toolbar.start}
-            </button>
+            </RailButton>
 
             {isSpeechActive && (
-                <button
+                <RailButton
+                    label={isPaused ? t.toolbar.resume : t.toolbar.pause}
                     onClick={onTogglePause}
-                    title={isPaused ? t.toolbar.resume : t.toolbar.pause}
-                    className={`${iconBtn} ${isPaused ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : ghost}`}>
+                    className={isPaused ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : ghost}>
                     {isPaused ? <Play size={ICON} /> : <Pause size={ICON} />}
-                </button>
+                </RailButton>
             )}
 
             {divider}
@@ -212,28 +228,31 @@ function ToolbarBar({
             <div
                 ref={langMenuRef}
                 data-tour="speech-language"
-                className="relative">
+                className="relative group">
                 <button
                     onClick={onLangMenuToggle}
-                    title={t.toolbar.speechLanguage}
-                    className={`${btn} ${ghost} px-2.5`}>
-                    <Languages size={ICON} />
-                    {LANGUAGES.find((l) => l.value === language)?.label ?? language}
-                    <ChevronDown
-                        size={12}
-                        className={`opacity-50 transition-transform ${langMenuOpen ? 'rotate-180' : ''}`}
-                    />
+                    aria-label={t.toolbar.speechLanguage}
+                    className={`${iconBtn} ${langMenuOpen ? primary : ghost} text-[10px] font-semibold`}>
+                    {speechLanguageLabel(language)}
                 </button>
+                <RailTooltip
+                    label={t.toolbar.speechLanguage}
+                    hidden={langMenuOpen}
+                />
                 <AnimatePresence>
                     {langMenuOpen && (
                         <motion.div
                             {...menuMotion}
-                            className={`${menu} min-w-[64px]`}>
+                            className={`${menu} min-w-[72px]`}>
                             {LANGUAGES.map((lang) => (
                                 <button
                                     key={lang.value}
                                     onClick={() => onLanguageChange(lang.value)}
-                                    className={menuItem(language === lang.value)}>
+                                    className={`px-4 py-1.5 text-[11px] font-medium text-left transition-colors ${
+                                        language === lang.value
+                                            ? 'bg-[#445ade] text-white'
+                                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                    }`}>
                                     {lang.label}
                                 </button>
                             ))}
@@ -245,21 +264,21 @@ function ToolbarBar({
             <div
                 ref={micMenuRef}
                 data-tour="microphone"
-                className="relative">
+                className="relative group">
                 <button
                     onClick={onMicMenuToggle}
-                    title={t.toolbar.microphone}
-                    className={`${btn} ${ghost} px-2.5`}>
+                    aria-label={t.toolbar.microphone}
+                    className={`${iconBtn} ${micMenuOpen ? primary : ghost}`}>
                     <Mic size={ICON} />
-                    {/* Name the device in use so the button explains itself */}
-                    <span className="max-w-[90px] truncate">
-                        {defaultMicrophone || t.toolbar.microphone}
-                    </span>
-                    <ChevronDown
-                        size={12}
-                        className={`opacity-50 transition-transform ${micMenuOpen ? 'rotate-180' : ''}`}
-                    />
                 </button>
+                <RailTooltip
+                    label={
+                        defaultMicrophone
+                            ? `${t.toolbar.microphone}: ${defaultMicrophone}`
+                            : t.toolbar.microphone
+                    }
+                    hidden={micMenuOpen}
+                />
                 <AnimatePresence>
                     {micMenuOpen && (
                         <motion.div
@@ -268,7 +287,9 @@ function ToolbarBar({
                             <span className="text-[10px] font-medium uppercase tracking-wide text-white/40">
                                 {t.mic.title}
                             </span>
-                            <span className="text-[12px] text-white truncate" title={defaultMicrophone}>
+                            <span
+                                className="text-[12px] text-white truncate"
+                                title={defaultMicrophone}>
                                 {defaultMicrophone || t.toolbar.noMicrophones}
                             </span>
                             <div
@@ -295,18 +316,14 @@ function ToolbarBar({
 
             <div data-tour="look">{appearance}</div>
 
-            <button
+            <RailButton
+                label={t.settings.tutorial}
                 onClick={onShowTutorial}
-                title={t.settings.tutorial}
-                className={`${iconBtn} ${ghost}`}>
-                <CircleHelp size={14} />
-            </button>
+                className={ghost}>
+                <CircleHelp size={ICON} />
+            </RailButton>
 
             {settings}
-
-            {error && (
-                <span className="text-[10px] text-red-400 ml-1">{t.errors[error] ?? error}</span>
-            )}
         </motion.div>
     )
 }

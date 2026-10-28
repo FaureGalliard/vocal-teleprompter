@@ -1,6 +1,6 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
-import Toolbar from './components/Toolbar'
+import Toolbar, { TOOLBAR_RAIL_WIDTH } from './components/Toolbar'
 import AppearancePanel from './components/AppearancePanel'
 import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
@@ -61,7 +61,6 @@ function App() {
     const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
-    const [toolbarHeight, setToolbarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
     const [typography, setTypography] = usePersistentState<Typography>(
@@ -621,7 +620,6 @@ function App() {
                     isRecognizing={isRecognizing}
                     isSpeechActive={isSpeechActive}
                     isPaused={isPaused}
-                    error={error}
                     content={content}
                     language={language}
                     langMenuOpen={langMenuOpen}
@@ -652,7 +650,6 @@ function App() {
                         setMicMenuOpen((v) => !v)
                         setLangMenuOpen(false)
                     }}
-                    onHeightChange={setToolbarHeight}
                     appearance={
                         <AppearancePanel
                             fontSize={fontSize}
@@ -765,7 +762,7 @@ function App() {
                     readingLine={readingLine}
                     typography={typography}
                     titleBarHeight={titleBarVisible ? titleBarHeight : 0}
-                    toolbarHeight={toolbarHeight}
+                    rightInset={TOOLBAR_RAIL_WIDTH}
                     titleBarPosition={titleBarPosition}
                 />
 
@@ -802,6 +799,8 @@ function App() {
                         {...pace}
                         clickThrough={clickThrough}
                         heard={isSpeechActive && !isPaused ? heardText : ''}
+                        error={error ? (t.errors[error] ?? error) : null}
+                        rightInset={TOOLBAR_RAIL_WIDTH}
                     />
                 )}
             </div>
