@@ -7,7 +7,60 @@ Vocal Teleprompter is a desktop teleprompter that listens to the speaker and \
 scrolls the script as they read it aloud. Use it to put a speech or a \
 presentation script in front of the user: write the script, send it with \
 load_script, and check its length with get_status. Read the format guide \
-resource (teleprompter://format-guide) before writing a script.";
+resource (teleprompter://format-guide) before writing a script, and the app \
+guide (teleprompter://app-guide) to explain features or where to find them. \
+update_settings changes the prompter's settings, control drives it.";
+
+pub const APP_GUIDE: &str = "\
+# Vocal Teleprompter: features and where to find them
+
+A small always-on-top window, usually placed under the webcam. The round \
+button at its top right opens and closes the toolbar; holding it drags the \
+window. While the toolbar is open the script moves below it.
+
+## Toolbar, left to right
+- Script: Paste (clipboard), Import (.txt file), Clear, Edit (write in place; \
+Done or Esc to finish).
+- Start / Stop: listening starts after a short countdown. Pause / Resume \
+appears while listening.
+- Speech language (EN, ES...) and microphone pickers.
+- Appearance (palette icon): text size, background color and opacity, text \
+color, and typography (font, weight, line spacing, text width, alignment).
+- Tutorial (?) replays the guided tour. Settings (gear) holds the rest.
+
+## Settings
+Interface language (9 languages), hide from screen sharing, automatic \
+contrast, click-through, reading line, countdown, target duration, title \
+bar, AI connector, updates, global shortcuts (rebindable, can be turned \
+off), tutorial and reset.
+
+## In the script
+- A line with only --- separates slide cards; the bottom bar shows Slide n / \
+total with previous and next buttons.
+- Click a word to edit the script there; Ctrl+click (or a click while \
+listening) continues reading from that word.
+- The bottom right shows the estimated reading time, and while listening the \
+elapsed time, words per minute, time left and pace against the target.
+
+## Features worth knowing
+- Hide from screen sharing (on by default): Zoom, Meet, Teams, OBS and \
+screenshots leave the window out, while the speaker still sees it.
+- Automatic contrast keeps the text readable; with a see-through background \
+the text gets a halo.
+- Click-through lets clicks reach the app behind the window. Turned off with \
+Ctrl+Alt+K or from the tray icon.
+- Reading line holds the current line near the top, close to the camera.
+
+## Shortcuts
+In the window: Space start/pause, Esc stop, arrows move a word, PageUp and \
+PageDown change slide, + and - change the text size.
+Global (from any app, by default): Ctrl+Alt+Space start/pause, \
+Ctrl+Alt+Left/Right previous/next slide, Ctrl+Alt+H show/hide the window, \
+Ctrl+Alt+K click-through.
+
+## Good to know
+Speech recognition uses the Windows WebView2 engine and needs internet. \
+Hiding from capture needs Windows 10 version 2004 or newer.";
 
 pub const FORMAT_GUIDE: &str = "\
 # Writing scripts for Vocal Teleprompter

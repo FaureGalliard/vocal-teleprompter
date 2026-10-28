@@ -29,6 +29,7 @@ import CountdownOverlay from './components/CountdownOverlay'
 import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
 import { useMcpBridge } from './hooks/useMcpBridge'
 import { DEFAULT_WPM } from './hooks/usePace'
+import { LANGUAGES } from './constants/languages'
 import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
@@ -254,7 +255,58 @@ function App() {
                 wordsPerMinute: pace.wpm === null ? null : Math.round(pace.wpm),
                 remainingMinutes: Math.round((pace.remainingMs / 60000) * 10) / 10,
                 pace: pace.status,
+                settings: {
+                    hideFromScreenSharing: hiddenFromCapture,
+                    fontSize,
+                    countdownSeconds,
+                    readingLine,
+                    autoContrast,
+                    clickThrough,
+                    windowVisible: !document.hidden,
+                },
             }
+        },
+        update_settings: (changes) => {
+            requireConnector()
+            const isBool = (v: unknown): v is boolean => typeof v === 'boolean'
+            const isInt = (v: unknown, min: number, max: number): v is number =>
+                Number.isInteger(v) && (v as number) >= min && (v as number) <= max
+            const applied: string[] = []
+            if (isBool(changes.hideFromScreenSharing)) {
+                setHiddenFromCapture(changes.hideFromScreenSharing)
+                applied.push('hideFromScreenSharing')
+            }
+            if (isInt(changes.fontSize, 6, 200)) {
+                setFontSize(changes.fontSize)
+                applied.push('fontSize')
+            }
+            if (isInt(changes.targetMinutes, 0, 180)) {
+                setTargetMinutes(changes.targetMinutes)
+                applied.push('targetMinutes')
+            }
+            if (isInt(changes.countdownSeconds, 0, 10)) {
+                setCountdownSeconds(changes.countdownSeconds)
+                applied.push('countdownSeconds')
+            }
+            if (isBool(changes.readingLine)) {
+                setReadingLine(changes.readingLine)
+                applied.push('readingLine')
+            }
+            if (isBool(changes.autoContrast)) {
+                setAutoContrast(changes.autoContrast)
+                applied.push('autoContrast')
+            }
+            if (isBool(changes.clickThrough)) {
+                setClickThrough(changes.clickThrough)
+                applied.push('clickThrough')
+            }
+            if (LANGUAGES.some((l) => l.value === changes.speechLanguage)) {
+                setLanguage(changes.speechLanguage as string)
+                applied.push('speechLanguage')
+            }
+            const ignored = Object.keys(changes).filter((k) => !applied.includes(k))
+            if (!applied.length) throw new Error(`Nothing to change. Invalid or unknown: ${ignored.join(', ')}`)
+            return { applied, ignored }
         },
         control: ({ action }) => {
             requireConnector()
@@ -277,6 +329,17 @@ function App() {
                     break
                 case 'previous_slide':
                     goToCard(currentCard - 1)
+                    break
+                case 'show_window':
+                    getCurrentWindow()
+                        .show()
+                        .then(() => getCurrentWindow().setFocus())
+                        .catch(() => {})
+                    break
+                case 'hide_window':
+                    getCurrentWindow()
+                        .hide()
+                        .catch(() => {})
                     break
                 default:
                     throw new Error(`Unknown action: ${String(action)}`)
