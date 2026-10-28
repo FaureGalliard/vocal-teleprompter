@@ -114,6 +114,22 @@ describe('nextPosition', () => {
         expect(current).toBe(last)
     })
 
+    // What Vosk returned for the Spanish test recording, with its slips
+    // (reducimos for redujimos, a stray accent, a missing one)
+    it('follows the real recognizer output of the Spanish recording', () => {
+        const script =
+            'Buenos días a todos. Hoy les quiero mostrar cómo redujimos a la mitad nuestros tiempos de entrega. Todo empezó con una pregunta muy simple: ¿dónde estábamos perdiendo tiempo de verdad?'
+        const { current, last } = readAloud(
+            script,
+            [
+                'buenos días a todos hoy les quiero mostrar cómo reducimos á la mitad nuestros tiempos de entrega',
+                'todo empezó con una pregunta muy simple donde estábamos perdiendo tiempo de verdad',
+            ],
+            'es-ES',
+        )
+        expect(current).toBe(last)
+    })
+
     it('follows Japanese, which is written without spaces', () => {
         const script = '今日はいい天気ですね。散歩に行きましょう。'
         const { current, last } = readAloud(script, ['今日はいい天気ですね', '散歩に行きましょう'], 'ja-JP')
