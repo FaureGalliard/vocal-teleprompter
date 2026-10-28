@@ -131,12 +131,28 @@ Desktop, Cursor or VS Code, then restart that app. For any other MCP client, use
 {
   "mcpServers": {
     "vocal-teleprompter": {
-      "command": "C:\\Users\\you\\AppData\\Local\\vocal-teleprompter\\vocal-teleprompter.exe",
+      "command": "C:\\Program Files\\vocal-teleprompter\\vocal-teleprompter.exe",
       "args": ["--mcp"]
     }
   }
 }
 ```
+
+Use the path where the app is installed: `C:\Program Files\vocal-teleprompter` for the
+`.msi`, `%LOCALAPPDATA%\vocal-teleprompter` for the `.exe` installer.
+
+**Claude Code:** from Git Bash, `cmd` or PowerShell 7, run
+
+```bash
+claude mcp add vocal-teleprompter -- "C:\Program Files\vocal-teleprompter\vocal-teleprompter.exe" --mcp
+```
+
+then `claude mcp list` should show it as connected, and new sessions get its tools. In
+Windows PowerShell 5.1, add `--%` right after `claude` (`claude --% mcp add ...`): that shell
+drops the `--` otherwise, and `claude` then rejects `--mcp`.
+
+> Testing the connector by piping JSON into it from Windows PowerShell 5.1 prints nothing,
+> because that shell does not connect pipes to Windows GUI apps. MCP clients and Git Bash do.
 
 What the assistant can do:
 
