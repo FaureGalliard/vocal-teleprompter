@@ -57,7 +57,7 @@ export const en = {
         languageTitle: 'Speech language',
         language: 'Pick the language you are going to speak in.',
         micTitle: 'Microphone',
-        mic: 'Choose which microphone the prompter listens to.',
+        mic: 'See which microphone it listens to and check that it hears you.',
         lookTitle: 'Make it yours',
         look: 'Text size, background color and opacity, and text color.',
         settingsTitle: 'Settings',

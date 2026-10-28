@@ -59,7 +59,7 @@ export const it: Messages = {
         languageTitle: 'Lingua parlata',
         language: 'Scegli la lingua in cui parlerai.',
         micTitle: 'Microfono',
-        mic: 'Scegli quale microfono ascolta il gobbo.',
+        mic: 'Guarda quale microfono ascolta e verifica che ti senta.',
         lookTitle: 'Personalizzalo',
         look: 'Dimensione del testo, colore e opacità dello sfondo e colore del testo.',
         settingsTitle: 'Impostazioni',

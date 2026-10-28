@@ -35,6 +35,12 @@ import { usePersistentState, clearPersistentState } from './hooks/usePersistentS
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
 
+// Speech language matching the system's, so a first run listens in the
+// language the user most likely speaks
+const systemSpeechLanguage =
+    LANGUAGES.find((l) => l.value.split('-')[0] === navigator.language.split('-')[0])?.value ??
+    'en-US'
+
 // Below this background opacity the backdrop shows through enough to need a halo
 const HALO_BELOW_OPACITY = 0.85
 
@@ -137,7 +143,7 @@ function App() {
         window.addEventListener('touchend', onUp)
     }
 
-    const [language, setLanguage] = usePersistentState('language', 'en-US')
+    const [language, setLanguage] = usePersistentState<string>('language', systemSpeechLanguage)
     const [langMenuOpen, setLangMenuOpen] = useState(false)
     const [micMenuOpen, setMicMenuOpen] = useState(false)
     const titleBarRef = useRef<HTMLDivElement>(null)

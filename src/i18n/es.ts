@@ -59,7 +59,7 @@ export const es: Messages = {
         languageTitle: 'Idioma de voz',
         language: 'Elige el idioma en el que vas a hablar.',
         micTitle: 'Micrófono',
-        mic: 'Elige qué micrófono escucha el teleprompter.',
+        mic: 'Mira qué micrófono escucha y comprueba que te oye.',
         lookTitle: 'Hazlo tuyo',
         look: 'Tamaño del texto, color y opacidad del fondo, y color del texto.',
         settingsTitle: 'Ajustes',

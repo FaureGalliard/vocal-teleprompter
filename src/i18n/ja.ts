@@ -59,7 +59,7 @@ export const ja: Messages = {
         languageTitle: '音声の言語',
         language: '話す言語を選んでください。',
         micTitle: 'マイク',
-        mic: 'プロンプターが聞き取るマイクを選びます。',
+        mic: 'どのマイクを使っているかを確認し、声が届いているかテストできます。',
         lookTitle: 'お好みに',
         look: '文字サイズ、背景の色と不透明度、文字の色。',
         settingsTitle: '設定',

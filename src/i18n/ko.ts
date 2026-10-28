@@ -59,7 +59,7 @@ export const ko: Messages = {
         languageTitle: '음성 언어',
         language: '말할 언어를 선택하세요.',
         micTitle: '마이크',
-        mic: '프롬프터가 들을 마이크를 선택하세요.',
+        mic: '어떤 마이크를 듣는지 확인하고 소리가 들어오는지 테스트하세요.',
         lookTitle: '나만의 스타일',
         look: '글자 크기, 배경 색상과 불투명도, 글자 색상.',
         settingsTitle: '설정',

@@ -59,7 +59,7 @@ export const zh: Messages = {
         languageTitle: '语音语言',
         language: '选择你要说的语言。',
         micTitle: '麦克风',
-        mic: '选择提词器使用的麦克风。',
+        mic: '查看它使用的是哪个麦克风，并确认它能听到你。',
         lookTitle: '按你的喜好',
         look: '字号、背景颜色和不透明度，以及文字颜色。',
         settingsTitle: '设置',
