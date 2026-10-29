@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import type { Expansion } from '../hooks/useWindowExpansion'
 import type { Glass } from '../hooks/useBackdropView'
+import GlassLayers from './GlassLayers'
 
 // The teleprompter itself. Its transform makes it the box that the
 // fixed-position pieces inside are laid out in, so they stay put while the
@@ -45,17 +46,10 @@ export default function Frame({
                 } as CSSProperties
             }>
             {glass && (
-                // Its own layer, under everything else, so it can fade out
-                // while the window moves and its picture is out of date
-                <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                        backgroundImage: `linear-gradient(${tint}, ${tint}), url(${glass.url})`,
-                        backgroundSize: `100% 100%, ${glass.width}px ${glass.height}px`,
-                        backgroundRepeat: 'no-repeat',
-                        opacity: glassShown ? 1 : 0,
-                        transition: 'opacity 0.25s ease, background-image 0.3s ease',
-                    }}
+                <GlassLayers
+                    glass={glass}
+                    shown={glassShown}
+                    tint={tint}
                 />
             )}
             {children}
