@@ -2,7 +2,7 @@
 // over it, away from the thread that draws the interface, so neither the
 // blur nor the per-letter colors can make it stutter.
 
-import { blur, colorMap, rgb, settle } from '../lib/backdrop'
+import { blur, colorMap, cropBackdrop, rgb, settle, type Backdrop } from '../lib/backdrop'
 import { paintLetters, type Seen } from '../lib/letterPaint'
 import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
@@ -12,6 +12,8 @@ const MAX_BLUR = 8
 // the last one (screen noise, a blinking caret elsewhere)
 const SAME_BELOW = 1.5
 
+// The last capture of the monitor the window is on
+let monitor: Backdrop | null = null
 // What the eye sees behind the text, from the last look
 let seen: Seen | null = null
 // The last look as it came, and how it was asked for, to spot repeats
@@ -33,6 +35,7 @@ async function picture(image: Uint8ClampedArray, cols: number, rows: number) {
 self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     if (data.type === 'reset') {
         seen = null
+        monitor = null
         lastPixels = null
         picked = new Map()
         colors.clear()
@@ -40,8 +43,12 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     }
 
     if (data.type === 'view') {
-        const { id, cols, rows, step, background, opacity, soften } = data
-        const pixels = new Uint8Array(data.pixels)
+        const { id, capture, place, background, opacity, soften } = data
+        if (capture) monitor = { ...capture, pixels: new Uint8Array(capture.pixels) }
+        const crop = monitor && cropBackdrop(monitor, place)
+        if (!monitor || !crop) return reply({ type: 'away', id })
+        const { cols, rows, pixels } = crop
+        const step = monitor.step
         const asked = `${cols}x${rows}:${background}:${opacity}:${soften}`
         if (asked === lastAsked && lastPixels?.length === pixels.length) {
             let change = 0

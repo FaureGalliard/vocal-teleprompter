@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { contrastRatio } from './contrast'
-import { colorMap, estimateBackground, settle, type Backdrop, type Surface } from './backdrop'
+import {
+    colorMap,
+    cropBackdrop,
+    estimateBackground,
+    settle,
+    type Backdrop,
+    type Surface,
+} from './backdrop'
 
 // A backdrop of 4x6 samples, painted with `paint(col, row)`
 function backdrop(paint: (c: number, r: number) => [number, number, number]): Backdrop {
@@ -9,7 +16,7 @@ function backdrop(paint: (c: number, r: number) => [number, number, number]): Ba
     const pixels = new Uint8Array(cols * rows * 3)
     for (let r = 0; r < rows; r++)
         for (let c = 0; c < cols; c++) pixels.set(paint(c, r), (r * cols + c) * 3)
-    return { cols, rows, step: 1, pixels }
+    return { cols, rows, step: 1, x: 0, y: 0, pixels }
 }
 
 const blue = '#7698fe'
@@ -79,5 +86,27 @@ describe('settle', () => {
         expect([...settle(new Float32Array([0, 0]), new Float32Array([200, 200]))]).toEqual([
             200, 200,
         ])
+    })
+})
+
+describe('cropBackdrop', () => {
+    // Each sample holds its own column and row
+    const monitor = { ...backdrop((c, r) => [c, r, 0]), x: 100, y: 50 }
+
+    it('cuts out the samples behind the window', () => {
+        const crop = cropBackdrop(monitor, { x: 101, y: 52, width: 2, height: 3 })!
+        expect(crop.cols).toBe(2)
+        expect(crop.rows).toBe(3)
+        expect([...crop.pixels.subarray(0, 3)]).toEqual([1, 2, 0])
+    })
+
+    it('reads black where the window hangs off the monitor', () => {
+        const crop = cropBackdrop(monitor, { x: 98, y: 50, width: 3, height: 1 })!
+        expect([...crop.pixels.subarray(0, 3)]).toEqual([0, 0, 0])
+        expect([...crop.pixels.subarray(6, 9)]).toEqual([0, 0, 0])
+    })
+
+    it('gives nothing once the window is on another monitor', () => {
+        expect(cropBackdrop(monitor, { x: 500, y: 50, width: 2, height: 2 })).toBeNull()
     })
 })

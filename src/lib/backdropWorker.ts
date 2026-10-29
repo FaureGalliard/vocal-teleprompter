@@ -3,7 +3,7 @@ import type { WorkerReply, WorkerRequest } from '../workers/backdropMessages'
 // A view request is answered with a new view, or `same` when nothing changed
 type Answer<T extends 'view' | 'paint'> = Extract<
     WorkerReply,
-    { type: T extends 'view' ? 'view' | 'same' : T }
+    { type: T extends 'view' ? 'view' | 'same' | 'away' : T }
 >
 type Ask<T extends 'view' | 'paint'> = Omit<Extract<WorkerRequest, { type: T }>, 'id' | 'type'>
 
@@ -38,7 +38,8 @@ function ask<T extends 'view' | 'paint'>(
 
 // The interface's side of the backdrop worker
 export const backdropWorker = {
-    view: (request: Ask<'view'>) => ask('view', request, [request.pixels]),
+    view: (request: Ask<'view'>) =>
+        ask('view', request, request.capture ? [request.capture.pixels] : []),
     paint: (request: Ask<'paint'>) => ask('paint', request),
     reset: () => worker?.postMessage({ type: 'reset' } satisfies WorkerRequest),
 }

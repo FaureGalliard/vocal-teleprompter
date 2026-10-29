@@ -21,11 +21,14 @@ export function useTextColors(settings: Settings, editing: boolean) {
     const { bgOpacity } = settings
     const display = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const seeThrough = bgOpacity < SEE_THROUGH_BELOW && (autoContrast || backdropSoften > 0)
-    const { backdrop, moving, hurry } = useBackdrop(seeThrough, !hiddenFromCapture)
+    const { backdrop, place, moving, hurry } = useBackdrop(seeThrough, !hiddenFromCapture)
     const view = useBackdropView(
         backdrop,
+        place,
         { background: bgColor, opacity: bgOpacity },
         backdropSoften,
+        // Moved onto another monitor: look at that one
+        hurry,
     )
     // Something changed behind the window: follow it closely for a moment
     const version = view?.version

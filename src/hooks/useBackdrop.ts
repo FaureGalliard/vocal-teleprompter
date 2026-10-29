@@ -2,18 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { parseBackdrop, type Backdrop } from '../lib/backdrop'
+import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 
-// Physical pixels between samples: plenty for the color behind a word
+// Physical pixels between samples: plenty for the color behind a letter
 const STEP = 2
 const EVERY_MS = 300
-// While the window shows in screen captures it is hidden for each look, so
-// look less often: a recording loses it for a moment each time
-const SHOWN_EVERY_MS = 800
-// After the window moves
-const MOVED_MS = 60
+// While the window shows in screen captures it steps out of each one, which
+// a recording can catch, so it looks rarely on its own; clicks and keys
+// still bring a look right away
+const SHOWN_EVERY_MS = 3000
 // The window counts as moving until it has held still this long
-const STILL_MS = 250
+const STILL_MS = 150
 // After something changed behind the window: it may still be changing (a
 // slide transition), so look again soon to follow it
 const CHANGED_MS = 120
@@ -21,14 +20,41 @@ const CHANGED_MS = 120
 // so look right away instead of waiting for the next round
 const INPUT_MS = 80
 
-// What is behind the window, refreshed a few times a second while `enabled`
-// (a see-through background), so the text can keep reading well over a
-// moving or changing backdrop. `shown`: the window is visible to screen
-// captures, so it has to step out of the way for each look.
+// What is behind the window, while `enabled` (a see-through background).
+// Each look captures the whole monitor, so moving or resizing the window
+// needs no new look: `place` says where it now is, to cut that part out.
+// Looks come at a steady pace, right after a click or a key, and closely
+// after a change (`hurry`). `shown`: the window is visible to screen
+// captures, so it steps out of the way for each look.
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
+    const [place, setPlace] = useState<Place | null>(null)
     const [moving, setMoving] = useState(false)
     const hurryRef = useRef<() => void>(() => {})
+
+    // Where the window is, kept up to date as it moves and resizes
+    useEffect(() => {
+        if (!enabled) return
+        const win = getCurrentWindow()
+        Promise.all([win.innerPosition(), win.innerSize()]).then(([p, s]) =>
+            setPlace({ x: p.x, y: p.y, width: s.width, height: s.height }),
+        )
+        let still: ReturnType<typeof setTimeout>
+        const moved = win.onMoved(({ payload }) => {
+            setPlace((p) => p && { ...p, x: payload.x, y: payload.y })
+            setMoving(true)
+            clearTimeout(still)
+            still = setTimeout(() => setMoving(false), STILL_MS)
+        })
+        const resized = win.onResized(({ payload }) =>
+            setPlace((p) => p && { ...p, width: payload.width, height: payload.height }),
+        )
+        return () => {
+            clearTimeout(still)
+            moved.then((off) => off())
+            resized.then((off) => off())
+        }
+    }, [enabled])
 
     useEffect(() => {
         if (!enabled) {
@@ -37,7 +63,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         }
         let stopped = false
         let busy = false
-        // Moved while a look was underway: take the next one soon
+        // Asked for a look while one was underway: take the next one soon
         let soon = false
         let timer: ReturnType<typeof setTimeout>
         const next = (ms: number) => {
@@ -51,42 +77,30 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
                 const buffer = await invoke<ArrayBuffer>('capture_backdrop', { step: STEP, shown })
                 if (!stopped) setBackdrop(parseBackdrop(buffer, STEP))
             } catch (e) {
-                // Off screen or unavailable: the text keeps its last colors
+                // Unavailable: the text keeps its last colors
                 console.warn('Could not see behind the window:', e)
             }
             busy = false
-            next(soon ? MOVED_MS : shown ? SHOWN_EVERY_MS : EVERY_MS)
+            next(soon ? CHANGED_MS : shown ? SHOWN_EVERY_MS : EVERY_MS)
         }
         capture()
-        hurryRef.current = () => {
+        const soonish = (ms: number) => {
             if (busy) soon = true
-            else next(CHANGED_MS)
+            else next(ms)
         }
+        hurryRef.current = () => soonish(CHANGED_MS)
         // Clicked, typed or scrolled somewhere: the screen is likely changing
-        const input = listen('user-input', () => {
-            if (busy) soon = true
-            else next(INPUT_MS)
-        })
-        // Moved: look again soon, so the glass and colors keep up with it
-        let still: ReturnType<typeof setTimeout>
-        const moved = getCurrentWindow().onMoved(() => {
-            setMoving(true)
-            clearTimeout(still)
-            still = setTimeout(() => setMoving(false), STILL_MS)
-            if (busy) soon = true
-            else next(MOVED_MS)
-        })
+        const input = listen('user-input', () => soonish(INPUT_MS))
         return () => {
             stopped = true
             clearTimeout(timer)
-            clearTimeout(still)
-            moved.then((off) => off())
             input.then((off) => off())
         }
     }, [enabled, shown])
 
-    // Look again soon, rather than at the usual pace
+    // Look again soon, rather than at the usual pace: something changed, or
+    // the window went to another monitor
     const hurry = useCallback(() => hurryRef.current(), [])
 
-    return { backdrop, moving, hurry }
+    return { backdrop, place, moving, hurry }
 }

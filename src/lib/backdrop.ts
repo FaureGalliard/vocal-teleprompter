@@ -1,11 +1,22 @@
 import { ensureContrast } from './contrast'
 
-// Every `step`-th physical pixel of the screen where the window is
+// Every `step`-th physical pixel of the monitor the window is on, which sits
+// at `x`, `y` on the desktop (physical pixels)
 export interface Backdrop {
     cols: number
     rows: number
     step: number
+    x: number
+    y: number
     pixels: Uint8Array
+}
+
+// Where the window's inside is on the desktop, in physical pixels
+export interface Place {
+    x: number
+    y: number
+    width: number
+    height: number
 }
 
 // How the window is drawn over the backdrop
@@ -22,9 +33,36 @@ export function parseBackdrop(buffer: ArrayBuffer, step: number): Backdrop {
     return {
         cols: view.getUint32(0, true),
         rows: view.getUint32(4, true),
+        x: view.getInt32(8, true),
+        y: view.getInt32(12, true),
         step,
-        pixels: new Uint8Array(buffer, 8),
+        pixels: new Uint8Array(buffer, 16),
     }
+}
+
+// The part of a monitor's capture behind the window at `place`, sample by
+// sample; anything off the monitor reads as black. Null when the window has
+// left that monitor.
+export function cropBackdrop(backdrop: Backdrop, place: Place) {
+    const { cols, rows, step, pixels } = backdrop
+    const left = Math.floor((place.x - backdrop.x) / step)
+    const top = Math.floor((place.y - backdrop.y) / step)
+    if (left >= cols || top >= rows || left + place.width / step <= 0) return null
+    if (top + place.height / step <= 0) return null
+    const w = Math.ceil(place.width / step)
+    const h = Math.ceil(place.height / step)
+    const out = new Uint8Array(w * h * 3)
+    for (let r = 0; r < h; r++) {
+        const sr = top + r
+        if (sr < 0 || sr >= rows) continue
+        for (let c = 0; c < w; c++) {
+            const sc = left + c
+            if (sc < 0 || sc >= cols) continue
+            const from = (sr * cols + sc) * 3
+            out.set(pixels.subarray(from, from + 3), (r * w + c) * 3)
+        }
+    }
+    return { cols: w, rows: h, pixels: out }
 }
 
 export const rgb = (hex: string): [number, number, number] => {
@@ -38,7 +76,10 @@ const hex = (r: number, g: number, b: number) =>
 // What the eye sees behind the text at every sample: the window's
 // background blended over the backdrop (the capture never includes the
 // window itself)
-export function estimateBackground(backdrop: Backdrop, surface: Surface): Background {
+export function estimateBackground(
+    backdrop: { cols: number; rows: number; pixels: Uint8Array },
+    surface: Surface,
+): Background {
     const { cols, rows, pixels } = backdrop
     const out = new Float32Array(cols * rows * 3)
     const fill = rgb(surface.background)

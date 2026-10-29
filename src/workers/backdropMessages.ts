@@ -1,18 +1,25 @@
+import type { Place } from '../lib/backdrop'
 import type { Letter } from '../lib/letterPaint'
 
 // What the interface asks the backdrop worker for
 export type WorkerRequest =
     // Forget everything: the background turned solid
     | { type: 'reset' }
-    // A new look at what is behind the window
+    // What is behind the window at `place`: from a new capture of its
+    // monitor when there is one, else from the last one (the window moved)
     | {
           type: 'view'
           id: number
-          cols: number
-          rows: number
-          step: number
-          // RGB per sample, transferred
-          pixels: ArrayBuffer
+          capture: {
+              cols: number
+              rows: number
+              step: number
+              x: number
+              y: number
+              // RGB per sample, transferred
+              pixels: ArrayBuffer
+          } | null
+          place: Place
           background: string
           opacity: number
           // How much to blur it, 0-100
@@ -27,6 +34,8 @@ export type WorkerReply =
     | { type: 'view'; id: number; glass: Blob | null; cols: number; rows: number; step: number }
     // Nothing changed since the last look: keep showing what is there
     | { type: 'same'; id: number }
+    // The window is off the captured monitor (or there is no capture yet)
+    | { type: 'away'; id: number }
     | {
           type: 'paint'
           id: number
