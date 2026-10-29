@@ -61,6 +61,7 @@ export default function ShortcutsSection({
         document.addEventListener('keydown', onKeyDown, true)
         return () => document.removeEventListener('keydown', onKeyDown, true)
         // onChange and onRecordingChange are recreated on every render upstream
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [recording, bindings])
 
     const isDefault = (Object.keys(GLOBAL_SHORTCUTS) as GlobalAction[]).every(

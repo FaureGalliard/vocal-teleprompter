@@ -66,6 +66,7 @@ export function useGlobalShortcuts({ handlers, bindings, enabled }: UseGlobalSho
             unregister(accelerators).catch(() => {})
         }
         // Re-register only when the bindings or the switch actually change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [key])
 
     return { failed }

@@ -83,6 +83,7 @@ export default function Canvas({
         const share = content.length ? caret / content.length : 0
         container.scrollTop = share * editor.scrollHeight - container.clientHeight / 2
         // Only when editing starts, not on every keystroke
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing])
 
     // Scroll the canvas itself, vertically only. scrollIntoView also moves

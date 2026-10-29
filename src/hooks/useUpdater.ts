@@ -46,6 +46,7 @@ export function useUpdater(checkOnLaunch: boolean) {
         const id = setTimeout(checkForUpdates, STARTUP_CHECK_DELAY_MS)
         return () => clearTimeout(id)
         // Only on launch, not when the setting is flipped later
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const install = useCallback(async () => {
