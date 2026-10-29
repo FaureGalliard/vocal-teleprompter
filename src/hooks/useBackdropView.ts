@@ -25,11 +25,12 @@ export function useBackdropView(
     place: Place | null,
     surface: Surface,
     soften: number,
+    textColor: string,
     onAway: () => void,
 ) {
     const [view, setView] = useState<{ glass: Glass | null; version: number } | null>(null)
-    const options = useRef({ surface, soften, onAway })
-    options.current = { surface, soften, onAway }
+    const options = useRef({ surface, soften, textColor, onAway })
+    options.current = { surface, soften, textColor, onAway }
     const busy = useRef(false)
     const queued = useRef(false)
     const latest = useRef({ backdrop, place })
@@ -54,7 +55,7 @@ export function useBackdropView(
         const send = async () => {
             busy.current = true
             const { backdrop, place } = latest.current
-            const { surface, soften } = options.current
+            const { surface, soften, textColor } = options.current
             const fresh = backdrop !== sent.current ? backdrop : null
             sent.current = backdrop
             const reply = await backdropWorker.view({
@@ -63,6 +64,7 @@ export function useBackdropView(
                 background: surface.background,
                 opacity: surface.opacity,
                 soften,
+                textColor,
             })
             busy.current = false
             if (reply.type === 'away') options.current.onAway()

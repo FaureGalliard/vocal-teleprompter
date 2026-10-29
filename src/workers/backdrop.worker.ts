@@ -2,7 +2,8 @@
 // over it, away from the thread that draws the interface, so neither the
 // blur nor the per-letter colors can make it stutter.
 
-import { blur, colorMap, cropBackdrop, rgb, settle, type Backdrop } from '../lib/backdrop'
+import { colorMap, cropBackdrop, rgb, settle, type Backdrop } from '../lib/backdrop'
+import { adaptiveBlur, veil } from '../lib/glass'
 import { paintLetters, type Seen } from '../lib/letterPaint'
 import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
@@ -43,13 +44,13 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     }
 
     if (data.type === 'view') {
-        const { id, capture, place, background, opacity, soften } = data
+        const { id, capture, place, background, opacity, soften, textColor } = data
         if (capture) monitor = { ...capture, pixels: new Uint8Array(capture.pixels) }
         const crop = monitor && cropBackdrop(monitor, place)
         if (!monitor || !crop) return reply({ type: 'away', id })
         const { cols, rows, pixels } = crop
         const step = monitor.step
-        const asked = `${cols}x${rows}:${background}:${opacity}:${soften}`
+        const asked = `${cols}x${rows}:${background}:${opacity}:${soften}:${textColor}`
         if (asked === lastAsked && lastPixels?.length === pixels.length) {
             let change = 0
             for (let i = 0; i < pixels.length; i++) change += Math.abs(pixels[i] - lastPixels[i])
@@ -58,19 +59,22 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
         }
         lastPixels = pixels
         lastAsked = asked
-        const raw = Float32Array.from(pixels)
+        // Softened, more where it is busy
         const radius = Math.round((soften / 100) * MAX_BLUR)
-        const behind = radius ? blur(raw, cols, rows, radius) : raw
-        let glass: Blob | null = null
-        if (radius) {
-            const image = new Uint8ClampedArray(cols * rows * 4)
-            for (let i = 0; i < cols * rows; i++)
-                image.set([behind[i * 3], behind[i * 3 + 1], behind[i * 3 + 2], 255], i * 4)
-            glass = await picture(image, cols, rows)
-        }
-        // The window's own background blended over it, eased in over time
+        const softened = adaptiveBlur(Float32Array.from(pixels), cols, rows, radius)
+        // As seen through the window's own background
         const fill = rgb(background)
-        const now = behind.map((v, i) => opacity * fill[i % 3] + (1 - opacity) * v)
+        const through = (g: Float32Array) =>
+            g.map((v, i) => opacity * fill[i % 3] + (1 - opacity) * v)
+        // Veiled where the text can't stand out enough over it
+        const textMap = colorMap(through(softened), cols, rows, textColor)
+        const glassGrid = veil(softened, through(softened), textMap, cols, rows)
+        const image = new Uint8ClampedArray(cols * rows * 4)
+        for (let i = 0; i < cols * rows; i++)
+            image.set([glassGrid[i * 3], glassGrid[i * 3 + 1], glassGrid[i * 3 + 2], 255], i * 4)
+        const glass = await picture(image, cols, rows)
+        // Eased in over time
+        const now = through(glassGrid)
         const sameSize = seen?.cols === cols && seen.rows === rows
         seen = { cols, rows, step, rgb: settle(sameSize ? seen!.rgb : null, now) }
         reply({ type: 'view', id, glass, cols, rows, step })

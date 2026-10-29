@@ -27,6 +27,7 @@ export function useTextColors(settings: Settings, editing: boolean) {
         place,
         { background: bgColor, opacity: bgOpacity },
         backdropSoften,
+        display,
         // Moved onto another monitor: look at that one
         hurry,
     )

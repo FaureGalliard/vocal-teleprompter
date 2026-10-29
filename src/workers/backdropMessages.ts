@@ -24,13 +24,15 @@ export type WorkerRequest =
           opacity: number
           // How much to blur it, 0-100
           soften: number
+          // The chosen text color, for the veil to make room for the text
+          textColor: string
       }
     // The text's colors over the last look, for the letters now in view
     | { type: 'paint'; id: number; letters: Letter[]; textColor: string; scale: number }
 
 // And what it answers
 export type WorkerReply =
-    // The frosted glass, null when not softening
+    // The frosted glass, veiled where the text needs it
     | { type: 'view'; id: number; glass: Blob | null; cols: number; rows: number; step: number }
     // Nothing changed since the last look: keep showing what is there
     | { type: 'same'; id: number }
