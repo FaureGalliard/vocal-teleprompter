@@ -11,8 +11,8 @@ export default function PaintedBorder({ paint }: { paint: BackdropPaint }) {
             className="fixed inset-0 pointer-events-none"
             style={
                 {
-                    padding: 1.5,
-                    opacity: 0.7,
+                    padding: 1,
+                    opacity: 0.6,
                     backgroundImage: `url(${paint.url})`,
                     backgroundSize: `${paint.width}px ${paint.height}px`,
                     backgroundRepeat: 'no-repeat',
