@@ -1,7 +1,8 @@
 name: Tests
 
-# Unit tests for the frontend and the Rust code, plus speech recognition on
-# recorded scripts. Runs on every push and pull request, and gates releases.
+# Lint, formatting and unit tests for the frontend and the Rust code, plus
+# speech recognition on recorded scripts. Runs on every push and pull
+# request, and gates releases.
 on:
   push:
     branches: [main]
@@ -22,6 +23,8 @@ jobs:
           cache: pnpm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
 
       - uses: swatinem/rust-cache@v2
         with:
@@ -33,6 +36,12 @@ jobs:
         run: |
           pnpm exec tsc --noEmit
           pnpm test
+
+      - name: Lint and formatting
+        run: |
+          pnpm lint
+          pnpm format:check
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
 
       # The models are large and rarely change, so keep them between runs
       - uses: actions/cache@v4
@@ -46,6 +55,9 @@ jobs:
 
       # The frontend must exist for the Tauri crate to compile
       - run: pnpm build
+
+      - name: Rust lints
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 
       - name: Rust and speech recognition tests
         shell: pwsh
