@@ -1,25 +1,13 @@
-import { useRef, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-    Check,
-    CircleHelp,
-    ClipboardPaste,
-    Check as Selected,
-    FileText,
-    FileUp,
-    Mic,
-    Pause,
-    Pencil,
-    Play,
-    Square,
-    Trash2,
-} from 'lucide-react'
-import { LANGUAGES } from '../constants/languages'
+import { Pause, Play, Square } from 'lucide-react'
 import { useT } from '../i18n'
 import type { Microphone } from '../hooks/useMicrophones'
-import { BarTooltip, Popover, useOpenTowards } from './Popover'
-
-const ICON = 14
+import BarButton, { ghost, ICON, primary } from './BarButton'
+import LanguageMenu from './LanguageMenu'
+import MicrophoneMenu from './MicrophoneMenu'
+import { useOpenTowards } from './Popover'
+import ScriptMenu from './ScriptMenu'
 
 interface ToolbarProps {
     visible: boolean
@@ -58,45 +46,7 @@ interface ToolbarProps {
     settings: ReactNode
 }
 
-const iconBtn = 'flex items-center justify-center w-8 h-8 rounded-full transition-colors'
-const primary = 'bg-[#445ade] text-white hover:bg-[#3448c5]'
-const ghost = 'bg-white/10 text-white hover:bg-white/20'
 const divider = <div className="h-5 w-px mx-0.5 bg-white/15" />
-const menuItem =
-    'flex items-center gap-2.5 px-4 py-2 text-[11px] text-left text-white/80 hover:bg-white/10 hover:text-white transition-colors'
-
-const speechLanguageLabel = (code: string) => LANGUAGES.find((l) => l.value === code)?.label ?? code
-
-function BarButton({
-    label,
-    onClick,
-    className,
-    disabled,
-    children,
-    tour,
-}: {
-    label: string
-    onClick: () => void
-    className: string
-    disabled?: boolean
-    children: ReactNode
-    tour?: string
-}) {
-    return (
-        <div
-            className="relative group"
-            data-tour={tour}>
-            <button
-                onClick={onClick}
-                disabled={disabled}
-                aria-label={label}
-                className={`${iconBtn} ${className} disabled:opacity-30 disabled:cursor-not-allowed`}>
-                {children}
-            </button>
-            <BarTooltip label={label} />
-        </div>
-    )
-}
 
 export default function Toolbar(props: ToolbarProps) {
     return <AnimatePresence>{props.visible && <ToolbarBar {...props} />}</AnimatePresence>
@@ -136,37 +86,7 @@ function ToolbarBar({
 }: ToolbarProps) {
     const t = useT()
     const towards = useOpenTowards()
-    const [moreOpen, setMoreOpen] = useState(false)
-    const langMenuRef = useRef<HTMLDivElement>(null)
-    const langPanelRef = useRef<HTMLDivElement>(null)
-    const micMenuRef = useRef<HTMLDivElement>(null)
-    const micPanelRef = useRef<HTMLDivElement>(null)
-    const moreRef = useRef<HTMLDivElement>(null)
-    const morePanelRef = useRef<HTMLDivElement>(null)
     const running = isSpeechActive || isCountingDown
-    const systemMic = microphones.find((m) => m.isDefault)
-    const currentMic = microphones.find((m) => m.id === selectedMic) ?? systemMic
-
-    // Close the menus on outside click
-    useEffect(() => {
-        if (!langMenuOpen && !micMenuOpen && !moreOpen) return
-        const outside = (target: Node, ...refs: React.RefObject<HTMLElement | null>[]) =>
-            !refs.some((r) => r.current?.contains(target))
-        const onMouseDown = (e: MouseEvent) => {
-            const target = e.target as Node
-            if (langMenuOpen && outside(target, langMenuRef, langPanelRef)) onLangMenuToggle()
-            if (micMenuOpen && outside(target, micMenuRef, micPanelRef)) onMicMenuToggle()
-            if (moreOpen && outside(target, moreRef, morePanelRef)) setMoreOpen(false)
-        }
-        document.addEventListener('mousedown', onMouseDown)
-        return () => document.removeEventListener('mousedown', onMouseDown)
-    }, [langMenuOpen, micMenuOpen, moreOpen, onLangMenuToggle, onMicMenuToggle])
-
-    // A menu item does its thing and closes the menu
-    const pick = (action: () => void) => () => {
-        setMoreOpen(false)
-        action()
-    }
 
     const shift = towards === 'down' ? -8 : 8
     return (
@@ -207,109 +127,21 @@ function ToolbarBar({
 
             {divider}
 
-            <div
-                ref={langMenuRef}
-                data-tour="speech-language"
-                className="relative group">
-                <button
-                    onClick={onLangMenuToggle}
-                    aria-label={t.toolbar.speechLanguage}
-                    className={`${iconBtn} ${langMenuOpen ? primary : ghost} text-[10px] font-semibold`}>
-                    {speechLanguageLabel(language)}
-                </button>
-                <BarTooltip
-                    label={t.toolbar.speechLanguage}
-                    hidden={langMenuOpen}
-                />
-                <Popover
-                    anchor={langMenuRef}
-                    panelRef={langPanelRef}
-                    open={langMenuOpen}
-                    width={96}
-                    className="flex flex-col py-1">
-                    {LANGUAGES.map((lang) => (
-                        <button
-                            key={lang.value}
-                            onClick={() => onLanguageChange(lang.value)}
-                            className={`px-4 py-1.5 text-[11px] font-medium text-left transition-colors ${
-                                language === lang.value
-                                    ? 'bg-[#445ade] text-white'
-                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}>
-                            {lang.label}
-                        </button>
-                    ))}
-                </Popover>
-            </div>
+            <LanguageMenu
+                language={language}
+                open={langMenuOpen}
+                onToggle={onLangMenuToggle}
+                onChange={onLanguageChange}
+            />
 
-            <div
-                ref={micMenuRef}
-                data-tour="microphone"
-                className="relative group">
-                <button
-                    onClick={onMicMenuToggle}
-                    aria-label={t.toolbar.microphone}
-                    className={`${iconBtn} ${micMenuOpen ? primary : ghost}`}>
-                    <Mic size={ICON} />
-                </button>
-                <BarTooltip
-                    label={
-                        currentMic
-                            ? `${t.toolbar.microphone}: ${currentMic.name}`
-                            : t.toolbar.microphone
-                    }
-                    hidden={micMenuOpen}
-                />
-                <Popover
-                    anchor={micMenuRef}
-                    panelRef={micPanelRef}
-                    open={micMenuOpen}
-                    width={256}
-                    className="flex flex-col py-1">
-                    <span className="px-4 pt-2 pb-1 text-[10px] font-medium uppercase tracking-wide text-white/40">
-                        {t.mic.title}
-                    </span>
-                    {[
-                        {
-                            id: null,
-                            name: systemMic
-                                ? `${t.mic.systemDefault} (${systemMic.name})`
-                                : t.mic.systemDefault,
-                        },
-                        ...microphones.map((m) => ({ id: m.id as string | null, name: m.name })),
-                    ].map((mic) => (
-                        <button
-                            key={mic.id ?? 'default'}
-                            onClick={() => onMicChange(mic.id)}
-                            title={mic.name}
-                            className={`flex items-center gap-2 px-4 py-1.5 text-[11px] text-left transition-colors ${
-                                selectedMic === mic.id
-                                    ? 'text-white'
-                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
-                            }`}>
-                            <Selected
-                                size={12}
-                                className={`flex-shrink-0 ${selectedMic === mic.id ? 'text-[#7698fe]' : 'invisible'}`}
-                            />
-                            <span className="truncate">{mic.name}</span>
-                        </button>
-                    ))}
-                    {microphones.length === 0 && (
-                        <span className="px-4 py-1.5 text-[11px] text-white/30">
-                            {t.toolbar.noMicrophones}
-                        </span>
-                    )}
-                    <div
-                        className="mx-4 my-2 h-1.5 rounded-full bg-white/10 overflow-hidden"
-                        title={t.mic.level}>
-                        <div
-                            className="h-full rounded-full bg-[#4ade80] transition-[width] duration-75"
-                            style={{ width: `${Math.round(micLevel * 100)}%` }}
-                        />
-                    </div>
-                    <span className="px-4 pb-2 text-[10px] text-white/40">{t.mic.level}</span>
-                </Popover>
-            </div>
+            <MicrophoneMenu
+                open={micMenuOpen}
+                onToggle={onMicMenuToggle}
+                microphones={microphones}
+                selected={selectedMic}
+                level={micLevel}
+                onChange={onMicChange}
+            />
 
             {divider}
 
@@ -319,60 +151,14 @@ function ToolbarBar({
 
             {divider}
 
-            <div
-                ref={moreRef}
-                data-tour="script"
-                className="relative group">
-                {/* While editing it finishes the edit in one click */}
-                <button
-                    onClick={isEditing ? onToggleEdit : () => setMoreOpen((v) => !v)}
-                    aria-label={isEditing ? t.toolbar.finishEditing : t.toolbar.more}
-                    className={`${iconBtn} ${moreOpen || isEditing ? primary : ghost}`}>
-                    {isEditing ? <Check size={ICON} /> : <FileText size={ICON} />}
-                </button>
-                <BarTooltip
-                    label={isEditing ? t.toolbar.finishEditing : t.toolbar.more}
-                    hidden={moreOpen}
-                />
-                <Popover
-                    anchor={moreRef}
-                    panelRef={morePanelRef}
-                    open={moreOpen}
-                    width={220}
-                    className="flex flex-col py-1">
-                    <button
-                        onClick={pick(onToggleEdit)}
-                        className={menuItem}>
-                        <Pencil size={ICON} />
-                        {t.toolbar.editScript}
-                    </button>
-                    <button
-                        onClick={pick(onPasteText)}
-                        className={menuItem}>
-                        <ClipboardPaste size={ICON} />
-                        {t.toolbar.pasteScript}
-                    </button>
-                    <button
-                        onClick={pick(onImport)}
-                        className={menuItem}>
-                        <FileUp size={ICON} />
-                        {t.toolbar.importScript}
-                    </button>
-                    <button
-                        onClick={pick(onClear)}
-                        className={`${menuItem} hover:!bg-red-500/80`}>
-                        <Trash2 size={ICON} />
-                        {t.toolbar.clearScript}
-                    </button>
-                    <div className="h-px my-1 bg-white/10" />
-                    <button
-                        onClick={pick(onShowTutorial)}
-                        className={menuItem}>
-                        <CircleHelp size={ICON} />
-                        {t.settings.tutorial}
-                    </button>
-                </Popover>
-            </div>
+            <ScriptMenu
+                isEditing={isEditing}
+                onToggleEdit={onToggleEdit}
+                onPasteText={onPasteText}
+                onImport={onImport}
+                onClear={onClear}
+                onShowTutorial={onShowTutorial}
+            />
         </motion.div>
     )
 }
