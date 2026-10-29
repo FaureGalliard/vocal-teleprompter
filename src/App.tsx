@@ -1,5 +1,5 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
-import TitleBar from './components/TitleBar'
+import TitleBar, { type TitleBarMode } from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import { OpenTowardsContext } from './components/Popover'
 import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
@@ -37,7 +37,7 @@ import { DEFAULT_SCROLLING, type Scrolling } from './lib/scrolling'
 import { useMcpBridge } from './hooks/useMcpBridge'
 import { DEFAULT_WPM } from './hooks/usePace'
 import { LANGUAGES } from './constants/languages'
-import { usePersistentState, clearPersistentState } from './hooks/usePersistentState'
+import { loadPersistent, usePersistentState, clearPersistentState } from './hooks/usePersistentState'
 import { DEFAULT_UI_LANGUAGE, I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
 import { bestOutline, ensureContrast } from './lib/contrast'
 
@@ -64,7 +64,12 @@ function App() {
         'titleBarPosition',
         'top',
     )
-    const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
+    const [titleBarMode, setTitleBarMode] = usePersistentState<TitleBarMode>(
+        'titleBarMode',
+        // Kept hidden for those who had turned it off
+        loadPersistent('titleBarVisible', true) ? 'hover' : 'never',
+    )
+    const [pointerActive, setPointerActive] = useState(false)
     const [toolbarVisible, setToolbarVisible] = useState(false)
     const [titleBarHeight, setTitleBarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
@@ -380,7 +385,35 @@ function App() {
         if (titleBarRef.current) {
             setTitleBarHeight(titleBarRef.current.offsetHeight)
         }
-    }, [titleBarVisible, titleBarPosition])
+    }, [titleBarMode, titleBarPosition])
+
+    // In hover mode the title bar shows while the mouse moves over the
+    // window, and fades a moment after it stops or leaves (unless it rests
+    // on the title bar itself), so it does not cover the text while reading
+    useEffect(() => {
+        if (titleBarMode !== 'hover') return
+        let timer: ReturnType<typeof setTimeout> | undefined
+        const hideIn = (ms: number) => {
+            clearTimeout(timer)
+            timer = setTimeout(() => {
+                if (titleBarRef.current?.matches(':hover')) hideIn(ms)
+                else setPointerActive(false)
+            }, ms)
+        }
+        const onMove = () => {
+            setPointerActive(true)
+            hideIn(2000)
+        }
+        const onLeave = () => hideIn(300)
+        const root = document.documentElement
+        root.addEventListener('mousemove', onMove)
+        root.addEventListener('mouseleave', onLeave)
+        return () => {
+            clearTimeout(timer)
+            root.removeEventListener('mousemove', onMove)
+            root.removeEventListener('mouseleave', onLeave)
+        }
+    }, [titleBarMode])
 
     const handleMouseDown = async () => {
         isDraggingRef.current = false
@@ -612,11 +645,12 @@ function App() {
             ? bestOutline(displayTextColor)
             : undefined
 
-    const toolbarTopOffset =
-        titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
+    // Room the title bar takes from the text, only when it is always shown
+    const titleBarRoom = titleBarMode === 'always' ? titleBarHeight : 0
+    const toolbarTopOffset = titleBarPosition === 'top' ? titleBarRoom : 0
 
     // Distance from the bottom of the frame to the status row
-    const statusBottom = (titleBarVisible && titleBarPosition === 'bottom' ? titleBarHeight : 0) + 6
+    const statusBottom = (titleBarPosition === 'bottom' ? titleBarRoom : 0) + 6
 
     // While the toolbar is open the window grows below the teleprompter (or
     // above it), so the toolbar and its panels never cover the text or get
@@ -662,9 +696,11 @@ function App() {
                             boxSizing: 'border-box',
                         } as React.CSSProperties
                     }>
-                    {titleBarVisible && (
+                    {titleBarMode !== 'never' && (
                         <TitleBar
                             ref={titleBarRef}
+                            // The tour points at it
+                            hidden={titleBarMode === 'hover' && !pointerActive && !tourActive}
                             position={titleBarPosition}
                             onPositionChange={setTitleBarPosition}
                         />
@@ -714,7 +750,7 @@ function App() {
                         readingLine={readingLine}
                         scrolling={scrolling}
                         typography={typography}
-                        titleBarHeight={titleBarVisible ? titleBarHeight : 0}
+                        titleBarHeight={titleBarRoom}
                         bottomInset={bottomInset}
                         titleBarPosition={titleBarPosition}
                     />
@@ -825,7 +861,7 @@ function App() {
                     }
                     settings={
                         <SettingsPanel
-                            titleBarVisible={titleBarVisible}
+                            titleBarMode={titleBarMode}
                             hiddenFromCapture={hiddenFromCapture}
                             uiLanguage={uiLanguage}
                             onUiLanguageChange={(val) => {
@@ -836,7 +872,7 @@ function App() {
                                 }
                                 setUiLanguage(val)
                             }}
-                            onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                            onTitleBarModeChange={setTitleBarMode}
                             onShowTutorial={showTutorial}
                             targetMinutes={targetMinutes}
                             onTargetMinutesChange={setTargetMinutes}
