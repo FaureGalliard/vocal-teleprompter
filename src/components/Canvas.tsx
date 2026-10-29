@@ -36,8 +36,8 @@ interface CanvasProps {
     scrolling: Scrolling
     typography: Typography
     titleBarHeight: number
-    // Room kept free on the right for the toolbar
-    rightInset: number
+    // Room kept free at the bottom for the toolbar, when it sits over the text
+    bottomInset: number
     titleBarPosition: 'top' | 'bottom'
 }
 
@@ -62,7 +62,7 @@ export default function Canvas({
     scrolling,
     typography,
     titleBarHeight,
-    rightInset,
+    bottomInset,
     titleBarPosition,
 }: CanvasProps) {
     const t = useT()
@@ -197,9 +197,9 @@ export default function Canvas({
                     {
                         position: 'fixed',
                         top,
-                        bottom,
+                        bottom: bottom + bottomInset,
                         left: 20,
-                        right: 20 + rightInset,
+                        right: 20,
                         overflowY: 'scroll',
                         overflowX: 'hidden',
                         scrollbarWidth: 'none',

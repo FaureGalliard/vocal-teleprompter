@@ -6,11 +6,12 @@ export const fr: Messages = {
         "Bienvenue dans Vocal Teleprompter. Appuyez sur Démarrer et lisez ce texte à voix haute : le prompteur vous écoute et suit votre voix mot à mot. Faites une pause quand vous voulez, accélérez ou ralentissez, il vous attendra. Cliquez sur n'importe quel mot pour reprendre à partir de là, ou appuyez sur Modifier pour écrire votre propre texte. Quand vous partagez votre écran dans Zoom ou Meet, cette fenêtre reste invisible pour votre public.",
 
     toolbar: {
-        paste: 'COLLER',
-        import: 'IMPORTER',
-        clear: 'EFFACER',
-        edit: 'MODIFIER',
-        done: 'TERMINÉ',
+        more: 'Texte et aide',
+        editScript: 'Modifier le texte',
+        finishEditing: 'Terminer la modification',
+        pasteScript: 'Coller depuis le presse-papiers',
+        importScript: 'Importer un fichier .txt',
+        clearScript: 'Effacer le texte',
         start: 'DÉMARRER',
         stop: 'ARRÊTER',
         pause: 'PAUSE',
@@ -21,7 +22,6 @@ export const fr: Messages = {
         size: 'Taille',
         background: 'Fond',
         text: 'Texte',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const fr: Messages = {
         countdown: 'Compte à rebours',
         countdownHint: "Secondes pour vous préparer avant le début de l'écoute",
         countdownOff: 'Non',
+        sectionReading: 'Lecture',
+        sectionWindow: 'Fenêtre',
+        sectionGeneral: 'Général',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const fr: Messages = {
         welcomeTitle: 'Bienvenue',
         welcome: 'Une visite rapide du prompteur. Cela prend trente secondes.',
         scriptTitle: 'Votre texte',
-        script: "Collez-le, importez un fichier .txt ou appuyez sur Modifier pour l'écrire ici.",
+        script: 'Modifiez, collez, importez ou effacez votre texte depuis ce menu.',
         startTitle: "Lancez l'écoute",
         start: 'Appuyez sur Démarrer (ou Espace) et lisez à voix haute. Le texte suit votre voix.',
         languageTitle: 'Langue parlée',
@@ -61,13 +64,13 @@ export const fr: Messages = {
         micTitle: 'Microphone',
         mic: 'Choisissez le microphone à écouter et vérifiez son niveau.',
         lookTitle: 'Personnalisez',
-        look: 'Taille du texte, couleur et opacité du fond, et couleur du texte.',
+        look: 'Taille du texte, couleurs, contraste automatique et typographie.',
         settingsTitle: 'Paramètres',
-        settings: "Langue de l'interface, masquage lors du partage d'écran, contraste automatique et plus.",
+        settings: "Défilement du texte, compte à rebours, masquage lors du partage d'écran, langue de l'interface et plus.",
         canvasTitle: 'Modifier ou sauter',
         canvas: "Cliquez sur un mot pour modifier le texte à cet endroit. Ctrl+clic (ou un clic pendant l'écoute) reprend la lecture à partir de ce mot.",
         menuTitle: "Barre d'outils",
-        menu: 'Ouvrez ou fermez cette barre ici. Maintenez le bouton pour déplacer la fenêtre.',
+        menu: 'Ouvrez ou fermez la barre ici. Maintenez le bouton pour déplacer la fenêtre.',
     },
 
     cards: {

@@ -6,11 +6,12 @@ export const pt: Messages = {
         'Bem-vindo ao Vocal Teleprompter. Pressione Iniciar e leia este texto em voz alta: o teleprompter escuta você e acompanha sua voz palavra por palavra. Faça pausas quando quiser, acelere ou vá mais devagar, e ele vai esperar por você. Clique em qualquer palavra para continuar a partir dali, ou pressione Editar para escrever seu próprio roteiro. Quando você compartilhar a tela no Zoom ou no Meet, esta janela fica oculta para o seu público.',
 
     toolbar: {
-        paste: 'COLAR',
-        import: 'IMPORTAR',
-        clear: 'LIMPAR',
-        edit: 'EDITAR',
-        done: 'PRONTO',
+        more: 'Roteiro e ajuda',
+        editScript: 'Editar roteiro',
+        finishEditing: 'Concluir edição',
+        pasteScript: 'Colar da área de transferência',
+        importScript: 'Importar um arquivo .txt',
+        clearScript: 'Limpar roteiro',
         start: 'INICIAR',
         stop: 'PARAR',
         pause: 'PAUSAR',
@@ -21,7 +22,6 @@ export const pt: Messages = {
         size: 'Tamanho',
         background: 'Fundo',
         text: 'Texto',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const pt: Messages = {
         countdown: 'Contagem regressiva',
         countdownHint: 'Segundos para se preparar antes de começar a ouvir',
         countdownOff: 'Não',
+        sectionReading: 'Leitura',
+        sectionWindow: 'Janela',
+        sectionGeneral: 'Geral',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const pt: Messages = {
         welcomeTitle: 'Bem-vindo',
         welcome: 'Um tour rápido pelo teleprompter. Leva meio minuto.',
         scriptTitle: 'Seu roteiro',
-        script: 'Cole, importe um arquivo .txt ou pressione Editar para escrever aqui mesmo.',
+        script: 'Neste menu você pode editar, colar, importar ou limpar seu roteiro.',
         startTitle: 'Comece a ouvir',
         start: 'Pressione Iniciar (ou Espaço) e leia em voz alta. O texto acompanha sua voz.',
         languageTitle: 'Idioma da fala',
@@ -61,13 +64,13 @@ export const pt: Messages = {
         micTitle: 'Microfone',
         mic: 'Escolha qual microfone ele escuta e confira o nível.',
         lookTitle: 'Do seu jeito',
-        look: 'Tamanho do texto, cor e opacidade do fundo e cor do texto.',
+        look: 'Tamanho do texto, cores, contraste automático e tipografia.',
         settingsTitle: 'Configurações',
-        settings: 'Idioma da interface, ocultar ao compartilhar a tela, contraste automático e mais.',
+        settings: 'Como o texto rola, contagem regressiva, ocultar ao compartilhar a tela, idioma da interface e mais.',
         canvasTitle: 'Editar ou pular',
         canvas: 'Clique em uma palavra para editar o roteiro ali mesmo. Com Ctrl+clique (ou um clique enquanto ouve) você continua lendo a partir dessa palavra.',
         menuTitle: 'Barra de ferramentas',
-        menu: 'Abra ou feche esta barra aqui. Segure o botão para mover a janela.',
+        menu: 'Abra ou feche a barra aqui. Segure o botão para mover a janela.',
     },
 
     cards: {

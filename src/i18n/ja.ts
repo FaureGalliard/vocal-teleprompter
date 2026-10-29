@@ -6,11 +6,12 @@ export const ja: Messages = {
         'Vocal Teleprompter へようこそ。開始を押して、この文章を声に出して読んでください。プロンプターがあなたの声を聞き取り、一語ずつ追いかけます。好きなときに間を取っても、速く読んでもゆっくり読んでも、ちゃんと待ってくれます。どの単語でもクリックするとそこから再開でき、編集を押せば自分の原稿を書けます。Zoom や Meet で画面を共有しても、このウィンドウは視聴者には見えません。',
 
     toolbar: {
-        paste: '貼り付け',
-        import: '読み込み',
-        clear: '消去',
-        edit: '編集',
-        done: '完了',
+        more: '原稿とヘルプ',
+        editScript: '原稿を編集',
+        finishEditing: '編集を終了',
+        pasteScript: 'クリップボードから貼り付け',
+        importScript: '.txt ファイルを読み込む',
+        clearScript: '原稿を消去',
         start: '開始',
         stop: '停止',
         pause: '一時停止',
@@ -21,7 +22,6 @@ export const ja: Messages = {
         size: 'サイズ',
         background: '背景',
         text: '文字',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const ja: Messages = {
         countdown: 'カウントダウン',
         countdownHint: '聞き取り開始前に準備する秒数',
         countdownOff: 'オフ',
+        sectionReading: '読み上げ',
+        sectionWindow: 'ウィンドウ',
+        sectionGeneral: '一般',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const ja: Messages = {
         welcomeTitle: 'ようこそ',
         welcome: 'プロンプターをざっと紹介します。30秒ほどで終わります。',
         scriptTitle: '原稿',
-        script: '貼り付けるか、.txt ファイルを読み込むか、編集を押してここに直接書いてください。',
+        script: 'このメニューから原稿の編集、貼り付け、読み込み、消去ができます。',
         startTitle: '聞き取りを開始',
         start: '開始（またはスペース）を押して声に出して読みましょう。テキストが声についてきます。',
         languageTitle: '音声の言語',
@@ -61,13 +64,13 @@ export const ja: Messages = {
         micTitle: 'マイク',
         mic: '聞き取るマイクを選び、入力レベルを確認します。',
         lookTitle: 'お好みに',
-        look: '文字サイズ、背景の色と不透明度、文字の色。',
+        look: '文字サイズ、色、自動コントラスト、タイポグラフィ。',
         settingsTitle: '設定',
-        settings: '表示言語、画面共有時に隠す、自動コントラストなど。',
+        settings: 'テキストのスクロール、カウントダウン、画面共有時に隠す、表示言語など。',
         canvasTitle: '編集またはジャンプ',
         canvas: '単語をクリックするとその場所で原稿を編集できます。Ctrl+クリック（または聞き取り中のクリック）でその単語から読み進めます。',
         menuTitle: 'ツールバー',
-        menu: 'ここでこのバーを開閉します。ボタンを長押しするとウィンドウを移動できます。',
+        menu: 'ここでツールバーを開閉します。ボタンを長押しするとウィンドウを移動できます。',
     },
 
     cards: {

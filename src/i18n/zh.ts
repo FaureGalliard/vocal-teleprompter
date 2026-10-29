@@ -6,11 +6,12 @@ export const zh: Messages = {
         '欢迎使用 Vocal Teleprompter。点击开始，然后大声朗读这段文字：提词器会聆听你的声音，逐字跟随。你可以随时停顿，读快或读慢，它都会等你。点击任意一个词即可从那里继续，或者点击编辑来写你自己的稿子。在 Zoom 或 Meet 中共享屏幕时，观众看不到这个窗口。',
 
     toolbar: {
-        paste: '粘贴',
-        import: '导入',
-        clear: '清空',
-        edit: '编辑',
-        done: '完成',
+        more: '稿子和帮助',
+        editScript: '编辑稿子',
+        finishEditing: '完成编辑',
+        pasteScript: '从剪贴板粘贴',
+        importScript: '导入 .txt 文件',
+        clearScript: '清空稿子',
         start: '开始',
         stop: '停止',
         pause: '暂停',
@@ -21,7 +22,6 @@ export const zh: Messages = {
         size: '字号',
         background: '背景',
         text: '文字',
-        ok: '确定',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const zh: Messages = {
         countdown: '倒计时',
         countdownHint: '开始聆听前的准备秒数',
         countdownOff: '关',
+        sectionReading: '朗读',
+        sectionWindow: '窗口',
+        sectionGeneral: '通用',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const zh: Messages = {
         welcomeTitle: '欢迎',
         welcome: '快速了解一下提词器，只需半分钟。',
         scriptTitle: '你的稿子',
-        script: '粘贴、导入 .txt 文件，或点击编辑直接在这里写。',
+        script: '在这个菜单里可以编辑、粘贴、导入或清空你的稿子。',
         startTitle: '开始聆听',
         start: '点击开始（或按空格）然后大声朗读，文字会跟随你的声音。',
         languageTitle: '语音语言',
@@ -61,9 +64,9 @@ export const zh: Messages = {
         micTitle: '麦克风',
         mic: '选择要使用的麦克风，并查看输入音量。',
         lookTitle: '按你的喜好',
-        look: '字号、背景颜色和不透明度，以及文字颜色。',
+        look: '字号、颜色、自动对比度和字体排版。',
         settingsTitle: '设置',
-        settings: '界面语言、共享屏幕时隐藏、自动对比度等。',
+        settings: '文字滚动方式、倒计时、共享屏幕时隐藏、界面语言等。',
         canvasTitle: '编辑或跳转',
         canvas: '点击一个词即可在那里编辑稿子。Ctrl+点击（或在聆听时点击）则从这个词继续朗读。',
         menuTitle: '工具栏',

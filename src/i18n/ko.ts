@@ -6,11 +6,12 @@ export const ko: Messages = {
         'Vocal Teleprompter에 오신 것을 환영합니다. 시작을 누르고 이 글을 소리 내어 읽어 보세요. 프롬프터가 여러분의 목소리를 듣고 한 단어씩 따라갑니다. 원할 때 쉬어도 되고, 빠르게 또는 천천히 읽어도 기다려 줍니다. 아무 단어나 클릭하면 그 부분부터 이어서 읽을 수 있고, 편집을 누르면 직접 원고를 쓸 수 있습니다. Zoom이나 Meet에서 화면을 공유해도 이 창은 청중에게 보이지 않습니다.',
 
     toolbar: {
-        paste: '붙여넣기',
-        import: '가져오기',
-        clear: '지우기',
-        edit: '편집',
-        done: '완료',
+        more: '원고 및 도움말',
+        editScript: '원고 편집',
+        finishEditing: '편집 완료',
+        pasteScript: '클립보드에서 붙여넣기',
+        importScript: '.txt 파일 가져오기',
+        clearScript: '원고 지우기',
         start: '시작',
         stop: '중지',
         pause: '일시정지',
@@ -21,7 +22,6 @@ export const ko: Messages = {
         size: '크기',
         background: '배경',
         text: '텍스트',
-        ok: '확인',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const ko: Messages = {
         countdown: '카운트다운',
         countdownHint: '듣기를 시작하기 전에 준비하는 시간(초)',
         countdownOff: '끄기',
+        sectionReading: '읽기',
+        sectionWindow: '창',
+        sectionGeneral: '일반',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const ko: Messages = {
         welcomeTitle: '환영합니다',
         welcome: '프롬프터를 빠르게 둘러봅니다. 30초면 충분합니다.',
         scriptTitle: '원고',
-        script: '붙여넣거나 .txt 파일을 가져오거나, 편집을 눌러 여기에서 바로 쓰세요.',
+        script: '이 메뉴에서 원고를 편집하거나 붙여넣고, 가져오거나 지울 수 있습니다.',
         startTitle: '듣기 시작',
         start: '시작(또는 스페이스)을 누르고 소리 내어 읽으세요. 텍스트가 목소리를 따라갑니다.',
         languageTitle: '음성 언어',
@@ -61,9 +64,9 @@ export const ko: Messages = {
         micTitle: '마이크',
         mic: '들을 마이크를 고르고 입력 레벨을 확인하세요.',
         lookTitle: '나만의 스타일',
-        look: '글자 크기, 배경 색상과 불투명도, 글자 색상.',
+        look: '글자 크기, 색상, 자동 대비, 타이포그래피.',
         settingsTitle: '설정',
-        settings: '인터페이스 언어, 화면 공유 시 숨기기, 자동 대비 등.',
+        settings: '텍스트 스크롤 방식, 카운트다운, 화면 공유 시 숨기기, 인터페이스 언어 등.',
         canvasTitle: '편집 또는 이동',
         canvas: '단어를 클릭하면 그 위치에서 원고를 편집합니다. Ctrl+클릭(또는 듣는 중 클릭)하면 그 단어부터 이어서 읽습니다.',
         menuTitle: '도구 모음',

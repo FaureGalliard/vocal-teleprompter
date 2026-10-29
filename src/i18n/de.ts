@@ -6,11 +6,12 @@ export const de: Messages = {
         'Willkommen bei Vocal Teleprompter. Drücke auf Starten und lies diesen Text laut vor: Der Prompter hört dir zu und folgt deiner Stimme Wort für Wort. Mach Pausen, wann du willst, sprich schneller oder langsamer, er wartet auf dich. Klicke auf ein beliebiges Wort, um dort weiterzumachen, oder drücke auf Bearbeiten, um dein eigenes Skript zu schreiben. Wenn du deinen Bildschirm in Zoom oder Meet teilst, bleibt dieses Fenster für dein Publikum unsichtbar.',
 
     toolbar: {
-        paste: 'EINFÜGEN',
-        import: 'IMPORTIEREN',
-        clear: 'LEEREN',
-        edit: 'BEARBEITEN',
-        done: 'FERTIG',
+        more: 'Skript und Hilfe',
+        editScript: 'Skript bearbeiten',
+        finishEditing: 'Bearbeitung beenden',
+        pasteScript: 'Aus Zwischenablage einfügen',
+        importScript: '.txt-Datei importieren',
+        clearScript: 'Skript leeren',
         start: 'STARTEN',
         stop: 'STOPPEN',
         pause: 'PAUSE',
@@ -21,7 +22,6 @@ export const de: Messages = {
         size: 'Größe',
         background: 'Hintergrund',
         text: 'Text',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const de: Messages = {
         countdown: 'Countdown',
         countdownHint: 'Sekunden zum Bereitmachen, bevor das Zuhören beginnt',
         countdownOff: 'Aus',
+        sectionReading: 'Lesen',
+        sectionWindow: 'Fenster',
+        sectionGeneral: 'Allgemein',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const de: Messages = {
         welcomeTitle: 'Willkommen',
         welcome: 'Eine kurze Tour durch den Prompter. Sie dauert eine halbe Minute.',
         scriptTitle: 'Dein Skript',
-        script: 'Füge es ein, importiere eine .txt-Datei oder drücke auf Bearbeiten, um es direkt hier zu schreiben.',
+        script: 'In diesem Menü kannst du dein Skript bearbeiten, einfügen, importieren oder leeren.',
         startTitle: 'Zuhören starten',
         start: 'Drücke auf Starten (oder die Leertaste) und lies laut vor. Der Text folgt deiner Stimme.',
         languageTitle: 'Sprache der Spracheingabe',
@@ -61,13 +64,13 @@ export const de: Messages = {
         micTitle: 'Mikrofon',
         mic: 'Wähle das Mikrofon, auf das er hört, und prüfe den Pegel.',
         lookTitle: 'Mach es dir passend',
-        look: 'Textgröße, Hintergrundfarbe und Deckkraft sowie Textfarbe.',
+        look: 'Textgröße, Farben, automatischer Kontrast und Typografie.',
         settingsTitle: 'Einstellungen',
-        settings: 'Sprache der Oberfläche, Ausblenden bei Bildschirmfreigabe, automatischer Kontrast und mehr.',
+        settings: 'Wie der Text scrollt, Countdown, Ausblenden bei Bildschirmfreigabe, Sprache der Oberfläche und mehr.',
         canvasTitle: 'Bearbeiten oder springen',
         canvas: 'Klicke auf ein Wort, um das Skript genau dort zu bearbeiten. Mit Strg+Klick (oder einem Klick beim Zuhören) liest du ab diesem Wort weiter.',
         menuTitle: 'Werkzeugleiste',
-        menu: 'Öffne oder schließe diese Leiste hier. Halte die Taste gedrückt, um das Fenster zu verschieben.',
+        menu: 'Öffne oder schließe die Leiste hier. Halte die Taste gedrückt, um das Fenster zu verschieben.',
     },
 
     cards: {

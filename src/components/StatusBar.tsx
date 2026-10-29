@@ -19,8 +19,6 @@ interface StatusBarProps {
     // What the recognizer heard last, while listening
     heard: string
     error: string | null
-    // Room kept free on the right for the toolbar
-    rightInset: number
 }
 
 const STATUS_COLOR: Record<PaceStatus, string> = {
@@ -50,7 +48,6 @@ export default function StatusBar({
     clickThrough,
     heard,
     error,
-    rightInset,
 }: StatusBarProps) {
     const t = useT()
     const target = targetMinutes > 0 ? formatDuration(targetMinutes * 60000) : null
@@ -58,7 +55,8 @@ export default function StatusBar({
     return (
         <div
             className="fixed left-3 z-30 flex items-center justify-between gap-2 pointer-events-none opacity-70 hover:opacity-100 transition-opacity"
-            style={{ bottom, right: 12 + rightInset }}>
+            // Leaves the corner to the toolbar button
+            style={{ bottom, right: 44 }}>
             <div className="flex items-center gap-2">
                 {clickThrough && (
                     <div

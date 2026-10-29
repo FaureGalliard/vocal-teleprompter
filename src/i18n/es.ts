@@ -6,11 +6,12 @@ export const es: Messages = {
         'Bienvenido a Vocal Teleprompter. Pulsa Iniciar y lee este texto en voz alta: el teleprompter te escucha y sigue tu voz palabra por palabra. Haz pausas cuando quieras, acelera o ve más despacio, y te esperará. Haz click en cualquier palabra para continuar desde ahí, o pulsa Editar para escribir tu propio guion. Cuando compartas pantalla en Zoom o Meet, esta ventana queda oculta para tu audiencia.',
 
     toolbar: {
-        paste: 'PEGAR',
-        import: 'IMPORTAR',
-        clear: 'ELIMINAR',
-        edit: 'EDITAR',
-        done: 'LISTO',
+        more: 'Guion y ayuda',
+        editScript: 'Editar guion',
+        finishEditing: 'Terminar de editar',
+        pasteScript: 'Pegar del portapapeles',
+        importScript: 'Importar un archivo .txt',
+        clearScript: 'Borrar guion',
         start: 'INICIAR',
         stop: 'DETENER',
         pause: 'PAUSAR',
@@ -21,7 +22,6 @@ export const es: Messages = {
         size: 'Tamaño',
         background: 'Fondo',
         text: 'Texto',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const es: Messages = {
         countdown: 'Cuenta regresiva',
         countdownHint: 'Segundos para prepararte antes de empezar a escuchar',
         countdownOff: 'No',
+        sectionReading: 'Lectura',
+        sectionWindow: 'Ventana',
+        sectionGeneral: 'General',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const es: Messages = {
         welcomeTitle: 'Bienvenido',
         welcome: 'Un recorrido rápido por el teleprompter. Toma medio minuto.',
         scriptTitle: 'Tu guion',
-        script: 'Pégalo, importa un archivo .txt o pulsa Editar para escribirlo aquí mismo.',
+        script: 'Desde este menú puedes editar, pegar, importar o borrar tu guion.',
         startTitle: 'Empieza a escuchar',
         start: 'Pulsa Iniciar (o Espacio) y lee en voz alta. El texto sigue tu voz.',
         languageTitle: 'Idioma de voz',
@@ -61,13 +64,13 @@ export const es: Messages = {
         micTitle: 'Micrófono',
         mic: 'Elige qué micrófono escucha y revisa su nivel.',
         lookTitle: 'Hazlo tuyo',
-        look: 'Tamaño del texto, color y opacidad del fondo, y color del texto.',
+        look: 'Tamaño del texto, colores, contraste automático y tipografía.',
         settingsTitle: 'Ajustes',
-        settings: 'Idioma de la interfaz, ocultar al compartir pantalla, contraste automático y más.',
+        settings: 'Cómo avanza el texto, la cuenta atrás, ocultarlo al compartir pantalla, el idioma de la interfaz y más.',
         canvasTitle: 'Editar o saltar',
         canvas: 'Haz click en una palabra para editar el guion justo ahí. Con Ctrl+click (o un click mientras escuchas) sigues leyendo desde esa palabra.',
         menuTitle: 'Barra de herramientas',
-        menu: 'Abre o cierra esta barra aquí. Mantén pulsado el botón para mover la ventana.',
+        menu: 'Abre o cierra la barra aquí. Mantén pulsado el botón para mover la ventana.',
     },
 
     cards: {

@@ -1,7 +1,8 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import TitleBar from './components/TitleBar'
-import Toolbar, { TOOLBAR_RAIL_WIDTH } from './components/Toolbar'
-import { TOOLBAR_GUTTER, useWindowExpansion } from './hooks/useWindowExpansion'
+import Toolbar from './components/Toolbar'
+import { OpenTowardsContext } from './components/Popover'
+import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
 import AppearancePanel from './components/AppearancePanel'
 import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
@@ -613,18 +614,26 @@ function App() {
     const toolbarTopOffset =
         titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
 
-    // While the toolbar is open the window grows beside the teleprompter, so
-    // the toolbar and its panels never cover the text or get cut off. When it
-    // cannot grow (maximized) the toolbar sits over the right edge instead.
+    // Distance from the bottom of the frame to the status row
+    const statusBottom = (titleBarVisible && titleBarPosition === 'bottom' ? titleBarHeight : 0) + 6
+
+    // While the toolbar is open the window grows below the teleprompter (or
+    // above it), so the toolbar and its panels never cover the text or get
+    // cut off. When it cannot grow (maximized) the toolbar sits over the
+    // bottom of the text instead, which then makes room for it.
     const { expansion, ready: toolbarReady } = useWindowExpansion(toolbarVisible)
-    const frameLeft = expansion?.side === 'left' ? TOOLBAR_GUTTER : 0
-    const toolbarLeft = expansion
-        ? expansion.side === 'right'
-            ? expansion.frame.width + (TOOLBAR_GUTTER - 40) / 2
-            : (TOOLBAR_GUTTER - 40) / 2
-        : null
-    // Room kept for the toolbar over the text only in that fallback
-    const rightInset = toolbarVisible && toolbarReady && !expansion ? TOOLBAR_RAIL_WIDTH : 0
+    const frameTop = expansion?.side === 'above' ? expansion.room : 0
+    const toolbarPlacement: React.CSSProperties = expansion
+        ? {
+              left: expansion.frame.width / 2,
+              top:
+                  expansion.side === 'below'
+                      ? expansion.frame.height + (BAR_ROOM - 40) / 2
+                      : expansion.room - BAR_ROOM + (BAR_ROOM - 40) / 2,
+          }
+        : { left: '50%', bottom: statusBottom + 30 }
+    const openTowards = expansion?.side === 'below' ? 'down' : 'up'
+    const bottomInset = toolbarVisible && toolbarReady && !expansion ? BAR_ROOM : 0
 
     return (
         <I18nProvider language={uiLanguage}>
@@ -638,8 +647,8 @@ function App() {
                     style={
                         {
                             position: 'fixed',
-                            top: 0,
-                            left: frameLeft,
+                            top: frameTop,
+                            left: 0,
                             width: expansion ? expansion.frame.width : '100vw',
                             height: expansion ? expansion.frame.height : '100vh',
                             '--frame-h': expansion ? `${expansion.frame.height}px` : '100vh',
@@ -660,20 +669,20 @@ function App() {
                     )}
 
 
+                    {/* In the status row, clear of the text */}
                     <button
                         data-tour="menu"
+                        aria-label={t.tour.menuTitle}
                         onMouseDown={handleMouseDown}
                         onMouseUp={handleMouseUp}
                         onClick={handleClick}
-                        className="fixed z-50 w-9 h-9 flex items-center justify-center text-base bg-[#1a1a1a] text-white rounded-full cursor-pointer hover:bg-[#3448c5] transition-colors shadow-lg"
-                        style={{
-                            top:
-                                (titleBarVisible && titleBarPosition === 'top'
-                                    ? titleBarHeight
-                                    : 0) + 8,
-                            right: 12,
-                        }}>
-                        {toolbarVisible ? <X size={16} /> : <Menu size={16} />}
+                        className={`fixed z-50 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer transition-colors shadow-lg ${
+                            toolbarVisible
+                                ? 'bg-[#445ade] text-white hover:bg-[#3448c5]'
+                                : 'bg-[#1a1a1a] text-white hover:bg-[#3448c5]'
+                        }`}
+                        style={{ bottom: statusBottom - 2, right: 10 }}>
+                        {toolbarVisible ? <X size={14} /> : <Menu size={14} />}
                     </button>
 
                     <Canvas
@@ -704,7 +713,7 @@ function App() {
                         scrolling={scrolling}
                         typography={typography}
                         titleBarHeight={titleBarVisible ? titleBarHeight : 0}
-                        rightInset={rightInset}
+                        bottomInset={bottomInset}
                         titleBarPosition={titleBarPosition}
                     />
 
@@ -736,11 +745,7 @@ function App() {
 
                     {!isEditing && (
                         <StatusBar
-                            bottom={
-                                (titleBarVisible && titleBarPosition === 'bottom'
-                                    ? titleBarHeight
-                                    : 0) + 6
-                            }
+                            bottom={statusBottom}
                             cardCount={cards.length}
                             currentCard={currentCard}
                             onPreviousCard={() => goToCard(currentCard - 1)}
@@ -751,18 +756,17 @@ function App() {
                             clickThrough={clickThrough}
                             heard={isSpeechActive && !isPaused ? heardText : ''}
                             error={error ? (t.errors[error] ?? error) : null}
-                            rightInset={rightInset}
                         />
                     )}
                 </div>
 
+                <OpenTowardsContext.Provider value={openTowards}>
                 <Toolbar
                     // Shown once the window has made room, so it does not
                     // flash over the text first
                     visible={toolbarVisible && toolbarReady}
                     isAdjusting={isAdjusting}
-                    topOffset={toolbarTopOffset}
-                    left={toolbarLeft}
+                    placement={toolbarPlacement}
                     isRecognizing={isRecognizing}
                     isSpeechActive={isSpeechActive}
                     isPaused={isPaused}
@@ -811,6 +815,8 @@ function App() {
                             onTextColorChange={setTextColor}
                             typography={typography}
                             onTypographyChange={setTypography}
+                            autoContrast={autoContrast}
+                            onToggleAutoContrast={() => setAutoContrast((v) => !v)}
                             onAdjustStart={() => handleAdjustStart()}
                             onFontSizeChange={setFontSize}
                         />
@@ -829,8 +835,6 @@ function App() {
                                 setUiLanguage(val)
                             }}
                             onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
-                            autoContrast={autoContrast}
-                            onToggleAutoContrast={() => setAutoContrast((v) => !v)}
                             onShowTutorial={showTutorial}
                             targetMinutes={targetMinutes}
                             onTargetMinutesChange={setTargetMinutes}
@@ -870,6 +874,7 @@ function App() {
                         />
                     }
                 />
+                </OpenTowardsContext.Provider>
             </div>
         </I18nProvider>
     )

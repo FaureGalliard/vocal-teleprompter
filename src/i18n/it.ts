@@ -6,11 +6,12 @@ export const it: Messages = {
         'Benvenuto in Vocal Teleprompter. Premi Avvia e leggi questo testo ad alta voce: il gobbo ti ascolta e segue la tua voce parola per parola. Fai una pausa quando vuoi, accelera o rallenta, e ti aspetterà. Fai clic su qualsiasi parola per riprendere da lì, oppure premi Modifica per scrivere il tuo copione. Quando condividi lo schermo su Zoom o Meet, questa finestra resta nascosta al tuo pubblico.',
 
     toolbar: {
-        paste: 'INCOLLA',
-        import: 'IMPORTA',
-        clear: 'CANCELLA',
-        edit: 'MODIFICA',
-        done: 'FATTO',
+        more: 'Copione e aiuto',
+        editScript: 'Modifica copione',
+        finishEditing: 'Termina modifica',
+        pasteScript: 'Incolla dagli appunti',
+        importScript: 'Importa un file .txt',
+        clearScript: 'Cancella copione',
         start: 'AVVIA',
         stop: 'FERMA',
         pause: 'PAUSA',
@@ -21,7 +22,6 @@ export const it: Messages = {
         size: 'Dimensione',
         background: 'Sfondo',
         text: 'Testo',
-        ok: 'OK',
     },
 
     settings: {
@@ -44,6 +44,9 @@ export const it: Messages = {
         countdown: 'Conto alla rovescia',
         countdownHint: "Secondi per prepararti prima che inizi l'ascolto",
         countdownOff: 'No',
+        sectionReading: 'Lettura',
+        sectionWindow: 'Finestra',
+        sectionGeneral: 'Generale',
     },
 
     tour: {
@@ -53,7 +56,7 @@ export const it: Messages = {
         welcomeTitle: 'Benvenuto',
         welcome: 'Un giro veloce del gobbo. Ci vuole mezzo minuto.',
         scriptTitle: 'Il tuo copione',
-        script: 'Incollalo, importa un file .txt o premi Modifica per scriverlo qui.',
+        script: 'Da questo menu puoi modificare, incollare, importare o cancellare il tuo copione.',
         startTitle: 'Inizia ad ascoltare',
         start: 'Premi Avvia (o Spazio) e leggi ad alta voce. Il testo segue la tua voce.',
         languageTitle: 'Lingua parlata',
@@ -61,13 +64,13 @@ export const it: Messages = {
         micTitle: 'Microfono',
         mic: 'Scegli quale microfono ascoltare e controllane il livello.',
         lookTitle: 'Personalizzalo',
-        look: 'Dimensione del testo, colore e opacità dello sfondo e colore del testo.',
+        look: 'Dimensione del testo, colori, contrasto automatico e tipografia.',
         settingsTitle: 'Impostazioni',
-        settings: "Lingua dell'interfaccia, nascondi durante la condivisione, contrasto automatico e altro.",
+        settings: "Come scorre il testo, conto alla rovescia, nascondere durante la condivisione dello schermo, lingua dell'interfaccia e altro.",
         canvasTitle: 'Modifica o salta',
         canvas: "Fai clic su una parola per modificare il copione proprio lì. Con Ctrl+clic (o un clic durante l'ascolto) riprendi a leggere da quella parola.",
         menuTitle: 'Barra degli strumenti',
-        menu: 'Apri o chiudi questa barra da qui. Tieni premuto il pulsante per spostare la finestra.',
+        menu: 'Apri o chiudi la barra da qui. Tieni premuto il pulsante per spostare la finestra.',
     },
 
     cards: {

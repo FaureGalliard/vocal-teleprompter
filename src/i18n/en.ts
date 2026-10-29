@@ -4,11 +4,12 @@ export const en = {
         'Welcome to Vocal Teleprompter. Press Start and read this text out loud: the prompter listens to you and follows your voice word by word. Pause whenever you want, speed up or slow down, and it will wait for you. Click any word to continue from there, or press Edit to write your own script. When you share your screen in Zoom or Meet, this window stays hidden from your audience.',
 
     toolbar: {
-        paste: 'PASTE',
-        import: 'IMPORT',
-        clear: 'CLEAR',
-        edit: 'EDIT',
-        done: 'DONE',
+        more: 'Script and help',
+        editScript: 'Edit script',
+        finishEditing: 'Finish editing',
+        pasteScript: 'Paste from clipboard',
+        importScript: 'Import a .txt file',
+        clearScript: 'Clear script',
         start: 'START',
         stop: 'STOP',
         pause: 'PAUSE',
@@ -19,7 +20,6 @@ export const en = {
         size: 'Size',
         background: 'Background',
         text: 'Text',
-        ok: 'OK',
     },
 
     settings: {
@@ -42,6 +42,9 @@ export const en = {
         countdown: 'Countdown',
         countdownHint: 'Seconds to get ready before listening starts',
         countdownOff: 'Off',
+        sectionReading: 'Reading',
+        sectionWindow: 'Window',
+        sectionGeneral: 'General',
     },
 
     tour: {
@@ -51,7 +54,7 @@ export const en = {
         welcomeTitle: 'Welcome',
         welcome: 'A quick tour of the prompter. It takes half a minute.',
         scriptTitle: 'Your script',
-        script: 'Paste it, import a .txt file, or press Edit to write it right here.',
+        script: 'Edit, paste, import or clear your script from this menu.',
         startTitle: 'Start listening',
         start: 'Press Start (or Space) and read out loud. The text follows your voice.',
         languageTitle: 'Speech language',
@@ -59,13 +62,13 @@ export const en = {
         micTitle: 'Microphone',
         mic: 'Choose which microphone to listen to, and check its level.',
         lookTitle: 'Make it yours',
-        look: 'Text size, background color and opacity, and text color.',
+        look: 'Text size, colors, automatic contrast and typography.',
         settingsTitle: 'Settings',
-        settings: 'Interface language, hiding from screen sharing, automatic contrast and more.',
+        settings: 'How the text scrolls, the countdown, hiding from screen sharing, interface language and more.',
         canvasTitle: 'Edit or jump',
         canvas: 'Click a word to edit the script right there. Ctrl+click it (or click while listening) to continue reading from that word.',
         menuTitle: 'Toolbar',
-        menu: 'Open or close this toolbar here. Hold the button to drag the window.',
+        menu: 'Open or close the toolbar here. Hold the button to drag the window.',
     },
 
     cards: {

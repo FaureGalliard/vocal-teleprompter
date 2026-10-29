@@ -44,7 +44,7 @@ export function startTour(t: Messages, onDone: () => void) {
         },
         {
             element: at('menu'),
-            popover: { title: t.tour.menuTitle, description: t.tour.menu, side: 'left' },
+            popover: { title: t.tour.menuTitle, description: t.tour.menu, side: 'top' },
         },
     ]
 
