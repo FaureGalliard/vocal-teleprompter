@@ -31,7 +31,7 @@ import { readClipboard, readPickedFile } from './lib/scriptFiles'
 
 function App() {
     const settings = useSettings()
-    const { language, titleBarVisible, titleBarPosition, bgColor, bgOpacity } = settings
+    const { language, titleBarVisible, titleBarPosition, bgColor } = settings
     const t = getMessages(settings.uiLanguage)
     const script = useScript(language, t.sampleScript)
     const { content, currentWordIndex, currentCard } = script
@@ -178,9 +178,10 @@ function App() {
                 <Frame
                     expansion={expansion}
                     background={bgColor}
-                    opacity={bgOpacity}
+                    opacity={colors.opacity}
                     outline={displayTextColor}
-                    glass={colors.glass}>
+                    glass={colors.glass}
+                    glassShown={colors.glassShown}>
                     {titleBarVisible && (
                         <TitleBar
                             ref={titleBarRef}

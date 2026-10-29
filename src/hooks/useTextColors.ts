@@ -12,11 +12,11 @@ const SEE_THROUGH_BELOW = 0.85
 // it can soften it like frosted glass, and color the text, point by point,
 // so it reads over it.
 export function useTextColors(settings: Settings) {
-    const { autoContrast, textColor, bgColor, bgOpacity, hiddenFromCapture, backdropSoften } =
-        settings
+    const { autoContrast, textColor, bgColor, hiddenFromCapture, backdropSoften } = settings
+    const { bgOpacity } = settings
     const display = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const seeThrough = bgOpacity < SEE_THROUGH_BELOW && (autoContrast || backdropSoften > 0)
-    const backdrop = useBackdrop(seeThrough, !hiddenFromCapture)
+    const { backdrop, moving } = useBackdrop(seeThrough, !hiddenFromCapture)
     const view = useBackdropView(
         backdrop,
         { background: bgColor, opacity: bgOpacity },
@@ -26,5 +26,8 @@ export function useTextColors(settings: Settings) {
         display,
         seen: autoContrast ? (view?.seen ?? null) : null,
         glass: view?.glass ?? null,
+        // Out of date while the window moves: faded out until it settles
+        glassShown: !moving,
+        opacity: bgOpacity,
     }
 }

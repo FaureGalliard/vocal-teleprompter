@@ -18,7 +18,7 @@ export interface Glass {
 }
 
 // Softening at 100%, in samples
-const MAX_BLUR = 12
+const MAX_BLUR = 8
 
 function picture(canvas: HTMLCanvasElement, grid: Background, cols: number, rows: number) {
     const image = new Uint8ClampedArray(cols * rows * 4)

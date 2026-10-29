@@ -71,9 +71,13 @@ describe('colorMap', () => {
 })
 
 describe('settle', () => {
-    it('moves halfway toward a new look', () => {
-        expect([...settle(new Float32Array([0, 100]), new Float32Array([100, 100]))]).toEqual([
-            50, 100,
+    it('moves halfway toward a small change', () => {
+        expect([...settle(new Float32Array([0, 10]), new Float32Array([10, 10]))]).toEqual([5, 10])
+    })
+
+    it('takes a big change at once', () => {
+        expect([...settle(new Float32Array([0, 0]), new Float32Array([200, 200]))]).toEqual([
+            200, 200,
         ])
     })
 })

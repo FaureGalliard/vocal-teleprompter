@@ -123,10 +123,17 @@ export function blur(background: Background, cols: number, rows: number, radius 
     return pass(pass(background, 1, 0), 0, 1)
 }
 
-// Eases from the previous estimate toward the new one, so noise and
-// one-off changes don't make the text flicker
+// Average change per channel past which a new look is taken at once
+const BIG_CHANGE = 20
+
+// Eases from the previous estimate toward the new one, so noise and small
+// changes don't make the text flicker; a big change (the window moved, the
+// slide changed) is taken at once, so the text catches up right away
 export function settle(previous: Background | null, next: Background, keep = 0.5): Background {
     if (!previous || previous.length !== next.length) return next
+    let change = 0
+    for (let i = 0; i < next.length; i++) change += Math.abs(next[i] - previous[i])
+    if (change / next.length > BIG_CHANGE) return next
     const out = new Float32Array(next.length)
     for (let i = 0; i < next.length; i++) out[i] = keep * previous[i] + (1 - keep) * next[i]
     return out

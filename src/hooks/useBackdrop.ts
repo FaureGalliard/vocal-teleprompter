@@ -11,6 +11,8 @@ const EVERY_MS = 300
 const SHOWN_EVERY_MS = 800
 // After the window moves
 const MOVED_MS = 60
+// The window counts as moving until it has held still this long
+const STILL_MS = 250
 
 // What is behind the window, refreshed a few times a second while `enabled`
 // (a see-through background), so the text can keep reading well over a
@@ -18,6 +20,7 @@ const MOVED_MS = 60
 // captures, so it has to step out of the way for each look.
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
+    const [moving, setMoving] = useState(false)
 
     useEffect(() => {
         if (!enabled) {
@@ -48,16 +51,21 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         }
         capture()
         // Moved: look again soon, so the glass and colors keep up with it
+        let still: ReturnType<typeof setTimeout>
         const moved = getCurrentWindow().onMoved(() => {
+            setMoving(true)
+            clearTimeout(still)
+            still = setTimeout(() => setMoving(false), STILL_MS)
             if (busy) soon = true
             else next(MOVED_MS)
         })
         return () => {
             stopped = true
             clearTimeout(timer)
+            clearTimeout(still)
             moved.then((off) => off())
         }
     }, [enabled, shown])
 
-    return backdrop
+    return { backdrop, moving }
 }
