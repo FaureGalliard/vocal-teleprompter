@@ -14,6 +14,7 @@ invisible in Zoom, Meet, Teams and OBS. Free, open source, and it runs offline.
 [![Stars](https://img.shields.io/github/stars/FaureGalliard/vocal-teleprompter?style=flat&color=facc15)](https://github.com/FaureGalliard/vocal-teleprompter/stargazers)
 ![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/FaureGalliard)
 
 ## [⬇️ Download for Windows](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter-Setup.exe)
 
@@ -92,8 +93,6 @@ Linux and macOS are next, see the roadmap.
 
 - 🐧 **Linux** (AppImage, `.deb`, `.rpm`, then the AUR and Flathub) and 🍎 **macOS**
 - 🪟 **Microsoft Store and winget**
-- ⏭️ **Advance your slides by voice** and 📥 **import PowerPoint speaker notes**
-- 📚 **Script library** and 🏷️ **script markers** like `[PAUSE]`
 
 Have an idea? [Open an issue](https://github.com/FaureGalliard/vocal-teleprompter/issues).
 
