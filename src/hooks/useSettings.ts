@@ -23,7 +23,7 @@ export function useSettings() {
     // null listens to the system default input
     const [selectedMic, setSelectedMic] = usePersistentState<string | null>('microphoneId', null)
 
-    const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0.9)
+    const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0)
     // How much what is behind a see-through window is blurred, 0-100
     const [backdropSoften, setBackdropSoften] = usePersistentState('backdropSoften', 20)
     const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
