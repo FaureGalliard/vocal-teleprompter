@@ -16,6 +16,7 @@
         "core:window:allow-set-position",
         "core:window:allow-set-resizable",
         "core:window:allow-set-ignore-cursor-events",
+        "core:window:allow-cursor-position",
         "core:window:allow-set-skip-taskbar",
         "core:window:allow-set-decorations",
         "core:window:allow-is-decorated",

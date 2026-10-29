@@ -4,6 +4,7 @@ import Toolbar from './components/Toolbar'
 import { OpenTowardsContext } from './components/Popover'
 import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
 import { useWindowPlacement } from './hooks/useWindowPlacement'
+import { usePassThroughGaps } from './hooks/usePassThroughGaps'
 import AppearancePanel from './components/AppearancePanel'
 import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
@@ -622,6 +623,7 @@ function App() {
     // bottom of the text instead, which then makes room for it.
     const { expansion, ready: toolbarReady, resizeFrame } = useWindowExpansion(toolbarVisible)
     useWindowPlacement(toolbarVisible || expansion !== null)
+    usePassThroughGaps(expansion !== null)
     const toolbarPlacement: React.CSSProperties = expansion
         ? {
               left: expansion.frame.width / 2,
@@ -634,6 +636,8 @@ function App() {
     return (
         <I18nProvider language={uiLanguage}>
             <div
+                // Layout only: clicks on it go through to the apps behind
+                data-pass-through
                 className="font-sans"
                 style={{ height: '100vh', overflow: 'hidden' }}>
                 <div
