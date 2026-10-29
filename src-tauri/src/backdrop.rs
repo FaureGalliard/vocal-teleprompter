@@ -1,9 +1,9 @@
 //! What the screen shows where the window is, so the prompter can pick a
 //! readable color for each word against whatever is behind it.
 //!
-//! With the window hidden from capture, the screen comes back without it:
-//! that is the backdrop itself. Otherwise it includes the window, and the
-//! frontend leaves out the pixels of its own letters.
+//! The window is left out of the capture, so what comes back is exactly
+//! what is behind it. When it isn't hidden from screen capture anyway, it is
+//! hidden just for the moment of the capture.
 
 use tauri::ipc::Response;
 use tauri::WebviewWindow;
@@ -13,9 +13,30 @@ use xcap::Monitor;
 /// `[width: u32 LE][height: u32 LE][r g b ...]`. Picking single pixels
 /// rather than averaging keeps letters and background apart. Async, so it
 /// runs off the main thread, which is busy while the window is dragged.
+/// `shown` says the window is normally visible to screen captures.
 #[tauri::command]
-pub async fn capture_backdrop(window: WebviewWindow, step: u32) -> Result<Response, String> {
-    let step = step.max(1);
+pub async fn capture_backdrop(
+    window: WebviewWindow,
+    step: u32,
+    shown: bool,
+) -> Result<Response, String> {
+    if shown {
+        window
+            .set_content_protected(true)
+            .map_err(|e| e.to_string())?;
+        // Give the compositor a frame to take the window out
+        std::thread::sleep(std::time::Duration::from_millis(40));
+    }
+    let captured = capture(&window, step.max(1));
+    if shown {
+        window
+            .set_content_protected(false)
+            .map_err(|e| e.to_string())?;
+    }
+    captured
+}
+
+fn capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let size = window.inner_size().map_err(|e| e.to_string())?;
     let monitor = Monitor::from_point(position.x, position.y).map_err(|e| e.to_string())?;

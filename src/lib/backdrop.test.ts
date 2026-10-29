@@ -13,26 +13,15 @@ function backdrop(paint: (c: number, r: number) => [number, number, number]): Ba
 }
 
 const blue = '#7698fe'
-const hidden: Surface = { hiddenFromCapture: true, background: '#000000', opacity: 0 }
-const shown: Surface = { ...hidden, hiddenFromCapture: false }
+const hidden: Surface = { background: '#000000', opacity: 0 }
 const hexAt = (image: Uint8ClampedArray, i: number) =>
     '#' + [0, 1, 2].map((k) => image[i * 4 + k].toString(16).padStart(2, '0')).join('')
 
 describe('estimateBackground', () => {
-    it('blends the window background over the backdrop when hidden from capture', () => {
+    it('blends the window background over the backdrop', () => {
         const white = backdrop(() => [255, 255, 255])
-        const bg = estimateBackground(white, { ...hidden, opacity: 0.5 }, null)
+        const bg = estimateBackground(white, { ...hidden, opacity: 0.5 })
         expect(Math.round(bg[0])).toBe(128)
-    })
-
-    it('fills the letters in from the gaps around them when they are in the capture', () => {
-        // White page; rows 2 and 3 hold our own blue letters
-        const page = backdrop((_, r) => (r === 2 || r === 3 ? [118, 152, 254] : [255, 255, 255]))
-        const letters = new Uint8Array(4 * 6)
-        letters.fill(1, 2 * 4, 4 * 4)
-        const bg = estimateBackground(page, shown, letters)
-        expect(Math.round(bg[(2 * 4 + 1) * 3])).toBe(255)
-        expect(Math.round(bg[(3 * 4 + 1) * 3 + 2])).toBe(255)
     })
 })
 
@@ -40,7 +29,7 @@ describe('colorMap', () => {
     it('reads well over every gray, in the chosen color', () => {
         for (let v = 0; v <= 255; v += 15) {
             const gray = backdrop(() => [v, v, v])
-            const image = colorMap(estimateBackground(gray, hidden, null), 4, 6, blue)
+            const image = colorMap(estimateBackground(gray, hidden), 4, 6, blue)
             const behind = '#' + v.toString(16).padStart(2, '0').repeat(3)
             // Mid grays can't reach 7:1 with any color; the most there is is about 4.6
             expect(contrastRatio(hexAt(image, 0), behind)).toBeGreaterThanOrEqual(4.5)
@@ -59,7 +48,6 @@ describe('colorMap', () => {
                 estimateBackground(
                     backdrop(() => color),
                     hidden,
-                    null,
                 ),
                 4,
                 6,
@@ -73,7 +61,6 @@ describe('colorMap', () => {
             estimateBackground(
                 backdrop(() => colors[0]),
                 hidden,
-                null,
             ),
             4,
             6,

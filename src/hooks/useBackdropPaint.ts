@@ -54,23 +54,11 @@ export function useBackdropPaint(
         }
         const { cols, rows, step } = backdrop
         const scale = window.devicePixelRatio
-        const cell = (v: number) => (v * scale) / step
         const pieces = measure(root)
 
-        // Our own letters, to leave out of a capture that includes the window
-        let letters: Uint8Array | null = null
-        if (!surface.hiddenFromCapture) {
-            letters = new Uint8Array(cols * rows)
-            for (const p of pieces) {
-                const [c0, c1] = [Math.floor(cell(p.left)), Math.ceil(cell(p.right))]
-                const [r0, r1] = [Math.floor(cell(p.top)), Math.ceil(cell(p.bottom))]
-                for (let r = Math.max(0, r0); r < Math.min(rows, r1); r++)
-                    letters.fill(1, r * cols + Math.max(0, c0), r * cols + Math.min(cols, c1))
-            }
-        }
         const background = settle(
             backgroundRef.current,
-            blur(estimateBackground(backdrop, surface, letters), cols, rows),
+            blur(estimateBackground(backdrop, surface), cols, rows),
         )
         backgroundRef.current = background
 

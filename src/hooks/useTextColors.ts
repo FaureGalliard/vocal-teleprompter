@@ -13,10 +13,10 @@ export function useTextColors(settings: Settings) {
     const { autoContrast, textColor, bgColor, bgOpacity, hiddenFromCapture } = settings
     const display = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const seeThrough = autoContrast && bgOpacity < SEE_THROUGH_BELOW
-    const backdrop = useBackdrop(seeThrough)
+    const backdrop = useBackdrop(seeThrough, !hiddenFromCapture)
     return {
         display,
         backdrop,
-        surface: { hiddenFromCapture, background: bgColor, opacity: bgOpacity },
+        surface: { background: bgColor, opacity: bgOpacity },
     }
 }

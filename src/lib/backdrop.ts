@@ -10,8 +10,6 @@ export interface Backdrop {
 
 // How the window is drawn over the backdrop
 export interface Surface {
-    // The window is left out of screen captures, so the capture is the backdrop
-    hiddenFromCapture: boolean
     background: string
     opacity: number
 }
@@ -37,44 +35,16 @@ export const rgb = (hex: string): [number, number, number] => {
 const hex = (r: number, g: number, b: number) =>
     '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
 
-// What the eye sees behind the text at every sample. Hidden from capture, the
-// capture is the backdrop and the window's background is blended over it;
-// otherwise the capture already shows that blend, but also our own letters,
-// so the samples under `letters` (true where text is drawn) are filled in
-// from the nearest clear ones above and below, in the gaps between lines.
-// That never depends on how the letters are colored, so it can't feed back.
-export function estimateBackground(
-    backdrop: Backdrop,
-    surface: Surface,
-    letters: Uint8Array | null,
-): Background {
+// What the eye sees behind the text at every sample: the window's
+// background blended over the backdrop (the capture never includes the
+// window itself)
+export function estimateBackground(backdrop: Backdrop, surface: Surface): Background {
     const { cols, rows, pixels } = backdrop
     const out = new Float32Array(cols * rows * 3)
     const fill = rgb(surface.background)
-    const a = surface.hiddenFromCapture ? surface.opacity : 0
+    const a = surface.opacity
     for (let i = 0; i < cols * rows; i++)
         for (let k = 0; k < 3; k++) out[i * 3 + k] = a * fill[k] + (1 - a) * pixels[i * 3 + k]
-    if (surface.hiddenFromCapture || !letters) return out
-
-    const clear = out.slice()
-    for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) {
-            if (!letters[r * cols + c]) continue
-            let up = r
-            while (up >= 0 && letters[up * cols + c]) up--
-            let down = r
-            while (down < rows && letters[down * cols + c]) down++
-            const ends = [up, down].filter((e) => e >= 0 && e < rows)
-            if (!ends.length) continue
-            // Weighted by closeness, so a tall line blends from gap to gap
-            const weights = ends.map((e) => 1 / (1 + Math.abs(e - r)))
-            const total = weights.reduce((s, w) => s + w, 0)
-            for (let k = 0; k < 3; k++)
-                out[(r * cols + c) * 3 + k] =
-                    ends.reduce((s, e, j) => s + weights[j] * clear[(e * cols + c) * 3 + k], 0) /
-                    total
-        }
-    }
     return out
 }
 
