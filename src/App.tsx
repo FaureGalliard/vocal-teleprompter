@@ -66,7 +66,6 @@ function App() {
     )
     const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
-    useWindowPlacement()
     const [titleBarHeight, setTitleBarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)
@@ -624,6 +623,7 @@ function App() {
     // cut off. When it cannot grow (maximized) the toolbar sits over the
     // bottom of the text instead, which then makes room for it.
     const { expansion, ready: toolbarReady } = useWindowExpansion(toolbarVisible)
+    useWindowPlacement(toolbarVisible || expansion !== null)
     const frameTop = expansion?.side === 'above' ? expansion.room : 0
     const toolbarPlacement: React.CSSProperties = expansion
         ? {

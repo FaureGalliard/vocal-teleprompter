@@ -5,6 +5,7 @@ import {
     LogicalPosition,
     LogicalSize,
 } from '@tauri-apps/api/window'
+import { whenPlaced } from './useWindowPlacement'
 
 // Height of the toolbar plus a little air around it
 export const BAR_ROOM = 56
@@ -51,6 +52,7 @@ export function useWindowExpansion(open: boolean) {
         const win = getCurrentWindow()
 
         const grow = async () => {
+            await whenPlaced()
             await settledRef.current
             if (cancelled) return
             if (await win.isMaximized()) {
