@@ -618,23 +618,18 @@ function App() {
     // Distance from the bottom of the frame to the status row
     const statusBottom = (titleBarVisible && titleBarPosition === 'bottom' ? titleBarHeight : 0) + 6
 
-    // While the toolbar is open the window grows below the teleprompter (or
-    // above it), so the toolbar and its panels never cover the text or get
-    // cut off. When it cannot grow (maximized) the toolbar sits over the
+    // While the toolbar is open the window grows below the teleprompter, so
+    // the toolbar and its panels never cover the text or get cut off. When it cannot grow (maximized) the toolbar sits over the
     // bottom of the text instead, which then makes room for it.
     const { expansion, ready: toolbarReady, resizeFrame } = useWindowExpansion(toolbarVisible)
     useWindowPlacement(toolbarVisible || expansion !== null)
-    const frameTop = expansion?.side === 'above' ? expansion.room : 0
     const toolbarPlacement: React.CSSProperties = expansion
         ? {
               left: expansion.frame.width / 2,
-              top:
-                  expansion.side === 'below'
-                      ? expansion.frame.height + (BAR_ROOM - 40) / 2
-                      : expansion.room - BAR_ROOM + (BAR_ROOM - 40) / 2,
+              top: expansion.frame.height + (BAR_ROOM - 40) / 2,
           }
         : { left: '50%', bottom: statusBottom + 30 }
-    const openTowards = expansion?.side === 'below' ? 'down' : 'up'
+    const openTowards = expansion ? 'down' : 'up'
     const bottomInset = toolbarVisible && toolbarReady && !expansion ? BAR_ROOM : 0
 
     return (
@@ -649,7 +644,7 @@ function App() {
                     style={
                         {
                             position: 'fixed',
-                            top: frameTop,
+                            top: 0,
                             left: 0,
                             width: expansion ? expansion.frame.width : '100vw',
                             height: expansion ? expansion.frame.height : '100vh',

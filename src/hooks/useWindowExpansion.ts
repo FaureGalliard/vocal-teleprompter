@@ -15,9 +15,7 @@ const PANEL_ROOM = 440
 export interface Expansion {
     // Size of the teleprompter itself, which stays put while the window grows
     frame: { width: number; height: number }
-    // Where the toolbar sits, outside the frame
-    side: 'below' | 'above'
-    // Height the window grew by
+    // Height the window grew by, below the frame
     room: number
 }
 
@@ -32,9 +30,11 @@ interface State {
 const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
 
 // While `open`, grows the window with a transparent area below the
-// teleprompter (or above it, when the screen ends close below) so the
-// toolbar and its panels sit outside the text instead of covering it or
-// being cut off; shrinks it back when closed.
+// teleprompter so the toolbar and its panels sit outside the text instead of
+// covering it or being cut off; shrinks it back when closed. Near the bottom
+// of the screen the whole window first moves up just enough. (Growing it
+// upwards instead needs the teleprompter to move down inside the window at
+// the same instant, which can't be done, so everything jumped.)
 // The teleprompter is pinned to its size before the window grows and until
 // it has shrunk back, so it never stretches over the extra room.
 // `expansion` is null when the window cannot grow (maximized), so the
@@ -68,7 +68,6 @@ export function useWindowExpansion(open: boolean) {
             const monitor = await currentMonitor()
             if (cancelled) return
 
-            // Below unless the screen ends sooner there than above
             const wanted = BAR_ROOM + PANEL_ROOM
             const area = monitor
                 ? {
@@ -78,34 +77,28 @@ export function useWindowExpansion(open: boolean) {
                 : null
             const roomBelow = area ? area.bottom - position.y - size.height : wanted
             const roomAbove = area ? position.y - area.top : 0
-            const side = roomBelow >= wanted || roomBelow >= roomAbove ? 'below' : 'above'
-            const room = Math.min(wanted, Math.max(BAR_ROOM, side === 'below' ? roomBelow : roomAbove))
+            const lift = Math.min(roomAbove, Math.max(0, wanted - roomBelow))
+            const room = Math.min(wanted, Math.max(BAR_ROOM, roomBelow + lift))
             const frame = { width: size.width, height: size.height }
             frameRef.current = frame
 
             // Pin the frame where it is, then grow the window around it
-            setState({ expansion: { frame, side: 'below', room }, ready: false })
+            setState({ expansion: { frame, room }, ready: false })
             await nextPaint()
             await win.setResizable(false)
+            if (lift > 0) await win.setPosition(new LogicalPosition(position.x, position.y - lift))
             await win.setSize(new LogicalSize(size.width, size.height + room))
-            if (side === 'above') {
-                // The window grew downwards; slide it up while the frame
-                // moves down by the same amount
-                setState({ expansion: { frame, side, room }, ready: false })
-                await win.setPosition(new LogicalPosition(position.x, position.y - room))
-            }
-            if (!cancelled) setState({ expansion: { frame, side, room }, ready: true })
+            if (!cancelled) setState({ expansion: { frame, room }, ready: true })
 
             restoreRef.current = async () => {
-                if (side === 'above') {
-                    // Relative to where the window is now, in case it was dragged
-                    const now = (await win.outerPosition()).toLogical(await win.scaleFactor())
-                    setState({ expansion: { frame, side: 'below', room }, ready: false })
-                    await win.setPosition(new LogicalPosition(now.x, now.y + room))
-                }
                 const own = frameRef.current ?? frame
                 frameRef.current = null
                 await win.setSize(new LogicalSize(own.width, own.height))
+                if (lift > 0) {
+                    // Relative to where the window is now, in case it was dragged
+                    const now = (await win.outerPosition()).toLogical(await win.scaleFactor())
+                    await win.setPosition(new LogicalPosition(now.x, now.y + lift))
+                }
                 await win.setResizable(true)
             }
         }

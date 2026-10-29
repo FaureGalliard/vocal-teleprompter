@@ -16,8 +16,9 @@ pub const APP_GUIDE: &str = "\
 
 A small always-on-top window, usually placed under the webcam. The round \
 button at its bottom right corner opens and closes the toolbar, a row of \
-icons that appears below the window (or above it, near the bottom of the \
-screen) and shows each icon's name on hover; holding the round button drags \
+icons that appears below the window (which moves up first near the bottom \
+of the screen) and shows each icon's name on hover; holding the round \
+button drags \
 the window. The window reopens where and as big as it was left.
 
 ## Toolbar, left to right

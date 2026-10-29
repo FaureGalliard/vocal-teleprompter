@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Which way the toolbar's menus, panels and tooltips open: into the room
-// below the toolbar, or above it when the toolbar sits above the
-// teleprompter or over its bottom edge
+// below the toolbar, or above it when the toolbar sits over the bottom edge
+// of the teleprompter (maximized window)
 export type OpenTowards = 'down' | 'up'
 export const OpenTowardsContext = createContext<OpenTowards>('up')
 export const useOpenTowards = () => useContext(OpenTowardsContext)
