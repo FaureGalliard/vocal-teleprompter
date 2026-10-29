@@ -31,10 +31,12 @@ const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() 
 
 // While `open`, grows the window with a transparent area below the
 // teleprompter so the toolbar and its panels sit outside the text instead of
-// covering it or being cut off; shrinks it back when closed. Near the bottom
-// of the screen the whole window first moves up just enough. (Growing it
-// upwards instead needs the teleprompter to move down inside the window at
-// the same instant, which can't be done, so everything jumped.)
+// covering it or being cut off; shrinks it back when closed. The window
+// never moves: near the bottom of the screen it grows only as far as the
+// screen goes (the panels then scroll), and with no room even for the
+// toolbar it falls back to the toolbar over the text. (Growing upwards
+// needs the teleprompter to move inside the window at the same instant as
+// the window moves, which can't be done, so everything jumped.)
 // The teleprompter is pinned to its size before the window grows and until
 // it has shrunk back, so it never stretches over the extra room.
 // `expansion` is null when the window cannot grow (maximized), so the
@@ -58,10 +60,10 @@ export function useWindowExpansion(open: boolean) {
             await whenPlaced()
             await settledRef.current
             if (cancelled) return
-            if (await win.isMaximized()) {
+            const fallBack = () => {
                 if (!cancelled) setState({ expansion: null, ready: true })
-                return
             }
+            if (await win.isMaximized()) return fallBack()
             const scale = await win.scaleFactor()
             const size = (await win.innerSize()).toLogical(scale)
             const position = (await win.outerPosition()).toLogical(scale)
@@ -69,16 +71,11 @@ export function useWindowExpansion(open: boolean) {
             if (cancelled) return
 
             const wanted = BAR_ROOM + PANEL_ROOM
-            const area = monitor
-                ? {
-                      top: monitor.workArea.position.y / scale,
-                      bottom: (monitor.workArea.position.y + monitor.workArea.size.height) / scale,
-                  }
-                : null
-            const roomBelow = area ? area.bottom - position.y - size.height : wanted
-            const roomAbove = area ? position.y - area.top : 0
-            const lift = Math.min(roomAbove, Math.max(0, wanted - roomBelow))
-            const room = Math.min(wanted, Math.max(BAR_ROOM, roomBelow + lift))
+            const screenBottom = monitor
+                ? (monitor.workArea.position.y + monitor.workArea.size.height) / scale
+                : Infinity
+            const room = Math.min(wanted, screenBottom - position.y - size.height)
+            if (room < BAR_ROOM) return fallBack()
             const frame = { width: size.width, height: size.height }
             frameRef.current = frame
 
@@ -86,7 +83,6 @@ export function useWindowExpansion(open: boolean) {
             setState({ expansion: { frame, room }, ready: false })
             await nextPaint()
             await win.setResizable(false)
-            if (lift > 0) await win.setPosition(new LogicalPosition(position.x, position.y - lift))
             await win.setSize(new LogicalSize(size.width, size.height + room))
             if (!cancelled) setState({ expansion: { frame, room }, ready: true })
 
@@ -94,11 +90,6 @@ export function useWindowExpansion(open: boolean) {
                 const own = frameRef.current ?? frame
                 frameRef.current = null
                 await win.setSize(new LogicalSize(own.width, own.height))
-                if (lift > 0) {
-                    // Relative to where the window is now, in case it was dragged
-                    const now = (await win.outerPosition()).toLogical(await win.scaleFactor())
-                    await win.setPosition(new LogicalPosition(now.x, now.y + lift))
-                }
                 await win.setResizable(true)
             }
         }
