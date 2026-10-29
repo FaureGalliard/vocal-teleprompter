@@ -190,7 +190,12 @@ fn get_prompt(params: &Value) -> Result<Value, (i64, String)> {
     if params["name"] != "prepare_presentation" {
         return Err((-32602, "Unknown prompt".into()));
     }
-    let arg = |name: &str| params["arguments"][name].as_str().unwrap_or_default().to_string();
+    let arg = |name: &str| {
+        params["arguments"][name]
+            .as_str()
+            .unwrap_or_default()
+            .to_string()
+    };
     Ok(json!({
         "description": "Prepare a presentation for Vocal Teleprompter",
         "messages": [{
@@ -254,7 +259,9 @@ fn read_bridge_info() -> Option<BridgeInfo> {
 fn try_connect() -> Option<TcpStream> {
     let info = read_bridge_info()?;
     let stream = TcpStream::connect(("127.0.0.1", info.port)).ok()?;
-    stream.set_read_timeout(Some(Duration::from_secs(15))).ok()?;
+    stream
+        .set_read_timeout(Some(Duration::from_secs(15)))
+        .ok()?;
     Some(stream)
 }
 

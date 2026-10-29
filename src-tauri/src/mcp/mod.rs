@@ -25,7 +25,11 @@ pub struct BridgeInfo {
 }
 
 pub fn bridge_file() -> Option<PathBuf> {
-    Some(dirs::data_dir()?.join(APP_IDENTIFIER).join("mcp-bridge.json"))
+    Some(
+        dirs::data_dir()?
+            .join(APP_IDENTIFIER)
+            .join("mcp-bridge.json"),
+    )
 }
 
 /// One request from the connector to the app, sent as a single JSON line

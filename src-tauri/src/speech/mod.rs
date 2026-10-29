@@ -84,7 +84,11 @@ impl Transcriber {
         match self.recognizer.accept_waveform(samples) {
             Ok(DecodingState::Finalized) => {
                 let text = without_unknown(
-                    self.recognizer.result().single().map(|r| r.text).unwrap_or_default(),
+                    self.recognizer
+                        .result()
+                        .single()
+                        .map(|r| r.text)
+                        .unwrap_or_default(),
                 );
                 self.partial.clear();
                 (!text.is_empty()).then_some((text, true))
@@ -102,7 +106,13 @@ impl Transcriber {
     }
 
     pub fn finish(&mut self) -> String {
-        without_unknown(self.recognizer.final_result().single().map(|r| r.text).unwrap_or_default())
+        without_unknown(
+            self.recognizer
+                .final_result()
+                .single()
+                .map(|r| r.text)
+                .unwrap_or_default(),
+        )
     }
 }
 
@@ -239,5 +249,9 @@ pub fn transcribe(
         }
     }
     text.push(transcriber.finish());
-    Ok(text.into_iter().filter(|t| !t.is_empty()).collect::<Vec<_>>().join(" "))
+    Ok(text
+        .into_iter()
+        .filter(|t| !t.is_empty())
+        .collect::<Vec<_>>()
+        .join(" "))
 }

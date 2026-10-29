@@ -27,7 +27,13 @@ fn targets(client: &str) -> Result<(Vec<PathBuf>, &'static str), String> {
                 if let Ok(entries) = std::fs::read_dir(local.join("Packages")) {
                     for entry in entries.flatten() {
                         if entry.file_name().to_string_lossy().starts_with("Claude_") {
-                            paths.push(entry.path().join("LocalCache").join("Roaming").join("Claude"));
+                            paths.push(
+                                entry
+                                    .path()
+                                    .join("LocalCache")
+                                    .join("Roaming")
+                                    .join("Claude"),
+                            );
                         }
                     }
                 }
@@ -47,7 +53,10 @@ fn targets(client: &str) -> Result<(Vec<PathBuf>, &'static str), String> {
             "mcpServers",
         )),
         "cursor" => Ok((
-            vec![dirs::home_dir().ok_or_else(missing)?.join(".cursor").join("mcp.json")],
+            vec![dirs::home_dir()
+                .ok_or_else(missing)?
+                .join(".cursor")
+                .join("mcp.json")],
             "mcpServers",
         )),
         "vscode" => Ok((
@@ -127,7 +136,12 @@ mod tests {
             "claude.json",
             r#"{"numStartups": 5, "mcpServers": {"other": {"command": "x"}}, "userID": "abc"}"#,
         );
-        add_server(&path, "mcpServers", &json!({"command": "vt.exe", "args": ["--mcp"]})).unwrap();
+        add_server(
+            &path,
+            "mcpServers",
+            &json!({"command": "vt.exe", "args": ["--mcp"]}),
+        )
+        .unwrap();
         let text = std::fs::read_to_string(&path).unwrap();
         let config: Value = serde_json::from_str(&text).unwrap();
 
@@ -143,11 +157,17 @@ mod tests {
 
     #[test]
     fn refuses_to_rewrite_a_file_it_cannot_parse() {
-        let path = temp_file("broken.json", "{ // a comment
- }");
+        let path = temp_file(
+            "broken.json",
+            "{ // a comment
+ }",
+        );
         assert!(add_server(&path, "mcpServers", &json!({})).is_err());
-        assert_eq!(std::fs::read_to_string(&path).unwrap(), "{ // a comment
- }");
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "{ // a comment
+ }"
+        );
         let _ = std::fs::remove_file(path);
     }
 

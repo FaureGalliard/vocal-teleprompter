@@ -168,7 +168,11 @@ impl Resampler {
         while self.position < input.len() as f64 {
             let index = self.position.floor() as usize;
             let frac = (self.position - index as f64) as f32;
-            let a = if index == 0 { self.last } else { input[index - 1] };
+            let a = if index == 0 {
+                self.last
+            } else {
+                input[index - 1]
+            };
             let b = input[index];
             let value = a + (b - a) * frac;
             out.push((value.clamp(-1.0, 1.0) * i16::MAX as f32) as i16);
@@ -221,7 +225,11 @@ impl AutoGain {
         for s in samples.iter_mut() {
             let v = *s * self.gain;
             // Soft limiter near full scale
-            *s = if v.abs() > 0.9 { v.signum() * (0.9 + (v.abs() - 0.9) * 0.1).min(1.0) } else { v };
+            *s = if v.abs() > 0.9 {
+                v.signum() * (0.9 + (v.abs() - 0.9) * 0.1).min(1.0)
+            } else {
+                v
+            };
         }
     }
 }

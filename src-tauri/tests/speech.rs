@@ -13,7 +13,9 @@ use vocal_teleprompter_lib::speech::{transcribe, Transcriber};
 const MIN_ACCURACY: f64 = 0.8;
 
 fn fixtures() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures")
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
 }
 
 /// 16-bit mono PCM samples of a WAV file
@@ -53,7 +55,11 @@ fn accuracy(expected: &[String], heard: &[String]) -> f64 {
         let mut diagonal = 0;
         for (j, h) in heard.iter().enumerate() {
             let above = row[j + 1];
-            row[j + 1] = if e == h { diagonal + 1 } else { above.max(row[j]) };
+            row[j + 1] = if e == h {
+                diagonal + 1
+            } else {
+                above.max(row[j])
+            };
             diagonal = above;
         }
     }
@@ -74,7 +80,11 @@ fn recognizes_the_recorded_scripts() {
         }
         let language = path.file_stem().unwrap().to_string_lossy().to_string();
         let model = Path::new(&models).join(model_name(&language).expect("known language"));
-        assert!(model.exists(), "model for {language} missing at {}", model.display());
+        assert!(
+            model.exists(),
+            "model for {language} missing at {}",
+            model.display()
+        );
 
         let script = std::fs::read_to_string(path.with_extension("txt")).unwrap();
         let samples = read_wav(&path);
@@ -86,8 +96,14 @@ fn recognizes_the_recorded_scripts() {
         let vocabulary: Vec<String> = script.split_whitespace().map(String::from).collect();
         let guided = transcribe(&model, &samples, Some(&vocabulary)).unwrap();
         let guided_score = accuracy(&words(&script), &words(&guided));
-        println!("{language} with the script's vocabulary: {:.0}% — {guided}", guided_score * 100.0);
-        assert!(guided_score >= score, "the vocabulary made {language} worse: {guided}");
+        println!(
+            "{language} with the script's vocabulary: {:.0}% — {guided}",
+            guided_score * 100.0
+        );
+        assert!(
+            guided_score >= score,
+            "the vocabulary made {language} worse: {guided}"
+        );
         assert!(
             score >= MIN_ACCURACY,
             "{language} recognized only {:.0}% of the script: {heard}",
@@ -137,7 +153,11 @@ fn recognizes_a_live_48khz_stream() {
     let script = std::fs::read_to_string(path.with_extension("txt")).unwrap();
     let score = accuracy(&words(&script), &words(&heard));
     println!("live 48 kHz: {:.0}% — {heard}", score * 100.0);
-    assert!(score >= MIN_ACCURACY, "live stream recognized only {:.0}%: {heard}", score * 100.0);
+    assert!(
+        score >= MIN_ACCURACY,
+        "live stream recognized only {:.0}%: {heard}",
+        score * 100.0
+    );
 }
 
 /// Installed builds get the resource folder from Tauri as an extended-length
@@ -150,10 +170,19 @@ fn loads_models_from_extended_length_paths() {
         return;
     };
     // On Windows canonicalize returns the \\?\ form, the same as Tauri
-    let extended = std::fs::canonicalize(Path::new(&models).join(model_name("en-US").unwrap())).unwrap();
+    let extended =
+        std::fs::canonicalize(Path::new(&models).join(model_name("en-US").unwrap())).unwrap();
     let plain = plain_path(extended.clone());
-    assert!(!plain.to_string_lossy().starts_with(r"\\?\"), "{}", plain.display());
-    assert!(vosk::Model::new(plain.to_string_lossy()).is_some(), "model did not load from {}", plain.display());
+    assert!(
+        !plain.to_string_lossy().starts_with(r"\\?\"),
+        "{}",
+        plain.display()
+    );
+    assert!(
+        vosk::Model::new(plain.to_string_lossy()).is_some(),
+        "model did not load from {}",
+        plain.display()
+    );
 }
 
 /// A soft voice (the recording at a twentieth of its level) must still be
@@ -167,7 +196,10 @@ fn recognizes_a_quiet_voice_with_automatic_gain() {
     let path = fixtures().join("en-US.wav");
     let model_dir = Path::new(&models).join(model_name("en-US").unwrap());
     let model = vosk::Model::new(model_dir.to_string_lossy()).expect("model");
-    let quiet: Vec<f32> = read_wav(&path).iter().map(|&s| s as f32 / i16::MAX as f32 * 0.05).collect();
+    let quiet: Vec<f32> = read_wav(&path)
+        .iter()
+        .map(|&s| s as f32 / i16::MAX as f32 * 0.05)
+        .collect();
 
     let mut gain = AutoGain::new();
     let mut transcriber = Transcriber::new(&model, None).unwrap();
@@ -188,7 +220,19 @@ fn recognizes_a_quiet_voice_with_automatic_gain() {
 
     let script = std::fs::read_to_string(path.with_extension("txt")).unwrap();
     let score = accuracy(&words(&script), &words(&heard));
-    println!("quiet voice, gain {:.1}x: {:.0}% — {heard}", gain.gain(), score * 100.0);
-    assert!(gain.gain() > 4.0, "the gain did not rise for a quiet voice: {:.1}", gain.gain());
-    assert!(score >= MIN_ACCURACY, "quiet voice recognized only {:.0}%: {heard}", score * 100.0);
+    println!(
+        "quiet voice, gain {:.1}x: {:.0}% — {heard}",
+        gain.gain(),
+        score * 100.0
+    );
+    assert!(
+        gain.gain() > 4.0,
+        "the gain did not rise for a quiet voice: {:.1}",
+        gain.gain()
+    );
+    assert!(
+        score >= MIN_ACCURACY,
+        "quiet voice recognized only {:.0}%: {heard}",
+        score * 100.0
+    );
 }
