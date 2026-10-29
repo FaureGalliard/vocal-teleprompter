@@ -4,7 +4,6 @@ import { FONTS, type Typography } from '../lib/typography'
 import type { Scrolling } from '../lib/scrolling'
 import { useFollowWord } from '../hooks/useFollowWord'
 import ReadingLine from './ReadingLine'
-import type { Seen } from '../hooks/useBackdropView'
 import { paintFrom } from '../lib/wordPaint'
 import { useBackdropPaint } from '../hooks/useBackdropPaint'
 import ScriptEditor from './ScriptEditor'
@@ -38,7 +37,8 @@ interface CanvasProps {
     textColor: string
     // What is behind a see-through window, to color each word so it reads
     // well over it; null when the background is solid or it can't be seen
-    seen: Seen | null
+    // Counts the looks at what is behind the window, null when there are none
+    seen: number | null
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
     scrolling: Scrolling

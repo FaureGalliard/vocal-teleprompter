@@ -28,7 +28,8 @@ export function useTextColors(settings: Settings, editing: boolean) {
     )
     return {
         display,
-        seen: autoContrast ? (view?.seen ?? null) : null,
+        // Counts the looks behind the window, for coloring the text over them
+        seen: autoContrast ? (view?.version ?? null) : null,
         glass: view?.glass ?? null,
         // Out of date while the window moves: faded out until it settles
         glassShown: !moving,

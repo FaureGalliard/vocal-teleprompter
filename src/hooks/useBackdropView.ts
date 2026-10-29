@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { blur, settle, type Background, type Backdrop, type Surface } from '../lib/backdrop'
-import { rgb } from '../lib/backdrop'
-
-// What the eye sees behind the text, sample by sample
-export interface Seen {
-    cols: number
-    rows: number
-    step: number
-    rgb: Background
-}
+import type { Backdrop, Surface } from '../lib/backdrop'
+import { backdropWorker } from '../lib/backdropWorker'
 
 // The softened backdrop, drawn behind the text like frosted glass
 export interface Glass {
@@ -17,59 +9,63 @@ export interface Glass {
     height: number
 }
 
-// Softening at 100%, in samples
-const MAX_BLUR = 8
+// Lets go of a picture once whatever was fading from it is done
+const retire = (url: string | null) => url && setTimeout(() => URL.revokeObjectURL(url), 1000)
 
-function picture(canvas: HTMLCanvasElement, grid: Background, cols: number, rows: number) {
-    const image = new Uint8ClampedArray(cols * rows * 4)
-    for (let i = 0; i < cols * rows; i++) {
-        image.set([grid[i * 3], grid[i * 3 + 1], grid[i * 3 + 2], 255], i * 4)
-    }
-    canvas.width = cols
-    canvas.height = rows
-    canvas.getContext('2d')!.putImageData(new ImageData(image, cols, rows), 0, 0)
-    return canvas.toDataURL()
-}
-
-// From each look at the backdrop: the frosted glass (the backdrop blurred by
-// `soften`, 0-100) and what the eye then sees behind the text, with the
-// window's own background over it, eased in over time so it doesn't flicker
+// Hands each look at the backdrop to the worker, which blurs it into frosted
+// glass (by `soften`, 0-100) and keeps what the eye then sees behind the text
+// for the letters' colors. `version` counts the looks it has taken in. Looks
+// that come in while one is being worked on are dropped but the newest.
 export function useBackdropView(backdrop: Backdrop | null, surface: Surface, soften: number) {
-    const [view, setView] = useState<{ seen: Seen; glass: Glass | null } | null>(null)
-    const seenRef = useRef<Background | null>(null)
-    const canvasRef = useRef<HTMLCanvasElement | null>(null)
+    const [view, setView] = useState<{ glass: Glass | null; version: number } | null>(null)
+    const options = useRef({ surface, soften })
+    options.current = { surface, soften }
+    const busy = useRef(false)
+    const queued = useRef<Backdrop | null>(null)
+    const active = useRef(false)
+    const glassUrl = useRef<string | null>(null)
 
     useEffect(() => {
+        active.current = !!backdrop
         if (!backdrop) {
-            seenRef.current = null
+            backdropWorker.reset()
+            retire(glassUrl.current)
+            glassUrl.current = null
             setView(null)
             return
         }
-        const { cols, rows, step, pixels } = backdrop
-        const raw = Float32Array.from(pixels.subarray(0, cols * rows * 3))
-        const radius = Math.round((soften / 100) * MAX_BLUR)
-        const behind = radius ? blur(raw, cols, rows, radius) : raw
-        const scale = window.devicePixelRatio
-        const glass = radius
-            ? {
-                  url: picture(
-                      (canvasRef.current ??= document.createElement('canvas')),
-                      behind,
-                      cols,
-                      rows,
-                  ),
-                  width: cols * (step / scale),
-                  height: rows * (step / scale),
-              }
-            : null
-
-        const fill = rgb(surface.background)
-        const a = surface.opacity
-        const seen = behind.map((v, i) => a * fill[i % 3] + (1 - a) * v)
-        seenRef.current = settle(seenRef.current, seen)
-        setView({ seen: { cols, rows, step, rgb: seenRef.current }, glass })
-        // A new capture is what triggers a new look
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const send = async (look: Backdrop) => {
+            busy.current = true
+            const { surface, soften } = options.current
+            const reply = await backdropWorker.view({
+                cols: look.cols,
+                rows: look.rows,
+                step: look.step,
+                pixels: look.pixels.slice().buffer,
+                background: surface.background,
+                opacity: surface.opacity,
+                soften,
+            })
+            busy.current = false
+            if (active.current) {
+                const scale = window.devicePixelRatio
+                retire(glassUrl.current)
+                glassUrl.current = reply.glass ? URL.createObjectURL(reply.glass) : null
+                const glass: Glass | null = glassUrl.current
+                    ? {
+                          url: glassUrl.current,
+                          width: reply.cols * (reply.step / scale),
+                          height: reply.rows * (reply.step / scale),
+                      }
+                    : null
+                setView((v) => ({ glass, version: (v?.version ?? 0) + 1 }))
+            }
+            const next = queued.current
+            queued.current = null
+            if (next) send(next)
+        }
+        if (busy.current) queued.current = backdrop
+        else send(backdrop)
     }, [backdrop])
 
     return view
