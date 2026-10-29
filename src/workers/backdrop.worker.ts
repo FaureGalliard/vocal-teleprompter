@@ -8,9 +8,15 @@ import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
 // Softening at 100%, in samples
 const MAX_BLUR = 8
+// Average difference per channel below which a look counts as the same as
+// the last one (screen noise, a blinking caret elsewhere)
+const SAME_BELOW = 1.5
 
 // What the eye sees behind the text, from the last look
 let seen: Seen | null = null
+// The last look as it came, and how it was asked for, to spot repeats
+let lastPixels: Uint8Array | null = null
+let lastAsked = ''
 // Each letter's last luminance and color, kept between rounds
 let picked = new Map<number, number>()
 const colors = new Map<number, string>()
@@ -27,6 +33,7 @@ async function picture(image: Uint8ClampedArray, cols: number, rows: number) {
 self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     if (data.type === 'reset') {
         seen = null
+        lastPixels = null
         picked = new Map()
         colors.clear()
         return
@@ -34,7 +41,17 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
 
     if (data.type === 'view') {
         const { id, cols, rows, step, background, opacity, soften } = data
-        const raw = Float32Array.from(new Uint8Array(data.pixels))
+        const pixels = new Uint8Array(data.pixels)
+        const asked = `${cols}x${rows}:${background}:${opacity}:${soften}`
+        if (asked === lastAsked && lastPixels?.length === pixels.length) {
+            let change = 0
+            for (let i = 0; i < pixels.length; i++) change += Math.abs(pixels[i] - lastPixels[i])
+            // Same picture behind the window: redrawing it would only flicker
+            if (change / pixels.length < SAME_BELOW) return reply({ type: 'same', id })
+        }
+        lastPixels = pixels
+        lastAsked = asked
+        const raw = Float32Array.from(pixels)
         const radius = Math.round((soften / 100) * MAX_BLUR)
         const behind = radius ? blur(raw, cols, rows, radius) : raw
         let glass: Blob | null = null

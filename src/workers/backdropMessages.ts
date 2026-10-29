@@ -25,6 +25,8 @@ export type WorkerRequest =
 export type WorkerReply =
     // The frosted glass, null when not softening
     | { type: 'view'; id: number; glass: Blob | null; cols: number; rows: number; step: number }
+    // Nothing changed since the last look: keep showing what is there
+    | { type: 'same'; id: number }
     | {
           type: 'paint'
           id: number

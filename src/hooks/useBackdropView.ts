@@ -14,8 +14,9 @@ const retire = (url: string | null) => url && setTimeout(() => URL.revokeObjectU
 
 // Hands each look at the backdrop to the worker, which blurs it into frosted
 // glass (by `soften`, 0-100) and keeps what the eye then sees behind the text
-// for the letters' colors. `version` counts the looks it has taken in. Looks
-// that come in while one is being worked on are dropped but the newest.
+// for the letters' colors. `version` counts the looks it has taken in; a look
+// the same as the last one changes nothing, so the glass doesn't flicker.
+// Looks that come in while one is being worked on are dropped but the newest.
 export function useBackdropView(backdrop: Backdrop | null, surface: Surface, soften: number) {
     const [view, setView] = useState<{ glass: Glass | null; version: number } | null>(null)
     const options = useRef({ surface, soften })
@@ -47,7 +48,7 @@ export function useBackdropView(backdrop: Backdrop | null, surface: Surface, sof
                 soften,
             })
             busy.current = false
-            if (active.current) {
+            if (active.current && reply.type === 'view') {
                 const scale = window.devicePixelRatio
                 retire(glassUrl.current)
                 glassUrl.current = reply.glass ? URL.createObjectURL(reply.glass) : null

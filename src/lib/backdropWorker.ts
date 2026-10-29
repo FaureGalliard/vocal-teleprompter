@@ -1,6 +1,10 @@
 import type { WorkerReply, WorkerRequest } from '../workers/backdropMessages'
 
-type Answer<T extends WorkerReply['type']> = Extract<WorkerReply, { type: T }>
+// A view request is answered with a new view, or `same` when nothing changed
+type Answer<T extends 'view' | 'paint'> = Extract<
+    WorkerReply,
+    { type: T extends 'view' ? 'view' | 'same' : T }
+>
 type Ask<T extends 'view' | 'paint'> = Omit<Extract<WorkerRequest, { type: T }>, 'id' | 'type'>
 
 let worker: Worker | null = null
