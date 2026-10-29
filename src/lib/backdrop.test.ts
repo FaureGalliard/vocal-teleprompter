@@ -1,72 +1,92 @@
 import { describe, expect, it } from 'vitest'
 import { contrastRatio } from './contrast'
-import { behind, wordColors, type Backdrop, type Surface } from './backdrop'
+import { colorMap, estimateBackground, settle, type Backdrop, type Surface } from './backdrop'
 
-// A backdrop of 20x10 sampled pixels, painted with `paint(col, row)`
+// A backdrop of 4x6 samples, painted with `paint(col, row)`
 function backdrop(paint: (c: number, r: number) => [number, number, number]): Backdrop {
-    const cols = 20
-    const rows = 10
+    const cols = 4
+    const rows = 6
     const pixels = new Uint8Array(cols * rows * 3)
     for (let r = 0; r < rows; r++)
         for (let c = 0; c < cols; c++) pixels.set(paint(c, r), (r * cols + c) * 3)
     return { cols, rows, step: 1, pixels }
 }
 
-const hidden: Surface = { hiddenFromCapture: true, background: '#000000', opacity: 0 }
-const box = { left: 0, top: 0, width: 20, height: 10 }
 const blue = '#7698fe'
+const hidden: Surface = { hiddenFromCapture: true, background: '#000000', opacity: 0 }
+const shown: Surface = { ...hidden, hiddenFromCapture: false }
+const hexAt = (image: Uint8ClampedArray, i: number) =>
+    '#' + [0, 1, 2].map((k) => image[i * 4 + k].toString(16).padStart(2, '0')).join('')
 
-describe('behind', () => {
-    it('blends the window background over the backdrop', () => {
+describe('estimateBackground', () => {
+    it('blends the window background over the backdrop when hidden from capture', () => {
         const white = backdrop(() => [255, 255, 255])
-        const half = { ...hidden, opacity: 0.5 }
-        expect(behind(white, half, box, 1, blue)).toBe('#808080')
+        const bg = estimateBackground(white, { ...hidden, opacity: 0.5 }, null)
+        expect(Math.round(bg[0])).toBe(128)
     })
 
-    it('leaves out the letters when the window is in the capture', () => {
-        // White page with a few blue letter pixels on it
-        const page = backdrop((c) => (c % 5 === 0 ? [118, 152, 254] : [255, 255, 255]))
-        const shown = { ...hidden, hiddenFromCapture: false }
-        expect(behind(page, shown, box, 1, blue)).toBe('#ffffff')
+    it('fills the letters in from the gaps around them when they are in the capture', () => {
+        // White page; rows 2 and 3 hold our own blue letters
+        const page = backdrop((_, r) => (r === 2 || r === 3 ? [118, 152, 254] : [255, 255, 255]))
+        const letters = new Uint8Array(4 * 6)
+        letters.fill(1, 2 * 4, 4 * 4)
+        const bg = estimateBackground(page, shown, letters)
+        expect(Math.round(bg[(2 * 4 + 1) * 3])).toBe(255)
+        expect(Math.round(bg[(3 * 4 + 1) * 3 + 2])).toBe(255)
     })
 })
 
-describe('wordColors', () => {
-    it('darkens the text over a light backdrop until it reads well', () => {
-        const white = backdrop(() => [255, 255, 255])
-        const [left, right] = wordColors(white, hidden, box, 1, blue, blue)!
-        expect(left).toBe(right)
-        expect(contrastRatio(left, '#ffffff')).toBeGreaterThanOrEqual(4.5)
-    })
-
-    it('keeps the chosen color over a dark backdrop', () => {
-        const black = backdrop(() => [0, 0, 0])
-        expect(wordColors(black, hidden, box, 1, blue, blue)).toEqual([blue, blue])
-    })
-
-    it('reads a DOMRect-like box, whose fields are getters', () => {
-        const white = backdrop(() => [255, 255, 255])
-        class Rect {
-            get left() {
-                return 0
-            }
-            get top() {
-                return 0
-            }
-            get width() {
-                return 20
-            }
-            get height() {
-                return 10
-            }
+describe('colorMap', () => {
+    it('reads well over every gray, in the chosen color', () => {
+        for (let v = 0; v <= 255; v += 15) {
+            const gray = backdrop(() => [v, v, v])
+            const image = colorMap(estimateBackground(gray, hidden, null), 4, 6, blue)
+            const behind = '#' + v.toString(16).padStart(2, '0').repeat(3)
+            // Mid grays can't reach 7:1 with any color; the most there is is about 4.6
+            expect(contrastRatio(hexAt(image, 0), behind)).toBeGreaterThanOrEqual(4.5)
         }
-        expect(wordColors(white, hidden, new Rect(), 1, blue, blue)).not.toBeNull()
     })
 
-    it('splits a word that straddles a light and a dark area', () => {
-        const split = backdrop((c) => (c < 10 ? [0, 0, 0] : [255, 255, 255]))
-        const [left, right] = wordColors(split, hidden, box, 1, blue, blue)!
-        expect(left).toBe(blue)
-        expect(contrastRatio(right, '#ffffff')).toBeGreaterThanOrEqual(4.5)
+    it('takes the opposite hue over colors, at a high contrast', () => {
+        const colors: [number, number, number][] = [
+            [240, 200, 30],
+            [200, 30, 40],
+            [20, 60, 200],
+            [30, 160, 60],
+        ]
+        for (const color of colors) {
+            const image = colorMap(
+                estimateBackground(
+                    backdrop(() => color),
+                    hidden,
+                    null,
+                ),
+                4,
+                6,
+                blue,
+            )
+            const behind = '#' + color.map((v) => v.toString(16).padStart(2, '0')).join('')
+            expect(contrastRatio(hexAt(image, 0), behind)).toBeGreaterThanOrEqual(4.5)
+        }
+        // Dark blue text over yellow, not black
+        const yellow = colorMap(
+            estimateBackground(
+                backdrop(() => colors[0]),
+                hidden,
+                null,
+            ),
+            4,
+            6,
+            blue,
+        )
+        expect(yellow[2]).toBeGreaterThan(yellow[0])
+    })
+})
+
+describe('settle', () => {
+    it('moves halfway toward a new look', () => {
+        expect([...settle(new Float32Array([0, 100]), new Float32Array([100, 100]))]).toEqual([
+            50, 100,
+        ])
     })
 })

@@ -1,14 +1,25 @@
 import type { CSSProperties } from 'react'
+import type { BackdropPaint } from '../hooks/useBackdropPaint'
 
-// Inline style that paints a word in one color, or in a left-to-right blend
-// of two when it straddles a light and a dark area. `alpha` (two hex digits)
-// fades it.
-export function wordPaint([left, right]: [string, string], alpha = ''): CSSProperties {
-    if (left === right) return { color: left + alpha }
+// Paints a piece of text from the backdrop's color map, lined up with where
+// it sits in the window, so every letter takes the color readable over what
+// is right behind it. `fade` (0-1) dims words already read. Null when the
+// piece isn't on the map (out of view, or no map yet).
+export function paintFrom(
+    paint: BackdropPaint | null,
+    at: number,
+    fade: number,
+): CSSProperties | null {
+    const offset = paint?.offsets.get(at)
+    if (!paint || !offset) return null
     return {
         color: 'transparent',
-        backgroundImage: `linear-gradient(90deg, ${left}${alpha}, ${right}${alpha})`,
+        backgroundImage: `url(${paint.url})`,
+        backgroundSize: `${paint.width}px ${paint.height}px`,
+        backgroundPosition: `${-offset[0]}px ${-offset[1]}px`,
+        backgroundRepeat: 'no-repeat',
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
+        opacity: fade,
     }
 }

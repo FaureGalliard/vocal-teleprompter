@@ -11,9 +11,10 @@ use xcap::Monitor;
 
 /// Captures the window's area and returns every `step`-th pixel of it, as
 /// `[width: u32 LE][height: u32 LE][r g b ...]`. Picking single pixels
-/// rather than averaging keeps letters and background apart.
+/// rather than averaging keeps letters and background apart. Async, so it
+/// runs off the main thread, which is busy while the window is dragged.
 #[tauri::command]
-pub fn capture_backdrop(window: WebviewWindow, step: u32) -> Result<Response, String> {
+pub async fn capture_backdrop(window: WebviewWindow, step: u32) -> Result<Response, String> {
     let step = step.max(1);
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let size = window.inner_size().map_err(|e| e.to_string())?;

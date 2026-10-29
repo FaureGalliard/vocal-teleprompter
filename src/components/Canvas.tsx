@@ -5,8 +5,8 @@ import type { Scrolling } from '../lib/scrolling'
 import { useFollowWord } from '../hooks/useFollowWord'
 import ReadingLine from './ReadingLine'
 import type { Backdrop, Surface } from '../lib/backdrop'
-import { wordPaint } from '../lib/wordPaint'
-import { useWordColors } from '../hooks/useWordColors'
+import { paintFrom } from '../lib/wordPaint'
+import { useBackdropPaint } from '../hooks/useBackdropPaint'
 
 // How many of the words already read keep nearly full strength
 const RECENT_WORDS = 15
@@ -79,10 +79,7 @@ export default function Canvas({
     const activeWordRef = useRef<HTMLSpanElement>(null)
     // The word after a heard one, kept in view too
     const nextWordRef = useRef<HTMLSpanElement>(null)
-    const wordColors = useWordColors(containerRef, isEditing ? null : backdrop, surface, textColor)
-    // Each word's colors: picked from the backdrop, or the chosen color
-    const colorsOf = (word: number): [string, string] =>
-        wordColors?.get(word) ?? [textColor, textColor]
+    const paint = useBackdropPaint(containerRef, isEditing ? null : backdrop, surface, textColor)
 
     useEffect(() => {
         const editor = editorRef.current
@@ -111,8 +108,12 @@ export default function Canvas({
     // Words just read stay almost as bright, so the speaker can glance back
     // (or find their place if the marker ran ahead); older ones fade, less so
     // over a see-through background, where faint text gets lost
-    const [recent, older] = backdrop ? ['f2', 'b3'] : ['d9', '73']
-    const pastAlpha = (word: number) => (currentWordIndex - word <= RECENT_WORDS ? recent : older)
+    const [recent, older] = paint ? [0.95, 0.7] : [0.85, 0.45]
+    const fadeOf = (word: number, past: boolean) =>
+        !past ? 1 : currentWordIndex - word <= RECENT_WORDS ? recent : older
+    // Painted from the backdrop's color map when there is one, else plain
+    const look = (at: number, fade: number) =>
+        paintFrom(paint, at, fade) ?? { color: textColor, opacity: fade }
     // The reading line marks where fixed scrolling holds the current line
     const showReadingLine = readingLine && scrolling.mode === 'fixed'
     const readingLineAt = scrolling.anchor
@@ -133,13 +134,11 @@ export default function Canvas({
             return (
                 <span
                     key={s}
+                    data-at={segment.offset}
                     onClick={isListening ? undefined : () => onEditAt(segment.offset)}
                     className={isListening ? undefined : 'cursor-text'}
                     style={{
-                        ...wordPaint(
-                            [colorsOf(prevWord)[1], colorsOf(prevWord)[1]],
-                            prevWord < currentWordIndex ? pastAlpha(prevWord) : '',
-                        ),
+                        ...look(segment.offset, fadeOf(prevWord, prevWord < currentWordIndex)),
                         backgroundColor:
                             prevWord >= currentWordIndex && prevWord < currentWordIndex + 8
                                 ? `${textColor}10`
@@ -169,13 +168,13 @@ export default function Canvas({
                           ? nextWordRef
                           : null
                 }
-                data-word={i}
+                data-at={segment.offset}
                 onClick={() => (editsOnClick ? onEditAt(segment.offset) : onContinueFrom(i))}
                 className={editsOnClick ? 'cursor-text' : 'cursor-pointer'}
                 style={{
                     ...(isCurrentWord
                         ? { color: '#1a1a1a' }
-                        : wordPaint(colorsOf(i), isPast ? pastAlpha(i) : '')),
+                        : look(segment.offset, fadeOf(i, isPast))),
                     backgroundColor: isCurrentWord
                         ? '#facc15'
                         : isNearby
@@ -184,6 +183,8 @@ export default function Canvas({
                     borderRadius: isCurrentWord ? '2px' : undefined,
                     padding: isCurrentWord ? '0 2px' : undefined,
                     textDecoration: isNextWord ? 'underline' : undefined,
+                    // Painted text has no color of its own for the line to take
+                    textDecorationColor: paint ? '#facc15' : undefined,
                     textDecorationThickness: isNextWord ? '2px' : undefined,
                     textUnderlineOffset: isNextWord ? '0.25em' : undefined,
                     transition: 'color 0.2s ease, background-color 0.2s ease',

@@ -16,18 +16,8 @@ export interface Surface {
     opacity: number
 }
 
-// A word's box, in CSS pixels from the window's top left corner
-export interface Box {
-    left: number
-    top: number
-    width: number
-    height: number
-}
-
-type RGB = [number, number, number]
-
-// Colors this close to the word's own color are its letters, not what is behind
-const LETTER_DISTANCE = 60
+// What sits behind the text, as RGB per sample (0-255 floats)
+export type Background = Float32Array
 
 export function parseBackdrop(buffer: ArrayBuffer, step: number): Backdrop {
     const view = new DataView(buffer)
@@ -39,72 +29,135 @@ export function parseBackdrop(buffer: ArrayBuffer, step: number): Backdrop {
     }
 }
 
-const rgb = (hex: string): RGB => {
+export const rgb = (hex: string): [number, number, number] => {
     const n = parseInt(hex.replace('#', '').slice(0, 6), 16)
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 
-const hex = ([r, g, b]: RGB) =>
+const hex = (r: number, g: number, b: number) =>
     '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
 
-const distance = (a: RGB, b: RGB) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
-
-const median = (values: number[]) => {
-    const sorted = [...values].sort((a, b) => a - b)
-    return sorted[Math.floor(sorted.length / 2)]
-}
-
-// What the eye sees behind the letters in a box: the window's background
-// blended over the backdrop. Null when nothing but letters was found.
-export function behind(
+// What the eye sees behind the text at every sample. Hidden from capture, the
+// capture is the backdrop and the window's background is blended over it;
+// otherwise the capture already shows that blend, but also our own letters,
+// so the samples under `letters` (true where text is drawn) are filled in
+// from the nearest clear ones above and below, in the gaps between lines.
+// That never depends on how the letters are colored, so it can't feed back.
+export function estimateBackground(
     backdrop: Backdrop,
     surface: Surface,
-    box: Box,
-    scale: number,
-    letterColor: string,
-): string | null {
-    const { cols, rows, step, pixels } = backdrop
-    const from = (v: number, max: number) =>
-        Math.max(0, Math.min(max, Math.floor((v * scale) / step)))
-    const [c0, c1] = [from(box.left, cols), from(box.left + box.width, cols)]
-    const [r0, r1] = [from(box.top, rows), from(box.top + box.height, rows)]
+    letters: Uint8Array | null,
+): Background {
+    const { cols, rows, pixels } = backdrop
+    const out = new Float32Array(cols * rows * 3)
     const fill = rgb(surface.background)
-    const letters = rgb(letterColor)
-    const channels: [number[], number[], number[]] = [[], [], []]
-    for (let r = r0; r < r1; r++) {
-        for (let c = c0; c < c1; c++) {
-            const i = (r * cols + c) * 3
-            let p: RGB = [pixels[i], pixels[i + 1], pixels[i + 2]]
-            if (surface.hiddenFromCapture) {
-                const a = surface.opacity
-                p = [0, 1, 2].map((k) => a * fill[k] + (1 - a) * p[k]) as RGB
-            } else if (distance(p, letters) < LETTER_DISTANCE) continue
-            p.forEach((v, k) => channels[k].push(v))
+    const a = surface.hiddenFromCapture ? surface.opacity : 0
+    for (let i = 0; i < cols * rows; i++)
+        for (let k = 0; k < 3; k++) out[i * 3 + k] = a * fill[k] + (1 - a) * pixels[i * 3 + k]
+    if (surface.hiddenFromCapture || !letters) return out
+
+    const clear = out.slice()
+    for (let c = 0; c < cols; c++) {
+        for (let r = 0; r < rows; r++) {
+            if (!letters[r * cols + c]) continue
+            let up = r
+            while (up >= 0 && letters[up * cols + c]) up--
+            let down = r
+            while (down < rows && letters[down * cols + c]) down++
+            const ends = [up, down].filter((e) => e >= 0 && e < rows)
+            if (!ends.length) continue
+            // Weighted by closeness, so a tall line blends from gap to gap
+            const weights = ends.map((e) => 1 / (1 + Math.abs(e - r)))
+            const total = weights.reduce((s, w) => s + w, 0)
+            for (let k = 0; k < 3; k++)
+                out[(r * cols + c) * 3 + k] =
+                    ends.reduce((s, e, j) => s + weights[j] * clear[(e * cols + c) * 3 + k], 0) /
+                    total
         }
     }
-    if (!channels[0].length) return null
-    return hex(channels.map(median) as RGB)
+    return out
 }
 
-// The word's color for each half of its box: the chosen color, nudged just
-// enough to read well (WCAG) on what is behind that half. Both halves match
-// unless the word straddles a light and a dark area.
-export function wordColors(
-    backdrop: Backdrop,
-    surface: Surface,
-    box: Box,
-    scale: number,
-    textColor: string,
-    shown: string,
-): [string, string] | null {
-    // Read field by field: a DOMRect keeps them as getters, which spreading drops
-    const { left: x, top, width, height } = box
-    const half = { left: x, top, width: width / 2, height }
-    const left = behind(backdrop, surface, half, scale, shown)
-    const right = behind(backdrop, surface, { ...half, left: x + width / 2 }, scale, shown)
-    if (!left && !right) return null
-    const l = ensureContrast(textColor, left ?? right!)
-    const r = ensureContrast(textColor, right ?? left!)
-    // Close enough to read as one color
-    return distance(rgb(l), rgb(r)) < 40 ? [l, l] : [l, r]
+// Contrast every point of the text aims for with what is behind it, well
+// past WCAG AAA (7:1) so thin letters still read; where a backdrop can't give
+// that much, the most it can
+const TARGET_CONTRAST = 12
+// Below this spread between channels a color reads as gray, with no hue
+const MIN_SATURATION = 40
+
+// The hue opposite to the color's, vivid, or null for grays
+function complement(r: number, g: number, b: number): string | null {
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    if (max - min < MIN_SATURATION) return null
+    const d = max - min
+    const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    const hue = ((h * 60 + 180) % 360) / 60
+    // Fully saturated color at that hue
+    const x = 1 - Math.abs((hue % 2) - 1)
+    const sector = Math.floor(hue) % 6
+    const [cr, cg, cb] = [
+        [1, x, 0],
+        [x, 1, 0],
+        [0, 1, x],
+        [0, x, 1],
+        [x, 0, 1],
+        [1, 0, x],
+    ][sector]
+    return hex(cr * 255, cg * 255, cb * 255)
+}
+
+// The text color for every sample as an RGBA image. Over a colored area it
+// takes the opposite hue, over a gray one the chosen color, either lightened
+// or darkened until it reaches the target contrast (WCAG ratio) with what is
+// right behind it, so each letter and even part of a letter stands out.
+// Scaled up smoothly, it shades across where the backdrop changes.
+export function colorMap(background: Background, cols: number, rows: number, textColor: string) {
+    const image = new Uint8ClampedArray(cols * rows * 4)
+    // Backdrops repeat a lot of nearly equal colors: work each out once
+    const known = new Map<number, number[]>()
+    for (let i = 0; i < cols * rows; i++) {
+        const [r, g, b] = [background[i * 3], background[i * 3 + 1], background[i * 3 + 2]]
+        const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2)
+        let color = known.get(key)
+        if (!color) {
+            const base = complement(r, g, b) ?? textColor
+            color = [...rgb(ensureContrast(base, hex(r, g, b), TARGET_CONTRAST)), 255]
+            known.set(key, color)
+        }
+        image.set(color, i * 4)
+    }
+    return image
+}
+
+// Averages every sample with its neighbors `radius` samples around, so the
+// text color shifts gradually instead of jumping from letter to letter over
+// a busy picture
+export function blur(background: Background, cols: number, rows: number, radius = 2) {
+    const pass = (from: Float32Array, dc: number, dr: number) => {
+        const to = new Float32Array(from.length)
+        for (let r = 0; r < rows; r++)
+            for (let c = 0; c < cols; c++) {
+                let n = 0
+                const sum = [0, 0, 0]
+                for (let d = -radius; d <= radius; d++) {
+                    const [cc, rr] = [c + d * dc, r + d * dr]
+                    if (cc < 0 || cc >= cols || rr < 0 || rr >= rows) continue
+                    for (let k = 0; k < 3; k++) sum[k] += from[(rr * cols + cc) * 3 + k]
+                    n++
+                }
+                for (let k = 0; k < 3; k++) to[(r * cols + c) * 3 + k] = sum[k] / n
+            }
+        return to
+    }
+    return pass(pass(background, 1, 0), 0, 1)
+}
+
+// Eases from the previous estimate toward the new one, so noise and
+// one-off changes don't make the text flicker
+export function settle(previous: Background | null, next: Background, keep = 0.5): Background {
+    if (!previous || previous.length !== next.length) return next
+    const out = new Float32Array(next.length)
+    for (let i = 0; i < next.length; i++) out[i] = keep * previous[i] + (1 - keep) * next[i]
+    return out
 }

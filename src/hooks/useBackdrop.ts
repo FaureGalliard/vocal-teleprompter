@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { parseBackdrop, type Backdrop } from '../lib/backdrop'
 
 // Physical pixels between samples: plenty for the color behind a word
-const STEP = 4
+const STEP = 2
 const EVERY_MS = 300
 
 // What is behind the window, refreshed a few times a second while `enabled`
