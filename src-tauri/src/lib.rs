@@ -1,3 +1,4 @@
+mod backdrop;
 mod mcp;
 pub mod speech;
 
@@ -52,6 +53,7 @@ pub fn run() {
         .manage(speech::SpeechEngine::default())
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
+            backdrop::capture_backdrop,
             speech::list_microphones,
             speech::speech_start,
             speech::speech_stop,

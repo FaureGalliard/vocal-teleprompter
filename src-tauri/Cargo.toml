@@ -38,6 +38,7 @@ vosk = "0.3"
 cpal = "0.18"
 ureq = "3"
 zip = { version = "4", default-features = false, features = ["deflate"] }
+xcap = "0.9"
 
 [dev-dependencies]
 vosk = "0.3"
