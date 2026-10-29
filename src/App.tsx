@@ -616,7 +616,7 @@ function App() {
     // While the toolbar is open the window grows beside the teleprompter, so
     // the toolbar and its panels never cover the text or get cut off. When it
     // cannot grow (maximized) the toolbar sits over the right edge instead.
-    const expansion = useWindowExpansion(toolbarVisible)
+    const { expansion, ready: toolbarReady } = useWindowExpansion(toolbarVisible)
     const frameLeft = expansion?.side === 'left' ? TOOLBAR_GUTTER : 0
     const toolbarLeft = expansion
         ? expansion.side === 'right'
@@ -624,7 +624,7 @@ function App() {
             : (TOOLBAR_GUTTER - 40) / 2
         : null
     // Room kept for the toolbar over the text only in that fallback
-    const rightInset = toolbarVisible && !expansion ? TOOLBAR_RAIL_WIDTH : 0
+    const rightInset = toolbarVisible && toolbarReady && !expansion ? TOOLBAR_RAIL_WIDTH : 0
 
     return (
         <I18nProvider language={uiLanguage}>
@@ -757,7 +757,9 @@ function App() {
                 </div>
 
                 <Toolbar
-                    visible={toolbarVisible}
+                    // Shown once the window has made room, so it does not
+                    // flash over the text first
+                    visible={toolbarVisible && toolbarReady}
                     isAdjusting={isAdjusting}
                     topOffset={toolbarTopOffset}
                     left={toolbarLeft}
