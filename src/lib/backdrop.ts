@@ -56,7 +56,7 @@ const TARGET_CONTRAST = 12
 const MIN_SATURATION = 40
 
 // The hue opposite to the color's, vivid, or null for grays
-function complement(r: number, g: number, b: number): string | null {
+export function complement(r: number, g: number, b: number): string | null {
     const max = Math.max(r, g, b)
     const min = Math.min(r, g, b)
     if (max - min < MIN_SATURATION) return null
