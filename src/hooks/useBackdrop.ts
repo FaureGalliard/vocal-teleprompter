@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop } from '../lib/backdrop'
@@ -13,6 +13,9 @@ const SHOWN_EVERY_MS = 800
 const MOVED_MS = 60
 // The window counts as moving until it has held still this long
 const STILL_MS = 250
+// After something changed behind the window: it may still be changing (a
+// slide transition), so look again soon to follow it
+const CHANGED_MS = 120
 
 // What is behind the window, refreshed a few times a second while `enabled`
 // (a see-through background), so the text can keep reading well over a
@@ -21,6 +24,7 @@ const STILL_MS = 250
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
     const [moving, setMoving] = useState(false)
+    const hurryRef = useRef<() => void>(() => {})
 
     useEffect(() => {
         if (!enabled) {
@@ -50,6 +54,10 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             next(soon ? MOVED_MS : shown ? SHOWN_EVERY_MS : EVERY_MS)
         }
         capture()
+        hurryRef.current = () => {
+            if (busy) soon = true
+            else next(CHANGED_MS)
+        }
         // Moved: look again soon, so the glass and colors keep up with it
         let still: ReturnType<typeof setTimeout>
         const moved = getCurrentWindow().onMoved(() => {
@@ -67,5 +75,8 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         }
     }, [enabled, shown])
 
-    return { backdrop, moving }
+    // Look again soon, rather than at the usual pace
+    const hurry = useCallback(() => hurryRef.current(), [])
+
+    return { backdrop, moving, hurry }
 }

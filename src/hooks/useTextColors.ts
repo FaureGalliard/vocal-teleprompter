@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { ensureContrast } from '../lib/contrast'
 import { useBackdrop } from './useBackdrop'
 import { useBackdropView } from './useBackdropView'
@@ -20,12 +21,17 @@ export function useTextColors(settings: Settings, editing: boolean) {
     const { bgOpacity } = settings
     const display = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const seeThrough = bgOpacity < SEE_THROUGH_BELOW && (autoContrast || backdropSoften > 0)
-    const { backdrop, moving } = useBackdrop(seeThrough, !hiddenFromCapture)
+    const { backdrop, moving, hurry } = useBackdrop(seeThrough, !hiddenFromCapture)
     const view = useBackdropView(
         backdrop,
         { background: bgColor, opacity: bgOpacity },
         backdropSoften,
     )
+    // Something changed behind the window: follow it closely for a moment
+    const version = view?.version
+    useEffect(() => {
+        if (version) hurry()
+    }, [version, hurry])
     return {
         display,
         // Counts the looks behind the window, for coloring the text over them
