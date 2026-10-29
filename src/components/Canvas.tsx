@@ -225,11 +225,6 @@ export default function Canvas({
                     }>
                     {isEditing ? (
                         <>
-                            <p
-                                className="text-center text-[11px] mb-3 opacity-50"
-                                style={{ color: textColor }}>
-                                {t.cards.hint}
-                            </p>
                             <textarea
                                 ref={editorRef}
                                 value={content}
@@ -295,6 +290,19 @@ export default function Canvas({
                     )}
                 </div>
             </div>
+            {isEditing && (
+                // In the status row (hidden while editing), so the text does
+                // not shift down when editing starts
+                <p
+                    className="fixed left-3 h-6 flex items-center justify-center text-[11px] opacity-50 pointer-events-none truncate"
+                    style={{
+                        bottom: (titleBarPosition === 'bottom' ? titleBarHeight : 0) + 6,
+                        right: 44,
+                        color: textColor,
+                    }}>
+                    {t.cards.hint}
+                </p>
+            )}
             {showReadingLine && !isEditing && (
                 <div
                     className="fixed pointer-events-none rounded-md"
