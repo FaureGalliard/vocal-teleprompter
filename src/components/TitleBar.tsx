@@ -3,6 +3,8 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useT } from '../i18n'
 import { ArrowDownToLine, ArrowUpToLine, Minus, Square, X } from 'lucide-react'
 
+export const TITLE_BAR_HEIGHT = 32
+
 interface TitleBarProps {
     position: 'top' | 'bottom'
     onPositionChange: (pos: 'top' | 'bottom') => void
@@ -18,7 +20,7 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                     ref={ref}
                     data-tauri-drag-region
                     className="flex items-center justify-between pl-3 bg-[#1a1a1a] text-white select-none font-sans"
-                    style={{ height: '32px' }}>
+                    style={{ height: TITLE_BAR_HEIGHT }}>
                     <div className="flex items-center gap-2 pointer-events-none">
                         <span className="text-[11px] text-white/40 font-medium">
                             {t.appName}

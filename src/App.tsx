@@ -1,5 +1,5 @@
 import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
-import TitleBar from './components/TitleBar'
+import TitleBar, { TITLE_BAR_HEIGHT } from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import { OpenTowardsContext } from './components/Popover'
 import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
@@ -622,7 +622,7 @@ function App() {
     // above it), so the toolbar and its panels never cover the text or get
     // cut off. When it cannot grow (maximized) the toolbar sits over the
     // bottom of the text instead, which then makes room for it.
-    const { expansion, ready: toolbarReady } = useWindowExpansion(toolbarVisible)
+    const { expansion, ready: toolbarReady, resizeFrame } = useWindowExpansion(toolbarVisible)
     useWindowPlacement(toolbarVisible || expansion !== null)
     const frameTop = expansion?.side === 'above' ? expansion.room : 0
     const toolbarPlacement: React.CSSProperties = expansion
@@ -836,7 +836,13 @@ function App() {
                                 }
                                 setUiLanguage(val)
                             }}
-                            onToggleTitleBar={() => setTitleBarVisible((v) => !v)}
+                            // The window gives up (or takes back) just the title bar's
+                            // height, so the text stays where it is on screen
+                            onToggleTitleBar={() => {
+                                const delta = titleBarVisible ? -TITLE_BAR_HEIGHT : TITLE_BAR_HEIGHT
+                                resizeFrame(delta, titleBarPosition).catch((e) => console.error(e))
+                                setTitleBarVisible((v) => !v)
+                            }}
                             onShowTutorial={showTutorial}
                             targetMinutes={targetMinutes}
                             onTargetMinutesChange={setTargetMinutes}

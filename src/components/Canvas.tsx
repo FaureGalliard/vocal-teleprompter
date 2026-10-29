@@ -184,9 +184,9 @@ export default function Canvas({
         )
     }
 
-    const top = titleBarPosition === 'top' ? titleBarHeight + 15 : 20
+    const top = titleBarPosition === 'top' ? titleBarHeight + 20 : 20
     // Leave room for the status bar along the bottom edge
-    const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 34 : 36
+    const bottom = titleBarPosition === 'bottom' ? titleBarHeight + 36 : 36
 
     return (
         <>

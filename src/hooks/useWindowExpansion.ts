@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
     currentMonitor,
     getCurrentWindow,
@@ -45,6 +45,9 @@ export function useWindowExpansion(open: boolean) {
     // The last restore, which a new grow waits for so it measures the
     // window at its own size
     const settledRef = useRef<Promise<void>>(Promise.resolve())
+    // Size of the teleprompter while the window is grown, which the restore
+    // shrinks back to; it changes when the title bar is shown or hidden
+    const frameRef = useRef<Expansion['frame'] | null>(null)
 
     useEffect(() => {
         if (!open) return
@@ -78,6 +81,7 @@ export function useWindowExpansion(open: boolean) {
             const side = roomBelow >= wanted || roomBelow >= roomAbove ? 'below' : 'above'
             const room = Math.min(wanted, Math.max(BAR_ROOM, side === 'below' ? roomBelow : roomAbove))
             const frame = { width: size.width, height: size.height }
+            frameRef.current = frame
 
             // Pin the frame where it is, then grow the window around it
             setState({ expansion: { frame, side: 'below', room }, ready: false })
@@ -99,7 +103,9 @@ export function useWindowExpansion(open: boolean) {
                     setState({ expansion: { frame, side: 'below', room }, ready: false })
                     await win.setPosition(new LogicalPosition(now.x, now.y + room))
                 }
-                await win.setSize(new LogicalSize(size.width, size.height))
+                const own = frameRef.current ?? frame
+                frameRef.current = null
+                await win.setSize(new LogicalSize(own.width, own.height))
                 await win.setResizable(true)
             }
         }
@@ -121,5 +127,23 @@ export function useWindowExpansion(open: boolean) {
         }
     }, [open])
 
-    return state
+    // Makes the teleprompter taller (or shorter, when negative) by `delta` at
+    // one edge, moving the window so the rest of it stays put on screen
+    const resizeFrame = useCallback(async (delta: number, edge: 'top' | 'bottom') => {
+        const win = getCurrentWindow()
+        if (await win.isMaximized()) return
+        const scale = await win.scaleFactor()
+        const position = (await win.outerPosition()).toLogical(scale)
+        const size = (await win.innerSize()).toLogical(scale)
+        const frame = frameRef.current
+        if (frame) {
+            const resized = { width: frame.width, height: frame.height + delta }
+            frameRef.current = resized
+            setState((s) => (s.expansion ? { ...s, expansion: { ...s.expansion, frame: resized } } : s))
+        }
+        if (edge === 'top') await win.setPosition(new LogicalPosition(position.x, position.y - delta))
+        await win.setSize(new LogicalSize(size.width, size.height + delta))
+    }, [])
+
+    return { ...state, resizeFrame }
 }
