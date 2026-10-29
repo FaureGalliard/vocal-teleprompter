@@ -283,7 +283,14 @@ Vosk for offline speech recognition, cpal for audio capture.
 
 ## 🗺️ Roadmap
 
-Ideas for upcoming versions:
+Next up:
+
+- 🐧 **Linux**: AppImage, `.deb` and `.rpm` builds, then the AUR and Flathub.
+- 🍎 **macOS** build.
+- 🪟 **Microsoft Store and winget**, for a one-command install on Windows.
+- 🎚️ **Microphone sensitivity** control in the microphone menu.
+
+Ideas for later versions:
 
 - 📚 **Script library**: keep several scripts and switch between recent ones.
 - ⏭️ **Advance your slides by voice**: send the next-slide key to PowerPoint, Google Slides
@@ -291,7 +298,7 @@ Ideas for upcoming versions:
 - 📥 **Import PowerPoint notes**: one card per slide from a `.pptx`.
 - 🧭 **First-run setup**: language, microphone with a live level meter and a look preset.
 - 🏷️ **Script markers**: highlighted `[PAUSE]` cues and `(notes)` that you don't have to read.
-- 🔌 **Offline speech recognition** with a local Whisper model.
+- 🧠 **Sharper recognition** with a local Whisper model, for accents and noisy rooms.
 
 ---
 
@@ -307,6 +314,14 @@ recording courses
 - **Star the repo** on GitHub: it helps other people find it.
 - **Share it** with a classmate or a colleague who has a presentation coming up.
 - **Found a bug or have an idea?** [Open an issue](https://github.com/FaureGalliard/vocal-teleprompter/issues).
+
+### 💜 Support the project
+
+Vocal Teleprompter is free and open source, and stays that way. If it saves you time
+before a talk or a recording, you can
+**[sponsor it on GitHub](https://github.com/sponsors/FaureGalliard)**: it pays for the
+time that goes into new features, the Linux and macOS builds, and code signing so Windows
+stops warning about the installer.
 
 ---
 
