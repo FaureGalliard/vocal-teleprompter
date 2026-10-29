@@ -15,6 +15,17 @@ describe('scrollTarget in ahead mode', () => {
         expect(scrollTarget(ahead, view, { top: 280, height: 30 }, line)).toBe(30)
     })
 
+    it('keeps the word in view when the window is too short for the lines below', () => {
+        // Three lines below need 150 more, the view is 100 tall: the word
+        // goes to the top rather than above it
+        const short = { top: 0, height: 100 }
+        const word = { top: 200, height: 30 }
+        const top = scrollTarget(ahead, short, word, line)
+        expect(top).toBe(200)
+        // and the next word on that line leaves it there
+        expect(scrollTarget(ahead, { top: 200, height: 100 }, word, line)).toBe(200)
+    })
+
     it('brings back a word above the visible part', () => {
         expect(scrollTarget(ahead, { top: 500, height: 400 }, { top: 300, height: 30 }, line)).toBe(260)
     })

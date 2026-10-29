@@ -23,8 +23,12 @@ export function scrollTarget(
         return word.top - view.height * scrolling.anchor + word.height / 2
     }
     const neededBottom = word.top + word.height + scrolling.linesBelow * lineHeight
-    if (neededBottom > view.top + view.height) return neededBottom - view.height
-    // Moved back above the visible part (a click, the arrows)
-    if (word.top < view.top) return Math.max(0, word.top - lineHeight)
+    // In a window too short for all those lines, the word goes to the top
+    // with whatever fits below, instead of scrolling past it (which then
+    // brought it back on the next word, bouncing the text)
+    if (neededBottom > view.top + view.height) return Math.min(neededBottom - view.height, word.top)
+    // Moved back above the visible part (a click, the arrows); the slack
+    // absorbs scrollTop rounding at the top of the view
+    if (word.top < view.top - 1) return Math.max(0, word.top - lineHeight)
     return null
 }
