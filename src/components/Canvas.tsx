@@ -41,6 +41,16 @@ interface CanvasProps {
     titleBarPosition: 'top' | 'bottom'
 }
 
+// A solid ring around every letter, thicker for bigger text, plus a soft
+// glow: the text stands out over any backdrop, however busy
+function outline(color: string, fontSize: number) {
+    const w = Math.max(1, Math.round(fontSize / 14))
+    const ring = [-1, 0, 1].flatMap((x) =>
+        [-1, 0, 1].filter((y) => x || y).map((y) => `${x * w}px ${y * w}px 0 ${color}`),
+    )
+    return [...ring, `0 0 ${w * 4}px ${color}`].join(', ')
+}
+
 export default function Canvas({
     cards,
     currentCard,
@@ -106,9 +116,12 @@ export default function Canvas({
 
     let prevWord = -1
     // Words just read stay almost as bright, so the speaker can glance back
-    // (or find their place if the marker ran ahead); older ones fade
+    // (or find their place if the marker ran ahead); older ones fade, less so
+    // over a see-through background, where faint text gets lost
     const pastColor = (word: number) =>
-        currentWordIndex - word <= RECENT_WORDS ? `${textColor}d9` : `${textColor}73`
+        currentWordIndex - word <= RECENT_WORDS
+            ? `${textColor}${textHalo ? 'f2' : 'd9'}`
+            : `${textColor}${textHalo ? 'b3' : '73'}`
     // The reading line marks where fixed scrolling holds the current line
     const showReadingLine = readingLine && scrolling.mode === 'fixed'
     const readingLineAt = scrolling.anchor
@@ -122,9 +135,7 @@ export default function Canvas({
         marginLeft: 'auto',
         marginRight: 'auto',
     }
-    const textShadow = textHalo
-        ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
-        : undefined
+    const textShadow = textHalo ? outline(textHalo, fontSize) : undefined
     const renderSegment = (segment: CardSegment, s: number) => {
         const i = segment.word
         if (i === -1) {
