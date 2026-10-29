@@ -15,26 +15,32 @@ pub const APP_GUIDE: &str = "\
 # Vocal Teleprompter: features and where to find them
 
 A small always-on-top window, usually placed under the webcam. The round \
-button at its top right opens and closes the toolbar, a column of icons \
-down the right edge that shows each icon's name on hover; holding the round \
-button drags the window.
+button at its bottom right corner opens and closes the toolbar, a row of \
+icons that appears below the window (or above it, near the bottom of the \
+screen) and shows each icon's name on hover; holding the round button drags \
+the window.
 
-## Toolbar, top to bottom
-- Script: Paste (clipboard), Import (.txt file), Clear, Edit (write in place; \
-Done or Esc to finish).
+## Toolbar, left to right
 - Start / Stop: listening starts after a short countdown. Pause / Resume \
 appears while listening.
 - Speech language (EN, ES...) and microphone: any input device, with a live \
 level meter to test it.
 - Appearance (palette icon): text size, background color and opacity, text \
-color, and typography (font, weight, line spacing, text width, alignment).
-- Tutorial (?) replays the guided tour. Settings (gear) holds the rest.
+color, automatic contrast, and typography (font, weight, line spacing, text \
+width, alignment).
+- Settings (gear) holds the rest.
+- The ... menu: Edit script (write in place; the same button, now a check \
+mark, or Esc finishes), Paste from clipboard, Import a .txt file, Clear \
+script, and Show tutorial.
 
 ## Settings
-Interface language (9 languages), hide from screen sharing, automatic \
-contrast, click-through, reading line, countdown, target duration, title \
-bar, AI connector, updates, global shortcuts (rebindable, can be turned \
-off), tutorial and reset.
+- Reading: scrolling (ahead: the text moves only as the current line nears \
+the bottom, keeping some lines visible under it; fixed: the current line \
+stays at a chosen height), reading line (fixed mode), countdown, target \
+duration.
+- Window: hide from screen sharing, click-through, title bar.
+- General: interface language (9 languages), AI connector, global shortcuts \
+(rebindable, can be turned off), updates, tutorial and reset.
 
 ## In the script
 - A line with only --- separates slide cards; the bottom bar shows Slide n / \
