@@ -179,7 +179,8 @@ function App() {
                     expansion={expansion}
                     background={bgColor}
                     opacity={colors.opacity}
-                    outline={displayTextColor}
+                    // Painted from the backdrop instead, when it is seen
+                    outline={colors.seen ? 'transparent' : displayTextColor}
                     glass={colors.glass}
                     glassShown={colors.glassShown}>
                     {titleBarVisible && (

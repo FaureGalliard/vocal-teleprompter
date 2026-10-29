@@ -8,6 +8,7 @@ import type { Seen } from '../hooks/useBackdropView'
 import { paintFrom } from '../lib/wordPaint'
 import { useBackdropPaint } from '../hooks/useBackdropPaint'
 import ScriptEditor from './ScriptEditor'
+import PaintedBorder from './PaintedBorder'
 
 // How many of the words already read keep nearly full strength
 const RECENT_WORDS = 15
@@ -312,6 +313,7 @@ export default function Canvas({
                     {t.cards.hint}
                 </p>
             )}
+            {paint && <PaintedBorder paint={paint} />}
             {showReadingLine && !isEditing && (
                 <ReadingLine
                     top={top}
