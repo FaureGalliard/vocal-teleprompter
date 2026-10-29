@@ -22,7 +22,6 @@ import AiConnectorSection from './AiConnectorSection'
 import { BarTooltip, Popover } from './Popover'
 import type { useUpdater } from '../hooks/useUpdater'
 import type { Scrolling } from '../lib/scrolling'
-import type { TitleBarMode } from './TitleBar'
 
 const PANEL_WIDTH = 288
 const COUNTDOWN_OPTIONS = [0, 3, 5, 10]
@@ -31,10 +30,10 @@ const COUNTDOWN_OPTIONS = [0, 3, 5, 10]
 interface SettingsPanelProps {
     uiLanguage: string
     hiddenFromCapture: boolean
-    titleBarMode: TitleBarMode
+    titleBarVisible: boolean
     onUiLanguageChange: (val: string) => void
     onToggleHiddenFromCapture: () => void
-    onTitleBarModeChange: (mode: TitleBarMode) => void
+    onToggleTitleBar: () => void
     onReset: () => void
     onShowTutorial: () => void
     targetMinutes: number
@@ -99,10 +98,10 @@ function Section({ title, first }: { title: string; first?: boolean }) {
 export default function SettingsPanel({
     uiLanguage,
     hiddenFromCapture,
-    titleBarMode,
+    titleBarVisible,
     onUiLanguageChange,
     onToggleHiddenFromCapture,
-    onTitleBarModeChange,
+    onToggleTitleBar,
     onReset,
     onShowTutorial,
     targetMinutes,
@@ -329,39 +328,14 @@ export default function SettingsPanel({
                     />
                 </Row>
 
-                <div className="px-4 py-2.5 flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <span className="text-white/50 flex-shrink-0">
-                            <PanelTop size={14} />
-                        </span>
-                        <div className="flex-1 min-w-0">
-                            <div className="text-[11px] text-white">{t.settings.titleBar}</div>
-                            <div className="text-[10px] text-white/40 leading-snug">
-                                {t.settings.titleBarHint}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-1 pl-[26px]">
-                        {(
-                            [
-                                ['hover', t.settings.titleBarHover],
-                                ['always', t.settings.titleBarAlways],
-                                ['never', t.settings.titleBarNever],
-                            ] as const
-                        ).map(([mode, label]) => (
-                            <button
-                                key={mode}
-                                onClick={() => onTitleBarModeChange(mode)}
-                                className={`flex-1 h-6 px-1 rounded-md text-[10px] leading-tight transition-colors ${
-                                    titleBarMode === mode
-                                        ? 'bg-[#445ade] text-white'
-                                        : 'bg-white/10 text-white/70 hover:bg-white/20'
-                                }`}>
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <Row
+                    icon={<PanelTop size={14} />}
+                    label={t.settings.titleBar}>
+                    <Switch
+                        on={titleBarVisible}
+                        onToggle={onToggleTitleBar}
+                    />
+                </Row>
 
                 <Section title={t.settings.sectionGeneral} />
                 <Row

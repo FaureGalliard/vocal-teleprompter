@@ -10,10 +10,6 @@ export function startTour(t: Messages, onDone: () => void) {
     const steps: DriveStep[] = [
         { popover: { title: t.tour.welcomeTitle, description: t.tour.welcome } },
         {
-            element: at('title-bar'),
-            popover: { title: t.tour.titleBarTitle, description: t.tour.titleBar, side: 'bottom' },
-        },
-        {
             element: at('script'),
             popover: { title: t.tour.scriptTitle, description: t.tour.script },
         },

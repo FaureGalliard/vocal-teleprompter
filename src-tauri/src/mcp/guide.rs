@@ -18,9 +18,7 @@ A small always-on-top window, usually placed under the webcam. The round \
 button at its bottom right corner opens and closes the toolbar, a row of \
 icons that appears below the window (or above it, near the bottom of the \
 screen) and shows each icon's name on hover; holding the round button drags \
-the window. The title bar (move, minimize, maximize, close) shows while the \
-mouse is over the window; Settings > Window can keep it always visible or \
-hide it. The window reopens where and as big as it was left.
+the window. The window reopens where and as big as it was left.
 
 ## Toolbar, left to right
 - Start / Stop: listening starts after a short countdown. Pause / Resume \
@@ -40,8 +38,7 @@ script, and Show tutorial.
 the bottom, keeping some lines visible under it; fixed: the current line \
 stays at a chosen height), reading line (fixed mode), countdown, target \
 duration.
-- Window: hide from screen sharing, click-through, title bar (on hover, \
-always or never).
+- Window: hide from screen sharing, click-through, title bar.
 - General: interface language (9 languages), AI connector, global shortcuts \
 (rebindable, can be turned off), updates, tutorial and reset.
 

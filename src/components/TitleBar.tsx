@@ -3,28 +3,19 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useT } from '../i18n'
 import { ArrowDownToLine, ArrowUpToLine, Minus, Square, X } from 'lucide-react'
 
-// always: takes its own room; hover: floats over the text while the mouse
-// is over the window; never: hidden
-export type TitleBarMode = 'always' | 'hover' | 'never'
-
 interface TitleBarProps {
-    // Faded out (in hover mode, while the mouse is away)
-    hidden: boolean
     position: 'top' | 'bottom'
     onPositionChange: (pos: 'top' | 'bottom') => void
 }
 
 const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
-    ({ hidden, position, onPositionChange }, ref) => {
+    ({ position, onPositionChange }, ref) => {
         const t = useT()
         return (
             <div
-                className={`fixed left-0 right-0 z-50 transition-opacity duration-200 ${position === 'top' ? 'top-0' : 'bottom-0'} ${
-                    hidden ? 'opacity-0 pointer-events-none' : ''
-                }`}>
+                className={`fixed left-0 right-0 z-50 ${position === 'top' ? 'top-0' : 'bottom-0'}`}>
                 <div
                     ref={ref}
-                    data-tour="title-bar"
                     data-tauri-drag-region
                     className="flex items-center justify-between pl-3 bg-[#1a1a1a] text-white select-none font-sans"
                     style={{ height: '32px' }}>
