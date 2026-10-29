@@ -18,11 +18,17 @@ export function scrollTarget(
     view: { top: number; height: number },
     word: { top: number; height: number },
     lineHeight: number,
+    // The word to say after it, which at the end of a paragraph or slide can
+    // sit further down than the lines kept below
+    next?: { top: number; height: number },
 ): number | null {
     if (scrolling.mode === 'fixed') {
         return word.top - view.height * scrolling.anchor + word.height / 2
     }
-    const neededBottom = word.top + word.height + scrolling.linesBelow * lineHeight
+    const neededBottom = Math.max(
+        word.top + word.height + scrolling.linesBelow * lineHeight,
+        next ? next.top + next.height : 0,
+    )
     // In a window too short for all those lines, the word goes to the top
     // with whatever fits below, instead of scrolling past it (which then
     // brought it back on the next word, bouncing the text)

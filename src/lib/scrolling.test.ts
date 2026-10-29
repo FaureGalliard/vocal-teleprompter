@@ -26,6 +26,15 @@ describe('scrollTarget in ahead mode', () => {
         expect(scrollTarget(ahead, { top: 200, height: 100 }, word, line)).toBe(200)
     })
 
+    it('shows the next word when it starts further down, as a new paragraph does', () => {
+        // Lines below need 430, but the next word only ends at 520
+        expect(scrollTarget(ahead, view, { top: 280, height: 30 }, line, { top: 490, height: 30 })).toBe(120)
+    })
+
+    it('still keeps the word in view when the next one is too far down', () => {
+        expect(scrollTarget(ahead, view, { top: 280, height: 30 }, line, { top: 900, height: 30 })).toBe(280)
+    })
+
     it('brings back a word above the visible part', () => {
         expect(scrollTarget(ahead, { top: 500, height: 400 }, { top: 300, height: 30 }, line)).toBe(260)
     })

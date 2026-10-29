@@ -69,6 +69,8 @@ export default function Canvas({
     const containerRef = useRef<HTMLDivElement>(null)
     const editorRef = useRef<HTMLTextAreaElement>(null)
     const activeWordRef = useRef<HTMLSpanElement>(null)
+    // The word after a heard one, kept in view too
+    const nextWordRef = useRef<HTMLSpanElement>(null)
 
     useEffect(() => {
         const editor = editorRef.current
@@ -90,11 +92,13 @@ export default function Canvas({
         const container = containerRef.current
         const word = activeWordRef.current
         if (!container || !word) return
+        const next = heard ? nextWordRef.current : null
         const top = scrollTarget(
             scrolling,
             { top: container.scrollTop, height: container.clientHeight },
             { top: word.offsetTop, height: word.offsetHeight },
             fontSize * typography.lineHeight,
+            next ? { top: next.offsetTop, height: next.offsetHeight } : undefined,
         )
         if (top !== null) container.scrollTo({ top, left: 0, behavior: 'smooth' })
     }, [currentWordIndex, heard, scrolling, fontSize, typography.lineHeight])
@@ -151,7 +155,13 @@ export default function Canvas({
         return (
             <span
                 key={s}
-                ref={isCurrentWord || isNextWord ? activeWordRef : null}
+                ref={
+                    isCurrentWord || isNextWord
+                        ? activeWordRef
+                        : heard && i === currentWordIndex + 1
+                          ? nextWordRef
+                          : null
+                }
                 onClick={(e) =>
                     e.ctrlKey || e.metaKey || isListening
                         ? onContinueFrom(i)
