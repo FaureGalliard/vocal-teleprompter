@@ -25,7 +25,7 @@ export function useSettings() {
 
     const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0)
     // How much what is behind a see-through window is blurred, 0-100
-    const [backdropSoften, setBackdropSoften] = usePersistentState('backdropSoften', 20)
+    const [backdropSoften, setBackdropSoften] = usePersistentState('backdropSoften', 50)
     const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
     const [textColor, setTextColor] = usePersistentState('textColor', '#7698fe')
     const [autoContrast, setAutoContrast] = usePersistentState('autoContrast', true)

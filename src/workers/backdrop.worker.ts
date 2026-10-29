@@ -7,7 +7,7 @@ import { paintLetters, type Seen } from '../lib/letterPaint'
 import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
 // Softening at 100%, in samples
-const MAX_BLUR = 8
+const MAX_BLUR = 16
 // Average difference per channel below which a look counts as the same as
 // the last one (screen noise, a blinking caret elsewhere)
 const SAME_BELOW = 1.5
@@ -60,7 +60,10 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
         lastAsked = asked
         const raw = Float32Array.from(pixels)
         const radius = Math.round((soften / 100) * MAX_BLUR)
-        const behind = radius ? blur(raw, cols, rows, radius) : raw
+        // Two lighter passes come close to a soft, round blur, without the
+        // boxy look of one strong pass
+        const half = Math.ceil(radius / 2)
+        const behind = radius ? blur(blur(raw, cols, rows, half), cols, rows, half) : raw
         let glass: Blob | null = null
         if (radius) {
             const image = new Uint8ClampedArray(cols * rows * 4)
