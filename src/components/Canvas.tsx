@@ -259,7 +259,7 @@ export default function Canvas({
                             placeholder={t.canvas.editPlaceholder}
                             textStyle={{ ...textStyle, fontSize: `${fontSize}px` }}
                             color={textColor}
-                            look={look}
+                            colorAt={(at) => paint?.letters.get(at) ?? textColor}
                         />
                     ) : cards.some((c) => c.segments.length > 0) ? (
                         cards.map((card, c) => (

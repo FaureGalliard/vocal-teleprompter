@@ -11,6 +11,9 @@ export interface BackdropPaint {
     width: number
     height: number
     offsets: Map<number, [number, number]>
+    // Each letter's own color, by its offset in the script, kept for letters
+    // that scrolled out of view too, so the editor can start from them
+    letters: Map<number, string>
 }
 
 // Where every piece of text in view sits, in CSS pixels from the window's corner
@@ -67,6 +70,7 @@ function paintLetters(
     found: Letter[],
     textColor: string,
     previous: Map<number, number>,
+    colors: Map<number, string>,
 ) {
     const { cols, rows, step, rgb } = seen
     const cell = (v: number) => (v * window.devicePixelRatio) / step
@@ -87,6 +91,7 @@ function paintLetters(
         picked.set(letter.key, y)
         const [r, g, b] = sum.map((v) => v / around.length)
         const color = atLuminance(complement(r, g, b) ?? textColor, y)
+        colors.set(letter.key, color)
         const n = parseInt(color.slice(1), 16)
         const pixel = [(n >> 16) & 255, (n >> 8) & 255, n & 255, 255]
         for (let rr = Math.max(0, r0); rr < Math.min(rows, r1); rr++)
@@ -110,6 +115,7 @@ export function useBackdropPaint(
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     // Each letter's last luminance, so it only changes for a clear gain
     const pickedRef = useRef(new Map<number, number>())
+    const colorsRef = useRef(new Map<number, string>())
     // Bumped after scrolling, to paint the letters where they now are
     const [scrolled, setScrolled] = useState(0)
 
@@ -117,6 +123,7 @@ export function useBackdropPaint(
         const root = container.current
         if (!seen || !root) {
             pickedRef.current.clear()
+            colorsRef.current = new Map()
             setPaint(null)
             return
         }
@@ -129,13 +136,21 @@ export function useBackdropPaint(
         canvas.height = rows
         // Point by point first, then each letter on top with its own color
         const image = colorMap(seen.rgb, cols, rows, textColor)
-        pickedRef.current = paintLetters(image, seen, letters(root), textColor, pickedRef.current)
+        pickedRef.current = paintLetters(
+            image,
+            seen,
+            letters(root),
+            textColor,
+            pickedRef.current,
+            colorsRef.current,
+        )
         canvas.getContext('2d')!.putImageData(new ImageData(image, cols, rows), 0, 0)
         setPaint({
             url: canvas.toDataURL(),
             width: cols * (step / scale),
             height: rows * (step / scale),
             offsets: new Map(pieces.map((p) => [p.at, [p.left, p.top]])),
+            letters: new Map(colorsRef.current),
         })
         // A new capture is what triggers a new look
         // eslint-disable-next-line react-hooks/exhaustive-deps

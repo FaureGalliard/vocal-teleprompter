@@ -2,9 +2,9 @@ import { Fragment, type CSSProperties, type RefObject } from 'react'
 
 // The script as an editable field. The field draws only the caret and the
 // selection; a copy of the text right under it, laid out the same way,
-// carries the colors, so the text is painted letter by letter while editing
-// too. Each line of the copy is a piece with its offset, like the words when
-// reading.
+// carries the colors, so every letter keeps the color it had while reading
+// and gets a new one once typing pauses. Letters of the same color share a
+// piece, marked with its offset like the words when reading.
 export default function ScriptEditor({
     editorRef,
     content,
@@ -13,7 +13,7 @@ export default function ScriptEditor({
     placeholder,
     textStyle,
     color,
-    look,
+    colorAt,
 }: {
     editorRef: RefObject<HTMLTextAreaElement | null>
     content: string
@@ -22,15 +22,18 @@ export default function ScriptEditor({
     placeholder: string
     textStyle: CSSProperties
     color: string
-    // How a piece of text at an offset is painted
-    look: (at: number, fade: number) => CSSProperties
+    // The color of the letter at an offset
+    colorAt: (at: number) => string
 }) {
-    let at = 0
-    const lines = content.split('\n').map((text) => {
-        const line = { text, at }
-        at += text.length + 1
-        return line
-    })
+    // Runs of letters that share a color; line breaks stand on their own
+    const runs: { text: string; at: number; color: string | null }[] = []
+    for (let i = 0; i < content.length; i++) {
+        const ch = content[i]
+        const c = ch === '\n' ? null : colorAt(i)
+        const last = runs[runs.length - 1]
+        if (last && last.color === c && c !== null) last.text += ch
+        else runs.push({ text: ch, at: i, color: c })
+    }
     // Same wrapping as the field, so every letter lands in the same place
     const layout: CSSProperties = {
         ...textStyle,
@@ -44,16 +47,18 @@ export default function ScriptEditor({
                 aria-hidden
                 className="absolute inset-0 pointer-events-none select-none"
                 style={layout}>
-                {lines.map((line) => (
-                    <Fragment key={line.at}>
+                {runs.map((run) =>
+                    run.color === null ? (
+                        <Fragment key={run.at}>{run.text}</Fragment>
+                    ) : (
                         <span
-                            data-at={line.at}
-                            style={look(line.at, 1)}>
-                            {line.text}
+                            key={run.at}
+                            data-at={run.at}
+                            style={{ color: run.color }}>
+                            {run.text}
                         </span>
-                        {'\n'}
-                    </Fragment>
-                ))}
+                    ),
+                )}
                 {/* Keeps a trailing empty line as tall as in the field */}
                 {'​'}
             </div>
