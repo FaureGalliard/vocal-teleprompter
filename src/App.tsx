@@ -3,6 +3,7 @@ import TitleBar from './components/TitleBar'
 import Toolbar from './components/Toolbar'
 import { OpenTowardsContext } from './components/Popover'
 import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
+import { useWindowPlacement } from './hooks/useWindowPlacement'
 import AppearancePanel from './components/AppearancePanel'
 import SettingsPanel from './components/SettingsPanel'
 import Canvas from './components/Canvas'
@@ -65,6 +66,7 @@ function App() {
     )
     const [titleBarVisible, setTitleBarVisible] = usePersistentState('titleBarVisible', true)
     const [toolbarVisible, setToolbarVisible] = useState(false)
+    useWindowPlacement()
     const [titleBarHeight, setTitleBarHeight] = useState(0)
     const [content, setContent] = usePersistentState('content', t.sampleScript)
     const [fontSize, setFontSize] = usePersistentState('fontSize', 16)

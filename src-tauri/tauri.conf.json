@@ -13,8 +13,9 @@
         "windows": [
             {
                 "title": "vocal-teleprompter",
-                "width": 1200,
-                "height": 600,
+                "width": 1080,
+                "height": 165,
+                "visible": false,
                 "transparent": true,
                 "decorations": false,
                 "skipTaskbar": true,
