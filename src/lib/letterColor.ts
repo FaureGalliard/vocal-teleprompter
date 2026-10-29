@@ -15,13 +15,13 @@ const ratio = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b
 // tells more of them apart
 const LEVELS = Array.from({ length: 41 }, (_, i) => (i / 40) ** 2.2)
 // The share of the letter's surroundings it must stand out from: judging
-// on the worst tenth, not the average, keeps it readable over busy spots
-const WORST_SHARE = 0.1
+// on the worst twentieth, not the average, keeps it readable over busy spots
+const WORST_SHARE = 0.05
 // A letter keeps its luminance unless another one stands out this much more
 const STICKINESS = 1.15
 
 // How well a letter of luminance `y` stands out from the luminances around
-// it: the contrast ratio against the worst tenth of them
+// it: the contrast ratio against the worst twentieth of them
 export function standOut(y: number, around: number[]) {
     const ratios = around.map((l) => ratio(y, l)).sort((a, b) => a - b)
     return ratios[Math.floor(ratios.length * WORST_SHARE)] ?? 21

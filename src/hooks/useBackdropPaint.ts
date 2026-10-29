@@ -25,6 +25,9 @@ function measure(root: HTMLElement) {
     return pieces
 }
 
+// Samples looked at around each letter's box, besides those inside it
+const AROUND = 2
+
 interface Letter {
     key: number
     left: number
@@ -73,8 +76,8 @@ function paintLetters(
         const [r0, r1] = [Math.floor(cell(letter.top)), Math.ceil(cell(letter.bottom))]
         const around: number[] = []
         const sum = [0, 0, 0]
-        for (let r = Math.max(0, r0 - 1); r < Math.min(rows, r1 + 1); r++)
-            for (let c = Math.max(0, c0 - 1); c < Math.min(cols, c1 + 1); c++) {
+        for (let r = Math.max(0, r0 - AROUND); r < Math.min(rows, r1 + AROUND); r++)
+            for (let c = Math.max(0, c0 - AROUND); c < Math.min(cols, c1 + AROUND); c++) {
                 const i = (r * cols + c) * 3
                 around.push(luminance(rgb[i], rgb[i + 1], rgb[i + 2]))
                 for (let k = 0; k < 3; k++) sum[k] += rgb[i + k]
