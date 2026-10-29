@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { LANGUAGES } from '../constants/languages'
 import { useT } from '../i18n'
 import { useOutsideClick } from '../hooks/useOutsideClick'
@@ -10,19 +10,17 @@ const speechLanguageLabel = (code: string) => LANGUAGES.find((l) => l.value === 
 // The language the speaker talks in, shown by its short code
 export default function LanguageMenu({
     language,
-    open,
-    onToggle,
     onChange,
 }: {
     language: string
-    open: boolean
-    onToggle: () => void
     onChange: (language: string) => void
 }) {
     const t = useT()
+    const [open, setOpen] = useState(false)
     const ref = useRef<HTMLDivElement>(null)
     const panelRef = useRef<HTMLDivElement>(null)
-    useOutsideClick([ref, panelRef], open, onToggle)
+    const close = useCallback(() => setOpen(false), [])
+    useOutsideClick([ref, panelRef], open, close)
 
     return (
         <div
@@ -30,7 +28,7 @@ export default function LanguageMenu({
             data-tour="speech-language"
             className="relative group">
             <button
-                onClick={onToggle}
+                onClick={() => setOpen((v) => !v)}
                 aria-label={t.toolbar.speechLanguage}
                 className={`${iconBtn} ${open ? primary : ghost} text-[10px] font-semibold`}>
                 {speechLanguageLabel(language)}
@@ -48,7 +46,10 @@ export default function LanguageMenu({
                 {LANGUAGES.map((lang) => (
                     <button
                         key={lang.value}
-                        onClick={() => onChange(lang.value)}
+                        onClick={() => {
+                            onChange(lang.value)
+                            close()
+                        }}
                         className={`px-4 py-1.5 text-[11px] font-medium text-left transition-colors ${
                             language === lang.value
                                 ? 'bg-[#445ade] text-white'

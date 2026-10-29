@@ -6,10 +6,10 @@ import {
     MousePointerClick,
     PanelTop,
     RotateCcw,
-    Settings,
+    Settings as SettingsIcon,
 } from 'lucide-react'
 import { useT, UI_LANGUAGES } from '../i18n'
-import type { GlobalAction, ShortcutBindings } from '../hooks/useGlobalShortcuts'
+import type { GlobalAction } from '../hooks/useGlobalShortcuts'
 import { displayShortcut } from '../lib/shortcuts'
 import Switch from './Switch'
 import ShortcutsSection from './ShortcutsSection'
@@ -19,74 +19,31 @@ import ReadingSettings from './ReadingSettings'
 import { Row, Section, selectClass } from './SettingsRows'
 import UpdatesSection from './UpdatesSection'
 import type { useUpdater } from '../hooks/useUpdater'
-import type { Scrolling } from '../lib/scrolling'
+import type { Settings } from '../hooks/useSettings'
 
 const PANEL_WIDTH = 288
 
 interface SettingsPanelProps {
-    uiLanguage: string
-    hiddenFromCapture: boolean
-    titleBarVisible: boolean
-    onUiLanguageChange: (val: string) => void
-    onToggleHiddenFromCapture: () => void
-    onToggleTitleBar: () => void
-    onReset: () => void
-    onShowTutorial: () => void
-    targetMinutes: number
-    onTargetMinutesChange: (val: number) => void
-    readingLine: boolean
-    onToggleReadingLine: () => void
-    scrolling: Scrolling
-    onScrollingChange: (value: Scrolling) => void
-    clickThrough: boolean
-    onToggleClickThrough: () => void
-    autoUpdate: boolean
-    onToggleAutoUpdate: () => void
+    settings: Settings
     updater: ReturnType<typeof useUpdater>
-    shortcutsEnabled: boolean
-    shortcutBindings: ShortcutBindings
+    // Global shortcuts the system refused (another app holds them)
     failedShortcuts: GlobalAction[]
-    onToggleShortcuts: () => void
-    onShortcutChange: (action: GlobalAction, accelerator: string) => void
-    onResetShortcuts: () => void
     onRecordingShortcut: (recording: boolean) => void
-    countdownSeconds: number
-    onCountdownSecondsChange: (val: number) => void
-    aiConnectorEnabled: boolean
-    onToggleAiConnector: () => void
+    onUiLanguageChange: (val: string) => void
+    onToggleTitleBar: () => void
+    onShowTutorial: () => void
+    onReset: () => void
 }
 
 export default function SettingsPanel({
-    uiLanguage,
-    hiddenFromCapture,
-    titleBarVisible,
-    onUiLanguageChange,
-    onToggleHiddenFromCapture,
-    onToggleTitleBar,
-    onReset,
-    onShowTutorial,
-    targetMinutes,
-    onTargetMinutesChange,
-    readingLine,
-    onToggleReadingLine,
-    scrolling,
-    onScrollingChange,
-    clickThrough,
-    onToggleClickThrough,
-    autoUpdate,
-    onToggleAutoUpdate,
+    settings,
     updater,
-    shortcutsEnabled,
-    shortcutBindings,
     failedShortcuts,
-    onToggleShortcuts,
-    onShortcutChange,
-    onResetShortcuts,
     onRecordingShortcut,
-    countdownSeconds,
-    onCountdownSecondsChange,
-    aiConnectorEnabled,
-    onToggleAiConnector,
+    onUiLanguageChange,
+    onToggleTitleBar,
+    onShowTutorial,
+    onReset,
 }: SettingsPanelProps) {
     const t = useT()
     const [open, setOpen] = useState(false)
@@ -131,7 +88,7 @@ export default function SettingsPanel({
                 className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
                     open ? 'bg-[#445ade] text-white' : 'bg-white/10 text-white hover:bg-white/20'
                 }`}>
-                <Settings size={14} />
+                <SettingsIcon size={14} />
             </button>
             <BarTooltip
                 label={t.settings.title}
@@ -147,16 +104,7 @@ export default function SettingsPanel({
                     title={t.settings.sectionReading}
                     first
                 />
-                <ReadingSettings
-                    scrolling={scrolling}
-                    onScrollingChange={onScrollingChange}
-                    readingLine={readingLine}
-                    onToggleReadingLine={onToggleReadingLine}
-                    countdownSeconds={countdownSeconds}
-                    onCountdownSecondsChange={onCountdownSecondsChange}
-                    targetMinutes={targetMinutes}
-                    onTargetMinutesChange={onTargetMinutesChange}
-                />
+                <ReadingSettings settings={settings} />
 
                 <Section title={t.settings.sectionWindow} />
                 <Row
@@ -164,8 +112,8 @@ export default function SettingsPanel({
                     label={t.settings.hideFromCapture}
                     hint={t.settings.hideFromCaptureHint}>
                     <Switch
-                        on={hiddenFromCapture}
-                        onToggle={onToggleHiddenFromCapture}
+                        on={settings.hiddenFromCapture}
+                        onToggle={() => settings.setHiddenFromCapture((v) => !v)}
                     />
                 </Row>
 
@@ -173,13 +121,13 @@ export default function SettingsPanel({
                     icon={<MousePointerClick size={14} />}
                     label={t.settings.clickThrough}
                     hint={t.settings.clickThroughHint(
-                        displayShortcut(shortcutBindings.toggleClickThrough),
+                        displayShortcut(settings.shortcutBindings.toggleClickThrough),
                     )}>
                     <Switch
-                        on={clickThrough}
+                        on={settings.clickThrough}
                         onToggle={() => {
                             setOpen(false)
-                            onToggleClickThrough()
+                            settings.setClickThrough((v) => !v)
                         }}
                     />
                 </Row>
@@ -188,7 +136,7 @@ export default function SettingsPanel({
                     icon={<PanelTop size={14} />}
                     label={t.settings.titleBar}>
                     <Switch
-                        on={titleBarVisible}
+                        on={settings.titleBarVisible}
                         onToggle={onToggleTitleBar}
                     />
                 </Row>
@@ -198,7 +146,7 @@ export default function SettingsPanel({
                     icon={<Globe size={14} />}
                     label={t.settings.interfaceLanguage}>
                     <select
-                        value={uiLanguage}
+                        value={settings.uiLanguage}
                         onChange={(e) => onUiLanguageChange(e.target.value)}
                         className={selectClass}>
                         {UI_LANGUAGES.map((l) => (
@@ -213,23 +161,23 @@ export default function SettingsPanel({
                 </Row>
 
                 <AiConnectorSection
-                    enabled={aiConnectorEnabled}
-                    onToggleEnabled={onToggleAiConnector}
+                    enabled={settings.aiConnectorEnabled}
+                    onToggleEnabled={() => settings.setAiConnectorEnabled((v) => !v)}
                 />
 
                 <ShortcutsSection
-                    enabled={shortcutsEnabled}
-                    bindings={shortcutBindings}
+                    enabled={settings.shortcutsEnabled}
+                    bindings={settings.shortcutBindings}
                     failed={failedShortcuts}
-                    onToggleEnabled={onToggleShortcuts}
-                    onChange={onShortcutChange}
-                    onReset={onResetShortcuts}
+                    onToggleEnabled={() => settings.setShortcutsEnabled((v) => !v)}
+                    onChange={settings.setShortcut}
+                    onReset={settings.resetShortcuts}
                     onRecordingChange={onRecordingShortcut}
                 />
 
                 <UpdatesSection
-                    autoUpdate={autoUpdate}
-                    onToggleAutoUpdate={onToggleAutoUpdate}
+                    autoUpdate={settings.autoUpdate}
+                    onToggleAutoUpdate={() => settings.setAutoUpdate((v) => !v)}
                     updater={updater}
                 />
 

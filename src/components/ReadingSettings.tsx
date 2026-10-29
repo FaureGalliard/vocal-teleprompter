@@ -1,6 +1,6 @@
 import { Hourglass, MoveVertical, ScanLine, Timer } from 'lucide-react'
 import { useT } from '../i18n'
-import type { Scrolling } from '../lib/scrolling'
+import type { Settings } from '../hooks/useSettings'
 import Switch from './Switch'
 import { Row, selectClass } from './SettingsRows'
 
@@ -8,25 +8,17 @@ const COUNTDOWN_OPTIONS = [0, 3, 5, 10]
 
 // The Reading section of the settings: how the script scrolls, the reading
 // line, the countdown and the target duration
-export default function ReadingSettings({
-    scrolling,
-    onScrollingChange,
-    readingLine,
-    onToggleReadingLine,
-    countdownSeconds,
-    onCountdownSecondsChange,
-    targetMinutes,
-    onTargetMinutesChange,
-}: {
-    scrolling: Scrolling
-    onScrollingChange: (value: Scrolling) => void
-    readingLine: boolean
-    onToggleReadingLine: () => void
-    countdownSeconds: number
-    onCountdownSecondsChange: (val: number) => void
-    targetMinutes: number
-    onTargetMinutesChange: (val: number) => void
-}) {
+export default function ReadingSettings({ settings }: { settings: Settings }) {
+    const {
+        scrolling,
+        setScrolling: onScrollingChange,
+        readingLine,
+        countdownSeconds,
+        setCountdownSeconds: onCountdownSecondsChange,
+        targetMinutes,
+        setTargetMinutes: onTargetMinutesChange,
+    } = settings
+    const onToggleReadingLine = () => settings.setReadingLine((v) => !v)
     const t = useT()
     return (
         <>

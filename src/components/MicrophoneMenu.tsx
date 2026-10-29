@@ -1,32 +1,41 @@
-import { useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Check as Selected, Mic } from 'lucide-react'
 import { useT } from '../i18n'
 import type { Microphone } from '../hooks/useMicrophones'
 import { useOutsideClick } from '../hooks/useOutsideClick'
+import { useMicLevel } from '../hooks/useMicLevel'
 import { ghost, ICON, iconBtn, primary } from './BarButton'
 import { BarTooltip, Popover } from './Popover'
 
 // Which microphone to listen to, with a level meter to test it
 export default function MicrophoneMenu({
-    open,
-    onToggle,
     microphones,
+    onRefresh,
     selected,
-    level,
+    listening,
     onChange,
 }: {
-    open: boolean
-    onToggle: () => void
     microphones: Microphone[]
+    // Looks for microphones plugged in since the list was made
+    onRefresh: () => void
     // null for the system default input
     selected: string | null
-    level: number
+    // While listening the speech engine already reports the level
+    listening: boolean
     onChange: (id: string | null) => void
 }) {
     const t = useT()
+    const [open, setOpen] = useState(false)
     const ref = useRef<HTMLDivElement>(null)
     const panelRef = useRef<HTMLDivElement>(null)
-    useOutsideClick([ref, panelRef], open, onToggle)
+    const close = useCallback(() => setOpen(false), [])
+    useOutsideClick([ref, panelRef], open, close)
+    // Measured while the menu is open, to test the input
+    const level = useMicLevel(open, listening, selected)
+    const toggle = () => {
+        if (!open) onRefresh()
+        setOpen((v) => !v)
+    }
     const systemMic = microphones.find((m) => m.isDefault)
     const currentMic = microphones.find((m) => m.id === selected) ?? systemMic
 
@@ -36,7 +45,7 @@ export default function MicrophoneMenu({
             data-tour="microphone"
             className="relative group">
             <button
-                onClick={onToggle}
+                onClick={toggle}
                 aria-label={t.toolbar.microphone}
                 className={`${iconBtn} ${open ? primary : ghost}`}>
                 <Mic size={ICON} />
@@ -69,7 +78,10 @@ export default function MicrophoneMenu({
                 ].map((mic) => (
                     <button
                         key={mic.id ?? 'default'}
-                        onClick={() => onChange(mic.id)}
+                        onClick={() => {
+                            onChange(mic.id)
+                            close()
+                        }}
                         title={mic.name}
                         className={`flex items-center gap-2 px-4 py-1.5 text-[11px] text-left transition-colors ${
                             selected === mic.id

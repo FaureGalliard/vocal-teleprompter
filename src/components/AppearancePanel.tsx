@@ -5,21 +5,10 @@ import { useT } from '../i18n'
 import TypographyControls from './TypographyControls'
 import Switch from './Switch'
 import { BarTooltip, Popover } from './Popover'
-import type { Typography } from '../lib/typography'
+import type { Settings } from '../hooks/useSettings'
 
 interface AppearancePanelProps {
-    fontSize: number
-    onFontSizeChange: (value: number) => void
-    bgColor: string
-    bgOpacity: number
-    onBgColorChange: (value: string) => void
-    onBgOpacityChange: (value: number) => void
-    textColor: string
-    onTextColorChange: (value: string) => void
-    typography: Typography
-    onTypographyChange: (value: Typography) => void
-    autoContrast: boolean
-    onToggleAutoContrast: () => void
+    settings: Settings
     // The toolbar fades out while a control is dragged so the change shows on
     // the script; the panel lives in a portal so it stays visible meanwhile
     onAdjustStart: () => void
@@ -32,21 +21,21 @@ const stepper =
     'flex items-center justify-center w-6 h-6 rounded-md bg-white/10 hover:bg-white/20 transition-colors'
 
 // Text size, colors and typography behind one toolbar button
-export default function AppearancePanel({
-    fontSize,
-    onFontSizeChange,
-    bgColor,
-    bgOpacity,
-    onBgColorChange,
-    onBgOpacityChange,
-    textColor,
-    onTextColorChange,
-    typography,
-    onTypographyChange,
-    autoContrast,
-    onToggleAutoContrast,
-    onAdjustStart,
-}: AppearancePanelProps) {
+export default function AppearancePanel({ settings, onAdjustStart }: AppearancePanelProps) {
+    const {
+        fontSize,
+        setFontSize: onFontSizeChange,
+        bgColor,
+        setBgColor: onBgColorChange,
+        bgOpacity,
+        setBgOpacity: onBgOpacityChange,
+        textColor,
+        setTextColor: onTextColorChange,
+        typography,
+        setTypography: onTypographyChange,
+        autoContrast,
+    } = settings
+    const onToggleAutoContrast = () => settings.setAutoContrast((v) => !v)
     const t = useT()
     const [open, setOpen] = useState(false)
     const anchorRef = useRef<HTMLDivElement>(null)

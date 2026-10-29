@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Pause, Play, Square } from 'lucide-react'
 import { useT } from '../i18n'
 import type { Microphone } from '../hooks/useMicrophones'
+import type { useListeningSession } from '../hooks/useListeningSession'
+import type { Settings } from '../hooks/useSettings'
 import BarButton, { ghost, ICON, primary } from './BarButton'
 import LanguageMenu from './LanguageMenu'
 import MicrophoneMenu from './MicrophoneMenu'
@@ -15,35 +17,26 @@ interface ToolbarProps {
     // Where the toolbar sits: in the room the window made for it, or over
     // the bottom of the teleprompter when the window could not grow
     placement: CSSProperties
+    session: ReturnType<typeof useListeningSession>
     isRecognizing: boolean
-    isSpeechActive: boolean
-    isPaused: boolean
-    isCountingDown: boolean
     // Start waits for the speech model of the chosen language
     isDownloadingModel: boolean
     content: string
     isEditing: boolean
-    language: string
-    langMenuOpen: boolean
-    micMenuOpen: boolean
+    settings: Settings
     microphones: Microphone[]
-    // null for the system default input
-    selectedMic: string | null
-    micLevel: number
-    onMicChange: (id: string | null) => void
+    // The chosen microphone, or null for the system default
+    activeMic: string | null
+    onRefreshMicrophones: () => void
+    onToggleListen: () => void
     onPasteText: () => void
     onImport: () => void
     onClear: () => void
     onToggleEdit: () => void
-    onToggleListen: () => void
-    onTogglePause: () => void
-    onLanguageChange: (val: string) => void
-    onLangMenuToggle: () => void
-    onMicMenuToggle: () => void
     onShowTutorial: () => void
     // Panels built by App, which owns their state
     appearance: ReactNode
-    settings: ReactNode
+    settingsPanel: ReactNode
 }
 
 const divider = <div className="h-5 w-px mx-0.5 bg-white/15" />
@@ -57,36 +50,28 @@ export default function Toolbar(props: ToolbarProps) {
 function ToolbarBar({
     isAdjusting,
     placement,
+    session,
     isRecognizing,
-    isSpeechActive,
-    isPaused,
-    isCountingDown,
     isDownloadingModel,
     content,
     isEditing,
-    language,
-    langMenuOpen,
-    micMenuOpen,
+    settings,
     microphones,
-    selectedMic,
-    micLevel,
-    onMicChange,
+    activeMic,
+    onRefreshMicrophones,
+    onToggleListen,
     onPasteText,
     onImport,
     onClear,
     onToggleEdit,
-    onToggleListen,
-    onTogglePause,
-    onLanguageChange,
-    onLangMenuToggle,
-    onMicMenuToggle,
     onShowTutorial,
     appearance,
-    settings,
+    settingsPanel,
 }: ToolbarProps) {
     const t = useT()
     const towards = useOpenTowards()
-    const running = isSpeechActive || isCountingDown
+    const { isSpeechActive, isPaused } = session
+    const running = isSpeechActive || session.countdown !== null
 
     const shift = towards === 'down' ? -8 : 8
     return (
@@ -119,7 +104,7 @@ function ToolbarBar({
             {isSpeechActive && (
                 <BarButton
                     label={isPaused ? t.toolbar.resume : t.toolbar.pause}
-                    onClick={onTogglePause}
+                    onClick={() => session.setIsPaused((v) => !v)}
                     className={isPaused ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : ghost}>
                     {isPaused ? <Play size={ICON} /> : <Pause size={ICON} />}
                 </BarButton>
@@ -128,26 +113,23 @@ function ToolbarBar({
             {divider}
 
             <LanguageMenu
-                language={language}
-                open={langMenuOpen}
-                onToggle={onLangMenuToggle}
-                onChange={onLanguageChange}
+                language={settings.language}
+                onChange={settings.setLanguage}
             />
 
             <MicrophoneMenu
-                open={micMenuOpen}
-                onToggle={onMicMenuToggle}
                 microphones={microphones}
-                selected={selectedMic}
-                level={micLevel}
-                onChange={onMicChange}
+                onRefresh={onRefreshMicrophones}
+                selected={activeMic}
+                listening={isRecognizing}
+                onChange={settings.setSelectedMic}
             />
 
             {divider}
 
             <div data-tour="look">{appearance}</div>
 
-            {settings}
+            {settingsPanel}
 
             {divider}
 
