@@ -49,7 +49,8 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
   and it lands in the prompter, already split into slide cards and sized to your time.
 - ⌨️ **Global shortcuts** that work while Zoom, Meet or your slides have the focus. Rebind
   any of them in Settings, or turn them off.
-- ⏳ **Countdown** (3, 2, 1) before listening starts, so you can settle and look at the camera.
+- ⏳ **Countdown** (3, 2, 1) before listening starts, so you can settle and look at the
+  camera. It ticks in the bottom row, never over your script.
 - 🔤 **Typography**: font, weight, line spacing, text width and alignment.
 - 🖱️ **Click-through mode**: clicks pass through the window to the app behind it.
 - 📏 **Reading line** (optional): the current line stays at a fixed height near your
@@ -61,17 +62,24 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
 - 🖱️ **Click any word to continue reading from it** after you jump ahead or repeat a
   passage; click it again, or between words, to edit the script right there.
 - 🎙️ **Microphone picker** that picks up devices you plug in while the app is open.
-- 💾 **Remembers everything**: script, colors, opacity, size, language and microphone.
-- 🎨 **Appearance panel**: text size, background color and opacity, text color and
-  typography in one place.
-- ✍️ **Write right in the prompter**: press **EDIT** to type or fix the script in place,
-  then **DONE** (or `Esc`) to go back to prompting.
-- 📋 **Paste or import** your script from the clipboard or a `.txt` file. Line breaks are kept.
+- 💾 **Remembers everything**: script, colors, opacity, text size, language, microphone,
+  and where and how big you left the window. The first time it opens as a strip at the
+  top center of the screen, right under the webcam.
+- 🧰 **Toolbar outside the text**: the round button in the bottom corner opens a row of
+  controls below the prompter, so it never covers your script. The space it opens up
+  lets clicks through to the apps behind.
+- 🎨 **Appearance panel**: text size, background color and opacity, text color, automatic
+  contrast and typography in one place.
+- ✍️ **Write right in the prompter**: open the script menu (document icon) and pick
+  **Edit script**, then the check mark (or `Esc`) to go back to prompting.
+- 📋 **Paste or import** your script from the clipboard or a `.txt` file, from the same
+  menu. Line breaks are kept.
 - 🌐 **Interface in the same 9 languages** (English by default), tray menu included.
-- ⚙️ **Settings panel** behind the gear button: interface language, hiding from screen
-  sharing, automatic contrast, click-through, reading line, target duration, title bar,
-  the list of global shortcuts, and a reset to defaults.
-- 🎓 **Guided tour** on first launch (replay it any time with the **?** button).
+- ⚙️ **Settings panel** behind the gear button, grouped into **Reading** (scrolling,
+  reading line, countdown, target duration), **Window** (hiding from screen sharing,
+  click-through, title bar) and **General** (interface language, AI connector, global
+  shortcuts, updates and a reset to defaults).
+- 🎓 **Guided tour** on first launch (replay it any time from the script menu).
 - 🔄 **Automatic updates**: the app tells you when a new version is out and updates itself
   in one click.
 - 🧭 **Custom title bar** that you can move to the top or bottom, or hide.
