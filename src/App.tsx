@@ -148,7 +148,7 @@ function App() {
         window.addEventListener('touchend', onUp)
     }
 
-    const colors = useTextColors(settings)
+    const colors = useTextColors(settings, isEditing)
     const displayTextColor = colors.display
 
     const titleBarRoom = titleBarVisible ? titleBarHeight : 0
