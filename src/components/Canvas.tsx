@@ -115,7 +115,7 @@ export default function Canvas({
     // Words just read stay almost as bright, so the speaker can glance back
     // (or find their place if the marker ran ahead); older ones fade, less so
     // over a see-through background, where faint text gets lost
-    const [recent, older] = paint ? [0.95, 0.7] : [0.85, 0.45]
+    const [recent, older] = paint ? [0.95, 0.85] : [0.85, 0.45]
     const fadeOf = (word: number, past: boolean) =>
         !past ? 1 : currentWordIndex - word <= RECENT_WORDS ? recent : older
     // Painted from the backdrop's color map when there is one, else plain
@@ -274,7 +274,12 @@ export default function Canvas({
                                             ? `1px dashed ${textColor}40`
                                             : undefined,
                                     // Other slides fade back so the current one stands out
-                                    opacity: cards.length > 1 && c !== currentCard ? 0.45 : 1,
+                                    opacity:
+                                        cards.length > 1 && c !== currentCard
+                                            ? paint
+                                                ? 0.75
+                                                : 0.45
+                                            : 1,
                                     transition: 'opacity 0.3s ease',
                                 }}>
                                 <p
