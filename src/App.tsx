@@ -31,7 +31,6 @@ import {
 } from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
-import CountdownOverlay from './components/CountdownOverlay'
 import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
 import { DEFAULT_SCROLLING, type Scrolling } from './lib/scrolling'
 import { useMcpBridge } from './hooks/useMcpBridge'
@@ -723,12 +722,6 @@ function App() {
                         onRetry={() => speechModel.download()}
                     />
 
-                    <CountdownOverlay
-                        value={countdown}
-                        color={displayTextColor}
-                        halo={textHalo}
-                    />
-
                     <UpdateBanner
                         // Out of the way while the toolbar is open; Settings can install too
                         visible={updater.showBanner && !toolbarVisible}
@@ -753,6 +746,7 @@ function App() {
                             clickThrough={clickThrough}
                             heard={isSpeechActive && !isPaused ? heardText : ''}
                             error={error ? (t.errors[error] ?? error) : null}
+                            countdown={countdown}
                         />
                     )}
                 </div>

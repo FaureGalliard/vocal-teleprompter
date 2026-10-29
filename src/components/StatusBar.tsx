@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Mic, MousePointerClick, Timer } from 'lucide-react'
 import { useT } from '../i18n'
 import { formatDuration, type PaceStatus } from '../hooks/usePace'
@@ -19,6 +20,8 @@ interface StatusBarProps {
     // What the recognizer heard last, while listening
     heard: string
     error: string | null
+    // Seconds left before listening starts
+    countdown: number | null
 }
 
 const STATUS_COLOR: Record<PaceStatus, string> = {
@@ -26,6 +29,8 @@ const STATUS_COLOR: Record<PaceStatus, string> = {
     'speed-up': '#facc15',
     'slow-down': '#f87171',
 }
+
+const RING = 2 * Math.PI * 5
 
 const pill = 'flex items-center gap-1 h-6 px-1 rounded-full bg-[#1a1a1a]/80 text-white/70 text-[10px]'
 const arrow =
@@ -48,6 +53,7 @@ export default function StatusBar({
     clickThrough,
     heard,
     error,
+    countdown,
 }: StatusBarProps) {
     const t = useT()
     const target = targetMinutes > 0 ? formatDuration(targetMinutes * 60000) : null
@@ -64,6 +70,42 @@ export default function StatusBar({
                         title={t.settings.clickThrough}>
                         <MousePointerClick size={11} />
                         {t.statusBar.clickThroughOn}
+                    </div>
+                )}
+                {countdown !== null && (
+                    // A ring that empties each second, beside the slides
+                    // rather than over the text
+                    <div
+                        className={`${pill} px-2.5 gap-1.5 text-white`}
+                        title={t.settings.countdown}>
+                        <svg
+                            width={12}
+                            height={12}
+                            className="-rotate-90">
+                            <circle
+                                cx={6}
+                                cy={6}
+                                r={5}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeOpacity={0.2}
+                                strokeWidth={2}
+                            />
+                            <motion.circle
+                                key={countdown}
+                                cx={6}
+                                cy={6}
+                                r={5}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeDasharray={RING}
+                                initial={{ strokeDashoffset: 0 }}
+                                animate={{ strokeDashoffset: RING }}
+                                transition={{ duration: 1, ease: 'linear' }}
+                            />
+                        </svg>
+                        <span className="text-[11px] font-semibold tabular-nums">{countdown}</span>
                     </div>
                 )}
                 {cardCount > 1 ? (
