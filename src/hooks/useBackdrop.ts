@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop } from '../lib/backdrop'
 
@@ -16,6 +17,9 @@ const STILL_MS = 250
 // After something changed behind the window: it may still be changing (a
 // slide transition), so look again soon to follow it
 const CHANGED_MS = 120
+// After a click, a key or the wheel anywhere: what most slide changes follow,
+// so look right away instead of waiting for the next round
+const INPUT_MS = 80
 
 // What is behind the window, refreshed a few times a second while `enabled`
 // (a see-through background), so the text can keep reading well over a
@@ -58,6 +62,11 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             if (busy) soon = true
             else next(CHANGED_MS)
         }
+        // Clicked, typed or scrolled somewhere: the screen is likely changing
+        const input = listen('user-input', () => {
+            if (busy) soon = true
+            else next(INPUT_MS)
+        })
         // Moved: look again soon, so the glass and colors keep up with it
         let still: ReturnType<typeof setTimeout>
         const moved = getCurrentWindow().onMoved(() => {
@@ -72,6 +81,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             clearTimeout(timer)
             clearTimeout(still)
             moved.then((off) => off())
+            input.then((off) => off())
         }
     }, [enabled, shown])
 
