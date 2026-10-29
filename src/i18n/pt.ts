@@ -68,7 +68,7 @@ export const pt: Messages = {
         settingsTitle: 'Configurações',
         settings: 'Como o texto rola, contagem regressiva, ocultar ao compartilhar a tela, idioma da interface e mais.',
         canvasTitle: 'Editar ou pular',
-        canvas: 'Clique em uma palavra para editar o roteiro ali mesmo. Com Ctrl+clique (ou um clique enquanto ouve) você continua lendo a partir dessa palavra.',
+        canvas: 'Clique em uma palavra para continuar lendo a partir dela. Clique nela de novo, ou entre as palavras, para editar o roteiro ali mesmo.',
         menuTitle: 'Barra de ferramentas',
         menu: 'Abra ou feche a barra aqui. Segure o botão para mover a janela.',
     },

@@ -46,8 +46,8 @@ duration.
 ## In the script
 - A line with only --- separates slide cards; the bottom bar shows Slide n / \
 total with previous and next buttons.
-- Click a word to edit the script there; Ctrl+click (or a click while \
-listening) continues reading from that word.
+- Click a word to continue reading from it; click it again (or click \
+between words) to edit the script there.
 - The bottom right shows the estimated reading time, and while listening the \
 elapsed time, words per minute, time left and pace against the target.
 

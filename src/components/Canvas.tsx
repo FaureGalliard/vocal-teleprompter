@@ -15,9 +15,10 @@ interface CanvasProps {
     // Current word reached by voice (highlighted) rather than placed by hand
     heard: boolean
     currentWordIndex: number
-    // Ctrl+click, or any click while listening: continue reading from that word
+    // Click on a word: continue reading from it
     onContinueFrom: (index: number) => void
-    // Plain click while stopped: edit the script with the caret at that spot
+    // Click again on that word, or on a gap, while stopped: edit the script
+    // with the caret at that spot
     onEditAt: (offset: number) => void
     isListening: boolean
     // Where to put the caret when editing starts
@@ -131,6 +132,8 @@ export default function Canvas({
             return (
                 <span
                     key={s}
+                    onClick={isListening ? undefined : () => onEditAt(segment.offset)}
+                    className={isListening ? undefined : 'cursor-text'}
                     style={{
                         color: prevWord < currentWordIndex ? pastColor(prevWord) : textColor,
                         backgroundColor:
@@ -151,6 +154,8 @@ export default function Canvas({
         const isPast = i < currentWordIndex || (!heard && i === currentWordIndex)
         const isNearby =
             i > currentWordIndex && i <= currentWordIndex + 8
+        // The word reading continues from; clicking it again edits there
+        const editsOnClick = !isListening && i === currentWordIndex + 1
 
         return (
             <span
@@ -162,12 +167,8 @@ export default function Canvas({
                           ? nextWordRef
                           : null
                 }
-                onClick={(e) =>
-                    e.ctrlKey || e.metaKey || isListening
-                        ? onContinueFrom(i)
-                        : onEditAt(segment.offset)
-                }
-                className={isListening ? 'cursor-pointer' : 'cursor-text'}
+                onClick={() => (editsOnClick ? onEditAt(segment.offset) : onContinueFrom(i))}
+                className={editsOnClick ? 'cursor-text' : 'cursor-pointer'}
                 style={{
                     color: isCurrentWord
                         ? '#1a1a1a'
@@ -223,6 +224,11 @@ export default function Canvas({
                 className="[&::-webkit-scrollbar]:hidden">
                 <div
                     className="min-h-full"
+                    // A click off the words (beside or below the text) edits
+                    onClick={(e) => {
+                        if (isEditing || isListening || (e.target as HTMLElement).tagName === 'SPAN') return
+                        onEditStart()
+                    }}
                     // Start the text on the reading line and leave room to bring
                     // the last lines up to it
                     style={
@@ -289,7 +295,6 @@ export default function Canvas({
                         ))
                     ) : (
                         <p
-                            onClick={onEditStart}
                             className="text-5xl text-center opacity-65 cursor-text"
                             style={{ color: textColor, textShadow }}>
                             {t.canvas.placeholder}

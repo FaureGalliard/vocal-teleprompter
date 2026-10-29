@@ -66,7 +66,7 @@ export const en = {
         settingsTitle: 'Settings',
         settings: 'How the text scrolls, the countdown, hiding from screen sharing, interface language and more.',
         canvasTitle: 'Edit or jump',
-        canvas: 'Click a word to edit the script right there. Ctrl+click it (or click while listening) to continue reading from that word.',
+        canvas: 'Click a word to continue reading from it. Click it again, or click between words, to edit the script right there.',
         menuTitle: 'Toolbar',
         menu: 'Open or close the toolbar here. Hold the button to drag the window.',
     },

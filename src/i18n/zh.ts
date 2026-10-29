@@ -68,7 +68,7 @@ export const zh: Messages = {
         settingsTitle: '设置',
         settings: '文字滚动方式、倒计时、共享屏幕时隐藏、界面语言等。',
         canvasTitle: '编辑或跳转',
-        canvas: '点击一个词即可在那里编辑稿子。Ctrl+点击（或在聆听时点击）则从这个词继续朗读。',
+        canvas: '点击一个词即可从这个词继续朗读。再点一次，或点击词与词之间，即可在那里编辑稿子。',
         menuTitle: '工具栏',
         menu: '在这里打开或关闭工具栏。按住按钮可以拖动窗口。',
     },

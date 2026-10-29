@@ -58,9 +58,8 @@ Invisible in Zoom, Meet and OBS, so only you can see it.
   mispronounced or skipped words don't throw it off.
 - 🌍 **9 languages**: Spanish, English, French, German, Italian, Portuguese, Japanese,
   Chinese and Korean. Scripts without spaces are split into words with `Intl.Segmenter`.
-- 🖱️ **Click any word to edit it** right there, or **Ctrl+click** it to continue reading
-  from that word after you jump ahead or repeat a passage. While listening, a plain click
-  also continues from there.
+- 🖱️ **Click any word to continue reading from it** after you jump ahead or repeat a
+  passage; click it again, or between words, to edit the script right there.
 - 🎙️ **Microphone picker** that picks up devices you plug in while the app is open.
 - 💾 **Remembers everything**: script, colors, opacity, size, language and microphone.
 - 🎨 **Appearance panel**: text size, background color and opacity, text color and

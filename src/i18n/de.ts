@@ -68,7 +68,7 @@ export const de: Messages = {
         settingsTitle: 'Einstellungen',
         settings: 'Wie der Text scrollt, Countdown, Ausblenden bei Bildschirmfreigabe, Sprache der Oberfläche und mehr.',
         canvasTitle: 'Bearbeiten oder springen',
-        canvas: 'Klicke auf ein Wort, um das Skript genau dort zu bearbeiten. Mit Strg+Klick (oder einem Klick beim Zuhören) liest du ab diesem Wort weiter.',
+        canvas: 'Klicke auf ein Wort, um ab dort weiterzulesen. Klicke es erneut an, oder klicke zwischen zwei Wörter, um das Skript genau dort zu bearbeiten.',
         menuTitle: 'Werkzeugleiste',
         menu: 'Öffne oder schließe die Leiste hier. Halte die Taste gedrückt, um das Fenster zu verschieben.',
     },

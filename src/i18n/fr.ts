@@ -68,7 +68,7 @@ export const fr: Messages = {
         settingsTitle: 'Paramètres',
         settings: "Défilement du texte, compte à rebours, masquage lors du partage d'écran, langue de l'interface et plus.",
         canvasTitle: 'Modifier ou sauter',
-        canvas: "Cliquez sur un mot pour modifier le texte à cet endroit. Ctrl+clic (ou un clic pendant l'écoute) reprend la lecture à partir de ce mot.",
+        canvas: 'Cliquez sur un mot pour reprendre la lecture à partir de lui. Cliquez-le à nouveau, ou cliquez entre deux mots, pour modifier le texte à cet endroit.',
         menuTitle: "Barre d'outils",
         menu: 'Ouvrez ou fermez la barre ici. Maintenez le bouton pour déplacer la fenêtre.',
     },

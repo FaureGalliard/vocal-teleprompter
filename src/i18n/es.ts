@@ -68,7 +68,7 @@ export const es: Messages = {
         settingsTitle: 'Ajustes',
         settings: 'Cómo avanza el texto, la cuenta atrás, ocultarlo al compartir pantalla, el idioma de la interfaz y más.',
         canvasTitle: 'Editar o saltar',
-        canvas: 'Haz click en una palabra para editar el guion justo ahí. Con Ctrl+click (o un click mientras escuchas) sigues leyendo desde esa palabra.',
+        canvas: 'Haz click en una palabra para seguir leyendo desde ella. Vuelve a hacer click en ella, o haz click entre palabras, para editar el guion justo ahí.',
         menuTitle: 'Barra de herramientas',
         menu: 'Abre o cierra la barra aquí. Mantén pulsado el botón para mover la ventana.',
     },

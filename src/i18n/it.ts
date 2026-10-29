@@ -68,7 +68,7 @@ export const it: Messages = {
         settingsTitle: 'Impostazioni',
         settings: "Come scorre il testo, conto alla rovescia, nascondere durante la condivisione dello schermo, lingua dell'interfaccia e altro.",
         canvasTitle: 'Modifica o salta',
-        canvas: "Fai clic su una parola per modificare il copione proprio lì. Con Ctrl+clic (o un clic durante l'ascolto) riprendi a leggere da quella parola.",
+        canvas: 'Fai clic su una parola per riprendere a leggere da lì. Fai di nuovo clic su di essa, o tra due parole, per modificare il copione proprio lì.',
         menuTitle: 'Barra degli strumenti',
         menu: 'Apri o chiudi la barra da qui. Tieni premuto il pulsante per spostare la finestra.',
     },
