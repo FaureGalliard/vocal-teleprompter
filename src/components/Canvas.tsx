@@ -1,7 +1,12 @@
 import { useRef, useEffect } from 'react'
 import type { Card, CardSegment } from '../lib/cards'
 import { FONTS, type Typography } from '../lib/typography'
-import { scrollTarget, type Scrolling } from '../lib/scrolling'
+import type { Scrolling } from '../lib/scrolling'
+import { useFollowWord } from '../hooks/useFollowWord'
+import ReadingLine from './ReadingLine'
+import type { Backdrop, Surface } from '../lib/backdrop'
+import { wordPaint } from '../lib/wordPaint'
+import { useWordColors } from '../hooks/useWordColors'
 
 // How many of the words already read keep nearly full strength
 const RECENT_WORDS = 15
@@ -29,7 +34,11 @@ interface CanvasProps {
     onEditEnd: () => void
     fontSize: number
     textColor: string
-    // Outline color that keeps text readable over an unknown backdrop
+    // What is behind a see-through window, to color each word so it reads
+    // well over it; null when the background is solid or it can't be seen
+    backdrop: Backdrop | null
+    surface: Surface
+    // Glow color for a see-through background while the backdrop is unknown
     textHalo?: string
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
@@ -39,16 +48,6 @@ interface CanvasProps {
     // Room kept free at the bottom for the toolbar, when it sits over the text
     bottomInset: number
     titleBarPosition: 'top' | 'bottom'
-}
-
-// A solid ring around every letter, thicker for bigger text, plus a soft
-// glow: the text stands out over any backdrop, however busy
-function outline(color: string, fontSize: number) {
-    const w = Math.max(1, Math.round(fontSize / 14))
-    const ring = [-1, 0, 1].flatMap((x) =>
-        [-1, 0, 1].filter((y) => x || y).map((y) => `${x * w}px ${y * w}px 0 ${color}`),
-    )
-    return [...ring, `0 0 ${w * 4}px ${color}`].join(', ')
 }
 
 export default function Canvas({
@@ -67,6 +66,8 @@ export default function Canvas({
     onEditEnd,
     fontSize,
     textColor,
+    backdrop,
+    surface,
     textHalo,
     readingLine,
     scrolling,
@@ -81,6 +82,10 @@ export default function Canvas({
     const activeWordRef = useRef<HTMLSpanElement>(null)
     // The word after a heard one, kept in view too
     const nextWordRef = useRef<HTMLSpanElement>(null)
+    const wordColors = useWordColors(containerRef, isEditing ? null : backdrop, surface, textColor)
+    // Each word's colors: picked from the backdrop, or the chosen color
+    const colorsOf = (word: number): [string, string] =>
+        wordColors?.get(word) ?? [textColor, textColor]
 
     useEffect(() => {
         const editor = editorRef.current
@@ -96,32 +101,21 @@ export default function Canvas({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing])
 
-    // Scroll the canvas itself, vertically only. scrollIntoView also moves
-    // every ancestor on both axes, which could push the script sideways out
-    // of view.
-    useEffect(() => {
-        const container = containerRef.current
-        const word = activeWordRef.current
-        if (!container || !word) return
-        const next = heard ? nextWordRef.current : null
-        const top = scrollTarget(
-            scrolling,
-            { top: container.scrollTop, height: container.clientHeight },
-            { top: word.offsetTop, height: word.offsetHeight },
-            fontSize * typography.lineHeight,
-            next ? { top: next.offsetTop, height: next.offsetHeight } : undefined,
-        )
-        if (top !== null) container.scrollTo({ top, left: 0, behavior: 'smooth' })
-    }, [currentWordIndex, heard, scrolling, fontSize, typography.lineHeight])
+    useFollowWord({
+        container: containerRef,
+        word: activeWordRef,
+        next: nextWordRef,
+        scrolling,
+        lineHeight: fontSize * typography.lineHeight,
+        position: `${currentWordIndex}:${heard}`,
+    })
 
     let prevWord = -1
     // Words just read stay almost as bright, so the speaker can glance back
     // (or find their place if the marker ran ahead); older ones fade, less so
     // over a see-through background, where faint text gets lost
-    const pastColor = (word: number) =>
-        currentWordIndex - word <= RECENT_WORDS
-            ? `${textColor}${textHalo ? 'f2' : 'd9'}`
-            : `${textColor}${textHalo ? 'b3' : '73'}`
+    const [recent, older] = backdrop || textHalo ? ['f2', 'b3'] : ['d9', '73']
+    const pastAlpha = (word: number) => (currentWordIndex - word <= RECENT_WORDS ? recent : older)
     // The reading line marks where fixed scrolling holds the current line
     const showReadingLine = readingLine && scrolling.mode === 'fixed'
     const readingLineAt = scrolling.anchor
@@ -135,7 +129,11 @@ export default function Canvas({
         marginLeft: 'auto',
         marginRight: 'auto',
     }
-    const textShadow = textHalo ? outline(textHalo, fontSize) : undefined
+    // Words colored from the backdrop need no glow; until it is seen, a soft one
+    const textShadow =
+        textHalo && !wordColors
+            ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
+            : undefined
     const renderSegment = (segment: CardSegment, s: number) => {
         const i = segment.word
         if (i === -1) {
@@ -146,7 +144,10 @@ export default function Canvas({
                     onClick={isListening ? undefined : () => onEditAt(segment.offset)}
                     className={isListening ? undefined : 'cursor-text'}
                     style={{
-                        color: prevWord < currentWordIndex ? pastColor(prevWord) : textColor,
+                        ...wordPaint(
+                            [colorsOf(prevWord)[1], colorsOf(prevWord)[1]],
+                            prevWord < currentWordIndex ? pastAlpha(prevWord) : '',
+                        ),
                         backgroundColor:
                             prevWord >= currentWordIndex && prevWord < currentWordIndex + 8
                                 ? `${textColor}10`
@@ -176,10 +177,13 @@ export default function Canvas({
                           ? nextWordRef
                           : null
                 }
+                data-word={i}
                 onClick={() => (editsOnClick ? onEditAt(segment.offset) : onContinueFrom(i))}
                 className={editsOnClick ? 'cursor-text' : 'cursor-pointer'}
                 style={{
-                    color: isCurrentWord ? '#1a1a1a' : isPast ? pastColor(i) : textColor,
+                    ...(isCurrentWord
+                        ? { color: '#1a1a1a' }
+                        : wordPaint(colorsOf(i), isPast ? pastAlpha(i) : '')),
                     backgroundColor: isCurrentWord
                         ? '#facc15'
                         : isNearby
@@ -327,18 +331,12 @@ export default function Canvas({
                 </p>
             )}
             {showReadingLine && !isEditing && (
-                <div
-                    className="fixed pointer-events-none rounded-md"
-                    style={{
-                        left: 12,
-                        right: 12,
-                        top: `calc(${top}px + (var(--frame-h) - ${top + bottom}px) * ${readingLineAt})`,
-                        height: fontSize * typography.lineHeight + 8,
-                        transform: 'translateY(-50%)',
-                        backgroundColor: `${textColor}14`,
-                        borderTop: `1px solid ${textColor}30`,
-                        borderBottom: `1px solid ${textColor}30`,
-                    }}
+                <ReadingLine
+                    top={top}
+                    bottom={bottom}
+                    at={readingLineAt}
+                    height={fontSize * typography.lineHeight + 8}
+                    color={textColor}
                 />
             )}
         </>

@@ -23,14 +23,11 @@ import { useAssistantBridge } from './hooks/useAssistantBridge'
 import { useWindowKeys } from './hooks/useWindowKeys'
 import { useWindowBehavior } from './hooks/useWindowBehavior'
 import { useTour } from './hooks/useTour'
+import { useTextColors } from './hooks/useTextColors'
 import { clearPersistentState } from './hooks/usePersistentState'
 import { LANGUAGES } from './constants/languages'
 import { I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
-import { bestOutline, ensureContrast } from './lib/contrast'
 import { readClipboard, readPickedFile } from './lib/scriptFiles'
-
-// Below this background opacity the backdrop shows through enough to need a halo
-const HALO_BELOW_OPACITY = 0.85
 
 function App() {
     const settings = useSettings()
@@ -151,16 +148,8 @@ function App() {
         window.addEventListener('touchend', onUp)
     }
 
-    // With auto contrast the chosen color is nudged until it reads well on the
-    // background, and once the background turns see-through (so whatever is
-    // behind the window shows) the text gets a halo to stay legible on it
-    const displayTextColor = settings.autoContrast
-        ? ensureContrast(settings.textColor, bgColor)
-        : settings.textColor
-    const textHalo =
-        settings.autoContrast && bgOpacity < HALO_BELOW_OPACITY
-            ? bestOutline(displayTextColor)
-            : undefined
+    const colors = useTextColors(settings)
+    const displayTextColor = colors.display
 
     const titleBarRoom = titleBarVisible ? titleBarHeight : 0
     const toolbarTopOffset = titleBarPosition === 'top' ? titleBarRoom : 0
@@ -222,7 +211,9 @@ function App() {
                         onEditEnd={() => setIsEditing(false)}
                         fontSize={settings.fontSize}
                         textColor={displayTextColor}
-                        textHalo={textHalo}
+                        backdrop={colors.backdrop}
+                        surface={colors.surface}
+                        textHalo={colors.halo}
                         readingLine={settings.readingLine}
                         scrolling={settings.scrolling}
                         typography={settings.typography}
