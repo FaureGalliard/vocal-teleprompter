@@ -97,9 +97,11 @@ export function wordColors(
     textColor: string,
     shown: string,
 ): [string, string] | null {
-    const half = { ...box, width: box.width / 2 }
+    // Read field by field: a DOMRect keeps them as getters, which spreading drops
+    const { left: x, top, width, height } = box
+    const half = { left: x, top, width: width / 2, height }
     const left = behind(backdrop, surface, half, scale, shown)
-    const right = behind(backdrop, surface, { ...half, left: box.left + half.width }, scale, shown)
+    const right = behind(backdrop, surface, { ...half, left: x + width / 2 }, scale, shown)
     if (!left && !right) return null
     const l = ensureContrast(textColor, left ?? right!)
     const r = ensureContrast(textColor, right ?? left!)

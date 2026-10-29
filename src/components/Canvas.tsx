@@ -38,8 +38,6 @@ interface CanvasProps {
     // well over it; null when the background is solid or it can't be seen
     backdrop: Backdrop | null
     surface: Surface
-    // Glow color for a see-through background while the backdrop is unknown
-    textHalo?: string
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
     scrolling: Scrolling
@@ -68,7 +66,6 @@ export default function Canvas({
     textColor,
     backdrop,
     surface,
-    textHalo,
     readingLine,
     scrolling,
     typography,
@@ -114,7 +111,7 @@ export default function Canvas({
     // Words just read stay almost as bright, so the speaker can glance back
     // (or find their place if the marker ran ahead); older ones fade, less so
     // over a see-through background, where faint text gets lost
-    const [recent, older] = backdrop || textHalo ? ['f2', 'b3'] : ['d9', '73']
+    const [recent, older] = backdrop ? ['f2', 'b3'] : ['d9', '73']
     const pastAlpha = (word: number) => (currentWordIndex - word <= RECENT_WORDS ? recent : older)
     // The reading line marks where fixed scrolling holds the current line
     const showReadingLine = readingLine && scrolling.mode === 'fixed'
@@ -129,11 +126,6 @@ export default function Canvas({
         marginLeft: 'auto',
         marginRight: 'auto',
     }
-    // Words colored from the backdrop need no glow; until it is seen, a soft one
-    const textShadow =
-        textHalo && !wordColors
-            ? `0 0 2px ${textHalo}, 0 0 4px ${textHalo}, 0 0 1px ${textHalo}`
-            : undefined
     const renderSegment = (segment: CardSegment, s: number) => {
         const i = segment.word
         if (i === -1) {
@@ -190,8 +182,6 @@ export default function Canvas({
                           ? `${textColor}10`
                           : 'transparent',
                     borderRadius: isCurrentWord ? '2px' : undefined,
-                    // The highlight already has its own background
-                    textShadow: isCurrentWord ? 'none' : undefined,
                     padding: isCurrentWord ? '0 2px' : undefined,
                     textDecoration: isNextWord ? 'underline' : undefined,
                     textDecorationThickness: isNextWord ? '2px' : undefined,
@@ -270,7 +260,6 @@ export default function Canvas({
                                         fontSize: `${fontSize}px`,
                                         color: textColor,
                                         caretColor: textColor,
-                                        textShadow,
                                         // Grow with the text so the canvas scrolls, not the field
                                         fieldSizing: 'content',
                                     } as React.CSSProperties
@@ -302,7 +291,6 @@ export default function Canvas({
                                         whiteSpace: 'pre-wrap',
                                         // Long unbroken strings (URLs) wrap instead of widening the line
                                         overflowWrap: 'anywhere',
-                                        textShadow,
                                     }}>
                                     {card.segments.map(renderSegment)}
                                 </p>
@@ -311,7 +299,7 @@ export default function Canvas({
                     ) : (
                         <p
                             className="text-5xl text-center opacity-65 cursor-text"
-                            style={{ color: textColor, textShadow }}>
+                            style={{ color: textColor }}>
                             {t.canvas.placeholder}
                         </p>
                     )}

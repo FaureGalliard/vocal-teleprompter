@@ -44,6 +44,25 @@ describe('wordColors', () => {
         expect(wordColors(black, hidden, box, 1, blue, blue)).toEqual([blue, blue])
     })
 
+    it('reads a DOMRect-like box, whose fields are getters', () => {
+        const white = backdrop(() => [255, 255, 255])
+        class Rect {
+            get left() {
+                return 0
+            }
+            get top() {
+                return 0
+            }
+            get width() {
+                return 20
+            }
+            get height() {
+                return 10
+            }
+        }
+        expect(wordColors(white, hidden, new Rect(), 1, blue, blue)).not.toBeNull()
+    })
+
     it('splits a word that straddles a light and a dark area', () => {
         const split = backdrop((c) => (c < 10 ? [0, 0, 0] : [255, 255, 255]))
         const [left, right] = wordColors(split, hidden, box, 1, blue, blue)!

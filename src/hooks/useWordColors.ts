@@ -28,7 +28,8 @@ export function useWordColors(
         const next: WordColors = new Map()
         let changed = false
         for (const span of root.querySelectorAll<HTMLElement>('[data-word]')) {
-            const rect = span.getBoundingClientRect()
+            const { left, top, width, height } = span.getBoundingClientRect()
+            const rect = { left, top, width, height, bottom: top + height }
             // Only the words in view
             if (rect.bottom < view.top || rect.top > view.bottom) continue
             const word = Number(span.dataset.word)

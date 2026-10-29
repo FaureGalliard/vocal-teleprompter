@@ -213,7 +213,6 @@ function App() {
                         textColor={displayTextColor}
                         backdrop={colors.backdrop}
                         surface={colors.surface}
-                        textHalo={colors.halo}
                         readingLine={settings.readingLine}
                         scrolling={settings.scrolling}
                         typography={settings.typography}
