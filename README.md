@@ -274,6 +274,17 @@ $env:VOSK_MODELS_DIR = "$PWD\.speech-models"
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+**Code style**: Prettier formats the frontend and rustfmt the Rust code; ESLint checks the
+hook rules and keeps every file under 300 lines of code, and clippy lints the Rust side.
+
+```bash
+pnpm format
+```
+
+```bash
+pnpm lint
+```
+
 CI runs all of them on every push, and a release is only built when they pass.
 
 **Stack**: React 19 + TypeScript, Vite, Tailwind CSS v4, Framer Motion, Tauri 2 (Rust), and
