@@ -29,7 +29,7 @@ level meter to test it.
 color, automatic contrast, and typography (font, weight, line spacing, text \
 width, alignment).
 - Settings (gear) holds the rest.
-- The ... menu: Edit script (write in place; the same button, now a check \
+- Script menu (document icon): Edit script (write in place; the same button, now a check \
 mark, or Esc finishes), Paste from clipboard, Import a .txt file, Clear \
 script, and Show tutorial.
 

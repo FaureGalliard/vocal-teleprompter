@@ -5,7 +5,7 @@ import {
     CircleHelp,
     ClipboardPaste,
     Check as Selected,
-    Ellipsis,
+    FileText,
     FileUp,
     Mic,
     Pause,
@@ -103,7 +103,7 @@ export default function Toolbar(props: ToolbarProps) {
 }
 
 // What is used while reading stays on the bar; the script actions, used
-// before, live in the ⋯ menu with their names spelled out
+// before, live in the script menu with their names spelled out
 function ToolbarBar({
     isAdjusting,
     placement,
@@ -328,7 +328,7 @@ function ToolbarBar({
                     onClick={isEditing ? onToggleEdit : () => setMoreOpen((v) => !v)}
                     aria-label={isEditing ? t.toolbar.finishEditing : t.toolbar.more}
                     className={`${iconBtn} ${moreOpen || isEditing ? primary : ghost}`}>
-                    {isEditing ? <Check size={ICON} /> : <Ellipsis size={ICON} />}
+                    {isEditing ? <Check size={ICON} /> : <FileText size={ICON} />}
                 </button>
                 <BarTooltip
                     label={isEditing ? t.toolbar.finishEditing : t.toolbar.more}
