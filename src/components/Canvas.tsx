@@ -4,7 +4,7 @@ import { FONTS, type Typography } from '../lib/typography'
 import type { Scrolling } from '../lib/scrolling'
 import { useFollowWord } from '../hooks/useFollowWord'
 import ReadingLine from './ReadingLine'
-import { paintFrom } from '../lib/wordPaint'
+import { PAINT_FADE, paintFrom } from '../lib/wordPaint'
 import { useBackdropPaint } from '../hooks/useBackdropPaint'
 import ScriptEditor from './ScriptEditor'
 import PaintedBorder from './PaintedBorder'
@@ -194,7 +194,7 @@ export default function Canvas({
                     textDecorationColor: paint ? '#facc15' : undefined,
                     textDecorationThickness: isNextWord ? '2px' : undefined,
                     textUnderlineOffset: isNextWord ? '0.25em' : undefined,
-                    transition: 'color 0.2s ease, background-color 0.2s ease',
+                    transition: `color 0.2s ease, background-color 0.2s ease, ${PAINT_FADE}`,
                 }}>
                 {segment.text}
             </span>

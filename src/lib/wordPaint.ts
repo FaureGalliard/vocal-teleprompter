@@ -1,6 +1,9 @@
 import type { CSSProperties } from 'react'
 import type { BackdropPaint } from '../hooks/useBackdropPaint'
 
+// New colors blend in rather than switch at once
+export const PAINT_FADE = 'background-image 0.3s ease'
+
 // Paints a piece of text from the backdrop's color map, lined up with where
 // it sits in the window, so every letter takes the color readable over what
 // is right behind it. `fade` (0-1) dims words already read. Null when the
@@ -21,5 +24,6 @@ export function paintFrom(
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
         opacity: fade,
+        transition: PAINT_FADE,
     }
 }
