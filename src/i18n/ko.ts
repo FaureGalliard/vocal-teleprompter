@@ -74,7 +74,6 @@ export const ko: Messages = {
     },
 
     cards: {
-        label: (n: number) => `슬라이드 ${n}`,
         position: (n: number, total: number) => `슬라이드 ${n} / ${total}`,
         previous: '이전 슬라이드',
         next: '다음 슬라이드',

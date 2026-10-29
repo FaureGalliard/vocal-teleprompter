@@ -74,7 +74,6 @@ export const es: Messages = {
     },
 
     cards: {
-        label: (n: number) => `Diapositiva ${n}`,
         position: (n: number, total: number) => `Diapositiva ${n} / ${total}`,
         previous: 'Diapositiva anterior',
         next: 'Diapositiva siguiente',

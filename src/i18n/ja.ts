@@ -74,7 +74,6 @@ export const ja: Messages = {
     },
 
     cards: {
-        label: (n: number) => `スライド ${n}`,
         position: (n: number, total: number) => `スライド ${n} / ${total}`,
         previous: '前のスライド',
         next: '次のスライド',

@@ -252,19 +252,16 @@ export default function Canvas({
                         cards.map((card, c) => (
                             <section
                                 key={c}
-                                className={cards.length > 1 ? 'mb-10' : undefined}
+                                // A thin line between slides, which the status row
+                                // already numbers, so the next one starts close by
+                                className={c < cards.length - 1 ? 'pb-3 mb-3' : undefined}
                                 style={{
+                                    borderBottom:
+                                        c < cards.length - 1 ? `1px dashed ${textColor}40` : undefined,
                                     // Other slides fade back so the current one stands out
                                     opacity: cards.length > 1 && c !== currentCard ? 0.45 : 1,
                                     transition: 'opacity 0.3s ease',
                                 }}>
-                                {cards.length > 1 && (
-                                    <div
-                                        className="text-center text-[10px] font-medium uppercase tracking-widest mb-2"
-                                        style={{ color: `${textColor}80` }}>
-                                        {t.cards.label(c + 1)}
-                                    </div>
-                                )}
                                 <p
                                     // Clicking words moves the position; don't select text too
                                 className="select-none"

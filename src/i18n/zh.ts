@@ -74,7 +74,6 @@ export const zh: Messages = {
     },
 
     cards: {
-        label: (n: number) => `幻灯片 ${n}`,
         position: (n: number, total: number) => `幻灯片 ${n} / ${total}`,
         previous: '上一张幻灯片',
         next: '下一张幻灯片',

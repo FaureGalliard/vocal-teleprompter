@@ -74,7 +74,6 @@ export const it: Messages = {
     },
 
     cards: {
-        label: (n: number) => `Slide ${n}`,
         position: (n: number, total: number) => `Slide ${n} / ${total}`,
         previous: 'Slide precedente',
         next: 'Slide successiva',

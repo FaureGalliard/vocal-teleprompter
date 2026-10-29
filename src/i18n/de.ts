@@ -74,7 +74,6 @@ export const de: Messages = {
     },
 
     cards: {
-        label: (n: number) => `Folie ${n}`,
         position: (n: number, total: number) => `Folie ${n} / ${total}`,
         previous: 'Vorherige Folie',
         next: 'Nächste Folie',

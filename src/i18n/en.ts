@@ -72,7 +72,6 @@ export const en = {
     },
 
     cards: {
-        label: (n: number) => `Slide ${n}`,
         position: (n: number, total: number) => `Slide ${n} / ${total}`,
         previous: 'Previous slide',
         next: 'Next slide',
