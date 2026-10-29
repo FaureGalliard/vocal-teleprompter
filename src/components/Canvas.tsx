@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import type { Card, CardSegment } from '../lib/cards'
 import { FONTS, type Typography } from '../lib/typography'
 import type { Scrolling } from '../lib/scrolling'
@@ -7,6 +7,7 @@ import ReadingLine from './ReadingLine'
 import type { Seen } from '../hooks/useBackdropView'
 import { paintFrom } from '../lib/wordPaint'
 import { useBackdropPaint } from '../hooks/useBackdropPaint'
+import ScriptEditor from './ScriptEditor'
 
 // How many of the words already read keep nearly full strength
 const RECENT_WORDS = 15
@@ -77,7 +78,14 @@ export default function Canvas({
     const activeWordRef = useRef<HTMLSpanElement>(null)
     // The word after a heard one, kept in view too
     const nextWordRef = useRef<HTMLSpanElement>(null)
-    const paint = useBackdropPaint(containerRef, isEditing ? null : seen, textColor)
+    // While editing, the letters are painted again once typing pauses
+    const [typed, setTyped] = useState(content)
+    useEffect(() => {
+        if (!isEditing) return
+        const timer = setTimeout(() => setTyped(content), 150)
+        return () => clearTimeout(timer)
+    }, [isEditing, content])
+    const paint = useBackdropPaint(containerRef, seen, textColor, isEditing ? typed : null)
 
     useEffect(() => {
         const editor = editorRef.current
@@ -242,29 +250,16 @@ export default function Canvas({
                             : undefined
                     }>
                     {isEditing ? (
-                        <>
-                            <textarea
-                                ref={editorRef}
-                                value={content}
-                                onChange={(e) => onContentChange(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Escape') onEditEnd()
-                                }}
-                                placeholder={t.canvas.editPlaceholder}
-                                spellCheck={false}
-                                className="block w-full min-h-[80%] bg-transparent resize-none outline-none placeholder:opacity-40"
-                                style={
-                                    {
-                                        ...textStyle,
-                                        fontSize: `${fontSize}px`,
-                                        color: textColor,
-                                        caretColor: textColor,
-                                        // Grow with the text so the canvas scrolls, not the field
-                                        fieldSizing: 'content',
-                                    } as React.CSSProperties
-                                }
-                            />
-                        </>
+                        <ScriptEditor
+                            editorRef={editorRef}
+                            content={content}
+                            onChange={onContentChange}
+                            onDone={onEditEnd}
+                            placeholder={t.canvas.editPlaceholder}
+                            textStyle={{ ...textStyle, fontSize: `${fontSize}px` }}
+                            color={textColor}
+                            look={look}
+                        />
                     ) : cards.some((c) => c.segments.length > 0) ? (
                         cards.map((card, c) => (
                             <section

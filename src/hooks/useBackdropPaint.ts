@@ -103,6 +103,8 @@ export function useBackdropPaint(
     seen: Seen | null,
     // Used over gray areas, which have no hue to work from
     textColor: string,
+    // Changes when the text is laid out anew (typing), to paint it again
+    layout: unknown,
 ): BackdropPaint | null {
     const [paint, setPaint] = useState<BackdropPaint | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -137,7 +139,7 @@ export function useBackdropPaint(
         })
         // A new capture is what triggers a new look
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [seen, scrolled])
+    }, [seen, scrolled, layout])
 
     // Text moves while scrolling: once it settles, paint it where it now is
     useEffect(() => {
