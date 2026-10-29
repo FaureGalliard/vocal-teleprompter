@@ -7,7 +7,7 @@ import { paintLetters, type Seen } from '../lib/letterPaint'
 import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
 // Softening at 100%, in samples
-const MAX_BLUR = 16
+const MAX_BLUR = 8
 // Average difference per channel below which a look counts as the same as
 // the last one (screen noise, a blinking caret elsewhere)
 const SAME_BELOW = 1.5
