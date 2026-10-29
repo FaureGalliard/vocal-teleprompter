@@ -1,0 +1,10 @@
+# Text files are stored and checked out with LF on every platform, so
+# Windows checkouts don't turn them into CRLF (and diffs stay clean)
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.mp4 binary
+*.wav binary
