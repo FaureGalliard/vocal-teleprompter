@@ -154,6 +154,12 @@ pub struct Resampler {
 
 pub const TARGET_RATE: u32 = 16_000;
 
+impl Default for Resampler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Resampler {
     pub fn new() -> Self {
         Self {
@@ -197,6 +203,12 @@ const TARGET_LEVEL: f32 = 0.1;
 const MAX_GAIN: f32 = 8.0;
 // Below this the chunk is background noise, not speech
 const NOISE_FLOOR: f32 = 0.004;
+
+impl Default for AutoGain {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl AutoGain {
     pub fn new() -> Self {
