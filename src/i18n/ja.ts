@@ -153,6 +153,8 @@ export const ja: Messages = {
     appearance: {
         title: '表示',
         opacity: '背景の不透明度',
+        soften: '背後をぼかす',
+        softenHint: '背景から透けて見えるものをすりガラスのようにぼかし、文字を読みやすくします',
     },
 
     mic: {

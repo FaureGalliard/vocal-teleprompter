@@ -154,6 +154,9 @@ export const de: Messages = {
     appearance: {
         title: 'Darstellung',
         opacity: 'Deckkraft des Hintergrunds',
+        soften: 'Hintergrund weichzeichnen',
+        softenHint:
+            'Macht unscharf, was durch den Hintergrund scheint, wie Milchglas, damit der Text hervortritt',
     },
 
     mic: {

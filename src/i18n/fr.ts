@@ -154,6 +154,9 @@ export const fr: Messages = {
     appearance: {
         title: 'Apparence',
         opacity: 'Opacité du fond',
+        soften: "Adoucir l'arrière-plan",
+        softenHint:
+            'Floute ce qui se voit à travers le fond, comme du verre dépoli, pour que le texte ressorte',
     },
 
     mic: {

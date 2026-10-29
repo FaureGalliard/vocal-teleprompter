@@ -154,6 +154,9 @@ export const es: Messages = {
     appearance: {
         title: 'Apariencia',
         opacity: 'Opacidad del fondo',
+        soften: 'Suavizar lo de detrás',
+        softenHint:
+            'Desenfoca lo que se ve a través del fondo, como un cristal esmerilado, para que el texto destaque',
     },
 
     mic: {

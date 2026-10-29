@@ -152,6 +152,9 @@ export const en = {
     appearance: {
         title: 'Appearance',
         opacity: 'Background opacity',
+        soften: 'Soften what is behind',
+        softenHint:
+            'Blurs what shows through the background, like frosted glass, so the text stands out',
     },
 
     mic: {

@@ -154,6 +154,9 @@ export const it: Messages = {
     appearance: {
         title: 'Aspetto',
         opacity: 'Opacità dello sfondo',
+        soften: 'Ammorbidisci lo sfondo',
+        softenHint:
+            'Sfoca ciò che si vede attraverso lo sfondo, come vetro smerigliato, perché il testo risalti',
     },
 
     mic: {

@@ -153,6 +153,8 @@ export const ko: Messages = {
     appearance: {
         title: '모양',
         opacity: '배경 불투명도',
+        soften: '뒤쪽 흐리게',
+        softenHint: '배경 너머로 보이는 것을 반투명 유리처럼 흐리게 해 글자가 잘 보이게 합니다',
     },
 
     mic: {

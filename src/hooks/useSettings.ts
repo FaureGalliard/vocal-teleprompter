@@ -24,6 +24,8 @@ export function useSettings() {
     const [selectedMic, setSelectedMic] = usePersistentState<string | null>('microphoneId', null)
 
     const [bgOpacity, setBgOpacity] = usePersistentState('bgOpacity', 0.9)
+    // How much what is behind a see-through window is blurred, 0-100
+    const [backdropSoften, setBackdropSoften] = usePersistentState('backdropSoften', 40)
     const [bgColor, setBgColor] = usePersistentState('bgColor', '#0a0000')
     const [textColor, setTextColor] = usePersistentState('textColor', '#7698fe')
     const [autoContrast, setAutoContrast] = usePersistentState('autoContrast', true)
@@ -81,6 +83,8 @@ export function useSettings() {
         setSelectedMic,
         bgOpacity,
         setBgOpacity,
+        backdropSoften,
+        setBackdropSoften,
         bgColor,
         setBgColor,
         textColor,

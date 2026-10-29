@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import {
-    blur,
-    colorMap,
-    estimateBackground,
-    settle,
-    type Background,
-    type Backdrop,
-    type Surface,
-} from '../lib/backdrop'
+import { colorMap } from '../lib/backdrop'
+import type { Seen } from './useBackdropView'
 
 // A picture of the text color for every point of the window, and where each
 // piece of text sits on it (by its `data-at` offset), so the text can be
@@ -36,31 +29,22 @@ function measure(root: HTMLElement) {
 // color for every point of it
 export function useBackdropPaint(
     container: RefObject<HTMLElement | null>,
-    backdrop: Backdrop | null,
-    surface: Surface,
+    seen: Seen | null,
     // Used over gray areas, which have no hue to work from
     textColor: string,
 ): BackdropPaint | null {
     const [paint, setPaint] = useState<BackdropPaint | null>(null)
-    const backgroundRef = useRef<Background | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
     useEffect(() => {
         const root = container.current
-        if (!backdrop || !root) {
-            backgroundRef.current = null
+        if (!seen || !root) {
             setPaint(null)
             return
         }
-        const { cols, rows, step } = backdrop
+        const { cols, rows, step } = seen
         const scale = window.devicePixelRatio
         const pieces = measure(root)
-
-        const background = settle(
-            backgroundRef.current,
-            blur(estimateBackground(backdrop, surface), cols, rows),
-        )
-        backgroundRef.current = background
 
         const canvas = (canvasRef.current ??= document.createElement('canvas'))
         canvas.width = cols
@@ -68,7 +52,7 @@ export function useBackdropPaint(
         canvas
             .getContext('2d')!
             .putImageData(
-                new ImageData(colorMap(background, cols, rows, textColor), cols, rows),
+                new ImageData(colorMap(seen.rgb, cols, rows, textColor), cols, rows),
                 0,
                 0,
             )
@@ -80,7 +64,7 @@ export function useBackdropPaint(
         })
         // A new capture is what triggers a new look
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [backdrop])
+    }, [seen])
 
     // Text moves while scrolling: keep each piece lined up with the map
     useEffect(() => {

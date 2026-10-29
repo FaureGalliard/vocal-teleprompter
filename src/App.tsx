@@ -179,7 +179,8 @@ function App() {
                     expansion={expansion}
                     background={bgColor}
                     opacity={bgOpacity}
-                    outline={displayTextColor}>
+                    outline={displayTextColor}
+                    glass={colors.glass}>
                     {titleBarVisible && (
                         <TitleBar
                             ref={titleBarRef}
@@ -211,8 +212,7 @@ function App() {
                         onEditEnd={() => setIsEditing(false)}
                         fontSize={settings.fontSize}
                         textColor={displayTextColor}
-                        backdrop={colors.backdrop}
-                        surface={colors.surface}
+                        seen={colors.seen}
                         readingLine={settings.readingLine}
                         scrolling={settings.scrolling}
                         typography={settings.typography}

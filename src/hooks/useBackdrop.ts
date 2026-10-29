@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop } from '../lib/backdrop'
 
 // Physical pixels between samples: plenty for the color behind a word
@@ -8,6 +9,8 @@ const EVERY_MS = 300
 // While the window shows in screen captures it is hidden for each look, so
 // look less often: a recording loses it for a moment each time
 const SHOWN_EVERY_MS = 800
+// After the window moves
+const MOVED_MS = 60
 
 // What is behind the window, refreshed a few times a second while `enabled`
 // (a see-through background), so the text can keep reading well over a
@@ -22,8 +25,17 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             return
         }
         let stopped = false
+        let busy = false
+        // Moved while a look was underway: take the next one soon
+        let soon = false
         let timer: ReturnType<typeof setTimeout>
+        const next = (ms: number) => {
+            clearTimeout(timer)
+            if (!stopped) timer = setTimeout(capture, ms)
+        }
         const capture = async () => {
+            busy = true
+            soon = false
             try {
                 const buffer = await invoke<ArrayBuffer>('capture_backdrop', { step: STEP, shown })
                 if (!stopped) setBackdrop(parseBackdrop(buffer, STEP))
@@ -31,12 +43,19 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
                 // Off screen or unavailable: the text keeps its last colors
                 console.warn('Could not see behind the window:', e)
             }
-            if (!stopped) timer = setTimeout(capture, shown ? SHOWN_EVERY_MS : EVERY_MS)
+            busy = false
+            next(soon ? MOVED_MS : shown ? SHOWN_EVERY_MS : EVERY_MS)
         }
         capture()
+        // Moved: look again soon, so the glass and colors keep up with it
+        const moved = getCurrentWindow().onMoved(() => {
+            if (busy) soon = true
+            else next(MOVED_MS)
+        })
         return () => {
             stopped = true
             clearTimeout(timer)
+            moved.then((off) => off())
         }
     }, [enabled, shown])
 

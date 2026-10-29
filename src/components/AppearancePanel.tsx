@@ -136,6 +136,27 @@ export default function AppearancePanel({ settings, onAdjustStart }: AppearanceP
                     </div>
                 </div>
 
+                <label
+                    className="flex flex-col gap-1.5"
+                    title={t.appearance.softenHint}>
+                    <span className={label}>{t.appearance.soften}</span>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={settings.backdropSoften}
+                            onMouseDown={onAdjustStart}
+                            onChange={(e) => settings.setBackdropSoften(Number(e.target.value))}
+                            className="flex-1 accent-[#445ade]"
+                        />
+                        <span className="w-8 text-right text-white/50 tabular-nums">
+                            {settings.backdropSoften}%
+                        </span>
+                    </div>
+                </label>
+
                 <div
                     className="flex flex-col gap-1.5"
                     onMouseDown={(e) => {

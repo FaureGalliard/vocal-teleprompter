@@ -146,6 +146,8 @@ export const zh: Messages = {
     appearance: {
         title: '外观',
         opacity: '背景不透明度',
+        soften: '柔化背后内容',
+        softenHint: '像磨砂玻璃一样模糊透过背景看到的内容，让文字更突出',
     },
 
     mic: {
