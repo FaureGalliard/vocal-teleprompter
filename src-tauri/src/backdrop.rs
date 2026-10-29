@@ -1,42 +1,56 @@
 //! What the screen shows behind the window, so the prompter can soften it and
 //! pick a readable color for each letter against it.
 //!
-//! The whole monitor the window is on is captured, so the window can be moved
-//! over it without looking again. The window is left out of the capture, so
-//! what comes back is exactly what is behind it. When it isn't hidden from
-//! screen capture anyway, it is hidden just for the frame of the capture.
+//! Hidden from screen capture, the window is left out of a capture of the
+//! whole monitor it is on, so what comes back is exactly what is behind it,
+//! and the window can be moved over it without looking again. Otherwise the
+//! windows behind it paint themselves instead (see `behind`), so the window
+//! never has to step out of the way and recordings never see it blink.
 
 use tauri::ipc::Response;
 use tauri::WebviewWindow;
 use xcap::Monitor;
 
-/// Captures the monitor the window is on and returns every `step`-th pixel
-/// of it, as `[cols: u32][rows: u32][x: i32][y: i32][r g b ...]` (little
-/// endian; x and y place the monitor on the desktop, in physical pixels).
-/// Picking single pixels rather than averaging keeps letters and background
-/// apart. Async, so it runs off the main thread, which is busy while the
-/// window is dragged. `shown` says the window is normally visible to screen
-/// captures.
+/// Returns every `step`-th pixel of what is behind the window, as
+/// `[cols: u32][rows: u32][x: i32][y: i32][r g b ...]` (little endian; x and
+/// y place the area on the desktop, in physical pixels): the whole monitor
+/// when hidden from capture, the window's own area when `shown` in screen
+/// captures. Picking single pixels rather than averaging keeps letters and
+/// background apart. Async, so it runs off the main thread, which is busy
+/// while the window is dragged.
 #[tauri::command]
 pub async fn capture_backdrop(
     window: WebviewWindow,
     step: u32,
     shown: bool,
 ) -> Result<Response, String> {
-    if shown {
-        window
-            .set_content_protected(true)
-            .map_err(|e| e.to_string())?;
-        // One frame for the compositor to take the window out
-        std::thread::sleep(std::time::Duration::from_millis(16));
+    let step = step.max(1);
+    if !shown {
+        return capture(&window, step);
     }
-    let captured = capture(&window, step.max(1));
-    if shown {
-        window
-            .set_content_protected(false)
-            .map_err(|e| e.to_string())?;
+    let behind = crate::behind::draw(&window)?;
+    let (cols, rows) = (
+        (behind.width as u32).div_ceil(step),
+        (behind.height as u32).div_ceil(step),
+    );
+    let mut out = header(cols, rows, behind.x, behind.y);
+    for row in 0..rows {
+        for col in 0..cols {
+            let i = ((row * step * behind.width as u32 + col * step) * 4) as usize;
+            // BGRA to RGB
+            out.extend_from_slice(&[behind.bgra[i + 2], behind.bgra[i + 1], behind.bgra[i]]);
+        }
     }
-    captured
+    Ok(Response::new(out))
+}
+
+fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
+    let mut out = Vec::with_capacity(16 + (cols * rows * 3) as usize);
+    out.extend_from_slice(&cols.to_le_bytes());
+    out.extend_from_slice(&rows.to_le_bytes());
+    out.extend_from_slice(&x.to_le_bytes());
+    out.extend_from_slice(&y.to_le_bytes());
+    out
 }
 
 fn capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
@@ -49,11 +63,7 @@ fn capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
     let image = monitor.capture_image().map_err(|e| e.to_string())?;
 
     let (cols, rows) = (image.width().div_ceil(step), image.height().div_ceil(step));
-    let mut out = Vec::with_capacity(16 + (cols * rows * 3) as usize);
-    out.extend_from_slice(&cols.to_le_bytes());
-    out.extend_from_slice(&rows.to_le_bytes());
-    out.extend_from_slice(&x.to_le_bytes());
-    out.extend_from_slice(&y.to_le_bytes());
+    let mut out = header(cols, rows, x, y);
     for row in 0..rows {
         for col in 0..cols {
             out.extend_from_slice(&image.get_pixel(col * step, row * step).0[..3]);

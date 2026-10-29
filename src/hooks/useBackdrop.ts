@@ -7,10 +7,9 @@ import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 // Physical pixels between samples: plenty for the color behind a letter
 const STEP = 2
 const EVERY_MS = 300
-// While the window shows in screen captures it steps out of each one, which
-// a recording can catch, so it looks rarely on its own; clicks and keys
-// still bring a look right away
-const SHOWN_EVERY_MS = 3000
+// While the window shows in screen captures the windows behind it paint
+// themselves for each look, which costs them some work: look a bit less often
+const SHOWN_EVERY_MS = 500
 // The window counts as moving until it has held still this long
 const STILL_MS = 150
 // After something changed behind the window: it may still be changing (a
@@ -21,11 +20,12 @@ const CHANGED_MS = 120
 const INPUT_MS = 80
 
 // What is behind the window, while `enabled` (a see-through background).
-// Each look captures the whole monitor, so moving or resizing the window
-// needs no new look: `place` says where it now is, to cut that part out.
-// Looks come at a steady pace, right after a click or a key, and closely
-// after a change (`hurry`). `shown`: the window is visible to screen
-// captures, so it steps out of the way for each look.
+// Hidden from screen capture, each look covers the whole monitor, so moving
+// or resizing the window needs no new look: `place` says where it now is, to
+// cut that part out. `shown` in screen captures, each look covers just the
+// window, painted by the windows behind it so the prompter never blinks in a
+// recording, and a move brings a new one. Looks come at a steady pace, right
+// after a click or a key, and closely after a change (`hurry`).
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
     const [place, setPlace] = useState<Place | null>(null)

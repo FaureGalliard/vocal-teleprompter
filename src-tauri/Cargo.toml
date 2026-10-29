@@ -41,9 +41,13 @@ zip = { version = "4", default-features = false, features = ["deflate"] }
 xcap = "0.9"
 
 [target.'cfg(windows)'.dependencies]
-# When the user last clicked, typed or scrolled, to look behind the window right then
+# When the user last clicked, typed or scrolled, to look behind the window right then,
+# and the windows behind it painting themselves, so recordings never see it blink
 windows = { version = "0.62", features = [
     "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_Xps",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
 ] }
