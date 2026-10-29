@@ -1,4 +1,5 @@
 mod backdrop;
+mod input;
 mod mcp;
 pub mod speech;
 
@@ -68,6 +69,7 @@ pub fn run() {
             mcp::clients::mcp_config_snippet
         ])
         .setup(|app| {
+            input::watch(app.handle().clone());
             if let Err(e) = mcp::bridge::start(app.handle()) {
                 eprintln!("AI connector bridge unavailable: {e}");
             }

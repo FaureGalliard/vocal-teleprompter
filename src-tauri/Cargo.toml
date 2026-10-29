@@ -40,5 +40,13 @@ ureq = "3"
 zip = { version = "4", default-features = false, features = ["deflate"] }
 xcap = "0.9"
 
+[target.'cfg(windows)'.dependencies]
+# When the user last clicked, typed or scrolled, to look behind the window right then
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
 [dev-dependencies]
 vosk = "0.3"

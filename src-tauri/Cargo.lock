@@ -5805,6 +5805,7 @@ dependencies = [
  "ureq",
  "uuid",
  "vosk",
+ "windows",
  "xcap",
  "zip",
 ]
