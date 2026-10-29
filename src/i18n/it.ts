@@ -40,7 +40,8 @@ export const it: Messages = {
         readingLine: 'Linea di lettura',
         readingLineHint: 'Tiene la riga corrente in alto, vicino alla videocamera',
         clickThrough: 'Clic passanti',
-        clickThroughHint: (keys: string) => `I clic vanno all'app dietro. Disattiva con ${keys} o dall'icona nella barra`,
+        clickThroughHint: (keys: string) =>
+            `I clic vanno all'app dietro. Disattiva con ${keys} o dall'icona nella barra`,
         countdown: 'Conto alla rovescia',
         countdownHint: "Secondi per prepararti prima che inizi l'ascolto",
         countdownOff: 'No',
@@ -66,7 +67,8 @@ export const it: Messages = {
         lookTitle: 'Personalizzalo',
         look: 'Dimensione del testo, colori, contrasto automatico e tipografia.',
         settingsTitle: 'Impostazioni',
-        settings: "Come scorre il testo, conto alla rovescia, nascondere durante la condivisione dello schermo, lingua dell'interfaccia e altro.",
+        settings:
+            "Come scorre il testo, conto alla rovescia, nascondere durante la condivisione dello schermo, lingua dell'interfaccia e altro.",
         canvasTitle: 'Modifica o salta',
         canvas: 'Fai clic su una parola per riprendere a leggere da lì. Fai di nuovo clic su di essa, o tra due parole, per modificare il copione proprio lì.',
         menuTitle: 'Barra degli strumenti',
@@ -124,7 +126,13 @@ export const it: Messages = {
 
     typography: {
         title: 'Tipografia',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Arrotondato', legible: 'Leggibile' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Arrotondato',
+            legible: 'Leggibile',
+        },
         weights: { 400: 'Normale', 600: 'Semigrassetto', 700: 'Grassetto' },
         lineHeight: 'Interlinea',
         width: 'Larghezza del testo',
@@ -208,7 +216,8 @@ export const it: Messages = {
         'language-not-supported': 'Lingua non supportata',
         network: 'Errore di rete, nuovo tentativo…',
         'model-missing': 'Il modello vocale di questa lingua non è ancora installato',
-        'model-unreadable': 'Impossibile caricare il modello vocale; eliminalo e scaricalo di nuovo',
+        'model-unreadable':
+            'Impossibile caricare il modello vocale; eliminalo e scaricalo di nuovo',
         'microphone-unavailable': 'Quel microfono non è disponibile; scegline un altro',
     },
 }

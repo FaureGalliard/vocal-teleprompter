@@ -40,7 +40,8 @@ export const pt: Messages = {
         readingLine: 'Linha de leitura',
         readingLineHint: 'Mantém a linha atual no alto, perto da sua câmera',
         clickThrough: 'Cliques atravessam',
-        clickThroughHint: (keys: string) => `Os cliques vão para o app de trás. Desative com ${keys} ou pelo ícone da bandeja`,
+        clickThroughHint: (keys: string) =>
+            `Os cliques vão para o app de trás. Desative com ${keys} ou pelo ícone da bandeja`,
         countdown: 'Contagem regressiva',
         countdownHint: 'Segundos para se preparar antes de começar a ouvir',
         countdownOff: 'Não',
@@ -66,7 +67,8 @@ export const pt: Messages = {
         lookTitle: 'Do seu jeito',
         look: 'Tamanho do texto, cores, contraste automático e tipografia.',
         settingsTitle: 'Configurações',
-        settings: 'Como o texto rola, contagem regressiva, ocultar ao compartilhar a tela, idioma da interface e mais.',
+        settings:
+            'Como o texto rola, contagem regressiva, ocultar ao compartilhar a tela, idioma da interface e mais.',
         canvasTitle: 'Editar ou pular',
         canvas: 'Clique em uma palavra para continuar lendo a partir dela. Clique nela de novo, ou entre as palavras, para editar o roteiro ali mesmo.',
         menuTitle: 'Barra de ferramentas',
@@ -124,7 +126,13 @@ export const pt: Messages = {
 
     typography: {
         title: 'Tipografia',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Arredondada', legible: 'Legível' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Arredondada',
+            legible: 'Legível',
+        },
         weights: { 400: 'Normal', 600: 'Seminegrito', 700: 'Negrito' },
         lineHeight: 'Entrelinha',
         width: 'Largura do texto',

@@ -38,7 +38,8 @@ export const en = {
         readingLine: 'Reading line',
         readingLineHint: 'Keeps the current line near the top, close to your camera',
         clickThrough: 'Click-through',
-        clickThroughHint: (keys: string) => `Clicks go to the app behind. Turn off with ${keys} or the tray icon`,
+        clickThroughHint: (keys: string) =>
+            `Clicks go to the app behind. Turn off with ${keys} or the tray icon`,
         countdown: 'Countdown',
         countdownHint: 'Seconds to get ready before listening starts',
         countdownOff: 'Off',
@@ -64,7 +65,8 @@ export const en = {
         lookTitle: 'Make it yours',
         look: 'Text size, colors, automatic contrast and typography.',
         settingsTitle: 'Settings',
-        settings: 'How the text scrolls, the countdown, hiding from screen sharing, interface language and more.',
+        settings:
+            'How the text scrolls, the countdown, hiding from screen sharing, interface language and more.',
         canvasTitle: 'Edit or jump',
         canvas: 'Click a word to continue reading from it. Click it again, or click between words, to edit the script right there.',
         menuTitle: 'Toolbar',
@@ -122,7 +124,13 @@ export const en = {
 
     typography: {
         title: 'Typography',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Rounded', legible: 'Legible' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Rounded',
+            legible: 'Legible',
+        },
         weights: { 400: 'Regular', 600: 'Semibold', 700: 'Bold' },
         lineHeight: 'Line spacing',
         width: 'Text width',

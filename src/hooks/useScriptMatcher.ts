@@ -30,8 +30,7 @@ export function useScriptMatcher(scriptWords: string[], language: string) {
 
     // Manual repositioning; matching resumes from the chosen word
     const jumpTo = useCallback(
-        (index: number) =>
-            moveTo(Math.max(-1, Math.min(index, scriptWords.length - 1)), false),
+        (index: number) => moveTo(Math.max(-1, Math.min(index, scriptWords.length - 1)), false),
         [moveTo, scriptWords.length],
     )
 

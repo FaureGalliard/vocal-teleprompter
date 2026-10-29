@@ -70,7 +70,12 @@ export default function AiConnectorSection({ enabled, onToggleEnabled }: AiConne
             </div>
             <div className="text-[10px] text-white/40 leading-snug mb-2">{t.ai.hint}</div>
 
-            <div className={enabled ? 'flex flex-col gap-1' : 'flex flex-col gap-1 opacity-40 pointer-events-none'}>
+            <div
+                className={
+                    enabled
+                        ? 'flex flex-col gap-1'
+                        : 'flex flex-col gap-1 opacity-40 pointer-events-none'
+                }>
                 {CLIENTS.map((client) => (
                     <div
                         key={client.id}

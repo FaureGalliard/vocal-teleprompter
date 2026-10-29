@@ -92,8 +92,7 @@ export function nextPosition(script: string[], spoken: string[], current: number
         // repeated further on must not drag the text a line ahead. A lone
         // short word ("the", "は") is too common even for that, unless it is
         // right after where we already are.
-        const reliable =
-            context >= 2 || distance <= 2 || (weight(last) >= 4 && distance <= NEAR)
+        const reliable = context >= 2 || distance <= 2 || (weight(last) >= 4 && distance <= NEAR)
         if (!reliable) continue
         // Strictly greater keeps the nearest candidate on ties
         if (context > bestContext) {

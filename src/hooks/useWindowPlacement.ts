@@ -81,12 +81,18 @@ export function useWindowPlacement(paused: boolean) {
         const remember = () => {
             clearTimeout(timer)
             timer = setTimeout(async () => {
-                if (pausedRef.current || (await win.isMaximized()) || !(await win.isVisible())) return
+                if (pausedRef.current || (await win.isMaximized()) || !(await win.isVisible()))
+                    return
                 const scale = await win.scaleFactor()
                 const position = await win.outerPosition()
                 const size = (await win.innerSize()).toLogical(scale)
                 if (pausedRef.current) return
-                savePersistent<Bounds>(KEY, { x: position.x, y: position.y, width: size.width, height: size.height })
+                savePersistent<Bounds>(KEY, {
+                    x: position.x,
+                    y: position.y,
+                    width: size.width,
+                    height: size.height,
+                })
             }, 400)
         }
 

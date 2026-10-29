@@ -40,7 +40,8 @@ export const ko: Messages = {
         readingLine: '읽기 라인',
         readingLineHint: '현재 줄을 카메라 가까운 위쪽에 유지합니다',
         clickThrough: '클릭 통과',
-        clickThroughHint: (keys: string) => `클릭이 뒤에 있는 앱으로 전달됩니다. ${keys} 또는 트레이 아이콘으로 끄기`,
+        clickThroughHint: (keys: string) =>
+            `클릭이 뒤에 있는 앱으로 전달됩니다. ${keys} 또는 트레이 아이콘으로 끄기`,
         countdown: '카운트다운',
         countdownHint: '듣기를 시작하기 전에 준비하는 시간(초)',
         countdownOff: '끄기',
@@ -124,7 +125,13 @@ export const ko: Messages = {
 
     typography: {
         title: '타이포그래피',
-        fonts: { sans: '고딕', serif: '명조', mono: '고정폭', rounded: '둥근체', legible: '가독성' },
+        fonts: {
+            sans: '고딕',
+            serif: '명조',
+            mono: '고정폭',
+            rounded: '둥근체',
+            legible: '가독성',
+        },
         weights: { 400: '보통', 600: '약간 굵게', 700: '굵게' },
         lineHeight: '줄 간격',
         width: '텍스트 너비',

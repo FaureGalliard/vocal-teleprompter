@@ -7,7 +7,6 @@ import { scrollTarget, type Scrolling } from '../lib/scrolling'
 const RECENT_WORDS = 15
 import { useT } from '../i18n'
 
-
 interface CanvasProps {
     cards: Card[]
     // Card holding the next word to read
@@ -137,8 +136,7 @@ export default function Canvas({
                     style={{
                         color: prevWord < currentWordIndex ? pastColor(prevWord) : textColor,
                         backgroundColor:
-                            prevWord >= currentWordIndex &&
-                            prevWord < currentWordIndex + 8
+                            prevWord >= currentWordIndex && prevWord < currentWordIndex + 8
                                 ? `${textColor}10`
                                 : 'transparent',
                     }}>
@@ -152,8 +150,7 @@ export default function Canvas({
         const isCurrentWord = heard && i === currentWordIndex
         const isNextWord = !heard && i === currentWordIndex + 1
         const isPast = i < currentWordIndex || (!heard && i === currentWordIndex)
-        const isNearby =
-            i > currentWordIndex && i <= currentWordIndex + 8
+        const isNearby = i > currentWordIndex && i <= currentWordIndex + 8
         // The word reading continues from; clicking it again edits there
         const editsOnClick = !isListening && i === currentWordIndex + 1
 
@@ -170,11 +167,7 @@ export default function Canvas({
                 onClick={() => (editsOnClick ? onEditAt(segment.offset) : onContinueFrom(i))}
                 className={editsOnClick ? 'cursor-text' : 'cursor-pointer'}
                 style={{
-                    color: isCurrentWord
-                        ? '#1a1a1a'
-                        : isPast
-                          ? pastColor(i)
-                          : textColor,
+                    color: isCurrentWord ? '#1a1a1a' : isPast ? pastColor(i) : textColor,
                     backgroundColor: isCurrentWord
                         ? '#facc15'
                         : isNearby
@@ -187,8 +180,7 @@ export default function Canvas({
                     textDecoration: isNextWord ? 'underline' : undefined,
                     textDecorationThickness: isNextWord ? '2px' : undefined,
                     textUnderlineOffset: isNextWord ? '0.25em' : undefined,
-                    transition:
-                        'color 0.2s ease, background-color 0.2s ease',
+                    transition: 'color 0.2s ease, background-color 0.2s ease',
                 }}>
                 {segment.text}
             </span>
@@ -226,7 +218,12 @@ export default function Canvas({
                     className="min-h-full"
                     // A click off the words (beside or below the text) edits
                     onClick={(e) => {
-                        if (isEditing || isListening || (e.target as HTMLElement).tagName === 'SPAN') return
+                        if (
+                            isEditing ||
+                            isListening ||
+                            (e.target as HTMLElement).tagName === 'SPAN'
+                        )
+                            return
                         onEditStart()
                     }}
                     // Start the text on the reading line and leave room to bring
@@ -273,14 +270,16 @@ export default function Canvas({
                                 className={c < cards.length - 1 ? 'pb-3 mb-3' : undefined}
                                 style={{
                                     borderBottom:
-                                        c < cards.length - 1 ? `1px dashed ${textColor}40` : undefined,
+                                        c < cards.length - 1
+                                            ? `1px dashed ${textColor}40`
+                                            : undefined,
                                     // Other slides fade back so the current one stands out
                                     opacity: cards.length > 1 && c !== currentCard ? 0.45 : 1,
                                     transition: 'opacity 0.3s ease',
                                 }}>
                                 <p
                                     // Clicking words moves the position; don't select text too
-                                className="select-none"
+                                    className="select-none"
                                     style={{
                                         ...textStyle,
                                         fontSize: `${fontSize}px`,

@@ -59,7 +59,11 @@ export function useSpeechRecognition({
         }
         let cancelled = false
         setError(null)
-        invoke('speech_start', { language, deviceId, vocabulary: vocabularyKey.split(' ').filter(Boolean) })
+        invoke('speech_start', {
+            language,
+            deviceId,
+            vocabulary: vocabularyKey.split(' ').filter(Boolean),
+        })
             .then(() => !cancelled && setListening(true))
             .catch((e) => {
                 if (cancelled) return

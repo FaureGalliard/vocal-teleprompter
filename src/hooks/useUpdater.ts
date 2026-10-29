@@ -4,12 +4,7 @@ import { relaunch } from '@tauri-apps/plugin-process'
 import { getVersion } from '@tauri-apps/api/app'
 
 export type UpdateStatus =
-    | 'idle'
-    | 'checking'
-    | 'up-to-date'
-    | 'available'
-    | 'downloading'
-    | 'failed'
+    'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'failed'
 
 // Leave the app a moment to settle before reaching out on launch
 const STARTUP_CHECK_DELAY_MS = 3000
@@ -23,7 +18,9 @@ export function useUpdater(checkOnLaunch: boolean) {
     const updateRef = useRef<Update | null>(null)
 
     useEffect(() => {
-        getVersion().then(setCurrentVersion).catch(() => {})
+        getVersion()
+            .then(setCurrentVersion)
+            .catch(() => {})
     }, [])
 
     const checkForUpdates = useCallback(async () => {

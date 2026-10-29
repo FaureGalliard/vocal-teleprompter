@@ -40,7 +40,8 @@ export const es: Messages = {
         readingLine: 'Línea de lectura',
         readingLineHint: 'Mantiene la línea actual arriba, cerca de tu cámara',
         clickThrough: 'Clicks a través',
-        clickThroughHint: (keys: string) => `Los clicks llegan a la app de atrás. Se apaga con ${keys} o desde el icono de la bandeja`,
+        clickThroughHint: (keys: string) =>
+            `Los clicks llegan a la app de atrás. Se apaga con ${keys} o desde el icono de la bandeja`,
         countdown: 'Cuenta regresiva',
         countdownHint: 'Segundos para prepararte antes de empezar a escuchar',
         countdownOff: 'No',
@@ -66,7 +67,8 @@ export const es: Messages = {
         lookTitle: 'Hazlo tuyo',
         look: 'Tamaño del texto, colores, contraste automático y tipografía.',
         settingsTitle: 'Ajustes',
-        settings: 'Cómo avanza el texto, la cuenta atrás, ocultarlo al compartir pantalla, el idioma de la interfaz y más.',
+        settings:
+            'Cómo avanza el texto, la cuenta atrás, ocultarlo al compartir pantalla, el idioma de la interfaz y más.',
         canvasTitle: 'Editar o saltar',
         canvas: 'Haz click en una palabra para seguir leyendo desde ella. Vuelve a hacer click en ella, o haz click entre palabras, para editar el guion justo ahí.',
         menuTitle: 'Barra de herramientas',
@@ -124,7 +126,13 @@ export const es: Messages = {
 
     typography: {
         title: 'Tipografía',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Redondeada', legible: 'Legible' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Redondeada',
+            legible: 'Legible',
+        },
         weights: { 400: 'Normal', 600: 'Seminegrita', 700: 'Negrita' },
         lineHeight: 'Interlineado',
         width: 'Ancho del texto',
@@ -170,7 +178,8 @@ export const es: Messages = {
         title: 'Desplazamiento',
         ahead: 'Líneas abajo',
         fixed: 'Línea fija',
-        aheadHint: 'El texto se queda quieto y solo avanza para mantener unas líneas visibles debajo',
+        aheadHint:
+            'El texto se queda quieto y solo avanza para mantener unas líneas visibles debajo',
         fixedHint: 'La línea que lees se mantiene a la misma altura',
         linesBelow: 'Líneas que se mantienen abajo',
         position: 'Posición de la línea',

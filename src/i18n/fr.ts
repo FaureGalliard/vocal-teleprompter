@@ -40,7 +40,8 @@ export const fr: Messages = {
         readingLine: 'Ligne de lecture',
         readingLineHint: 'Garde la ligne en cours en haut, près de votre caméra',
         clickThrough: 'Clics traversants',
-        clickThroughHint: (keys: string) => `Les clics vont à l'application derrière. Désactivez avec ${keys} ou l'icône de la barre`,
+        clickThroughHint: (keys: string) =>
+            `Les clics vont à l'application derrière. Désactivez avec ${keys} ou l'icône de la barre`,
         countdown: 'Compte à rebours',
         countdownHint: "Secondes pour vous préparer avant le début de l'écoute",
         countdownOff: 'Non',
@@ -66,7 +67,8 @@ export const fr: Messages = {
         lookTitle: 'Personnalisez',
         look: 'Taille du texte, couleurs, contraste automatique et typographie.',
         settingsTitle: 'Paramètres',
-        settings: "Défilement du texte, compte à rebours, masquage lors du partage d'écran, langue de l'interface et plus.",
+        settings:
+            "Défilement du texte, compte à rebours, masquage lors du partage d'écran, langue de l'interface et plus.",
         canvasTitle: 'Modifier ou sauter',
         canvas: 'Cliquez sur un mot pour reprendre la lecture à partir de lui. Cliquez-le à nouveau, ou cliquez entre deux mots, pour modifier le texte à cet endroit.',
         menuTitle: "Barre d'outils",
@@ -124,7 +126,13 @@ export const fr: Messages = {
 
     typography: {
         title: 'Typographie',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Arrondie', legible: 'Lisible' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Arrondie',
+            legible: 'Lisible',
+        },
         weights: { 400: 'Normal', 600: 'Demi-gras', 700: 'Gras' },
         lineHeight: 'Interligne',
         width: 'Largeur du texte',
@@ -170,7 +178,8 @@ export const fr: Messages = {
         title: 'Défilement',
         ahead: 'Lignes en dessous',
         fixed: 'Ligne fixe',
-        aheadHint: 'Le texte reste en place et ne bouge que pour garder quelques lignes visibles dessous',
+        aheadHint:
+            'Le texte reste en place et ne bouge que pour garder quelques lignes visibles dessous',
         fixedHint: 'La ligne lue reste à la même hauteur',
         linesBelow: 'Lignes gardées dessous',
         position: 'Position de la ligne',
@@ -208,7 +217,8 @@ export const fr: Messages = {
         'language-not-supported': 'Langue non prise en charge',
         network: 'Erreur réseau, nouvelle tentative…',
         'model-missing': "Le modèle vocal de cette langue n'est pas encore installé",
-        'model-unreadable': 'Impossible de charger le modèle vocal ; supprimez-le et téléchargez-le de nouveau',
+        'model-unreadable':
+            'Impossible de charger le modèle vocal ; supprimez-le et téléchargez-le de nouveau',
         'microphone-unavailable': "Ce microphone n'est pas disponible ; choisissez-en un autre",
     },
 }

@@ -25,11 +25,7 @@ import { startTour } from './lib/tour'
 import { splitCards, currentCardIndex } from './lib/cards'
 import StatusBar from './components/StatusBar'
 import { usePace } from './hooks/usePace'
-import {
-    GLOBAL_SHORTCUTS,
-    useGlobalShortcuts,
-    type GlobalAction,
-} from './hooks/useGlobalShortcuts'
+import { GLOBAL_SHORTCUTS, useGlobalShortcuts, type GlobalAction } from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import UpdateBanner from './components/UpdateBanner'
 import { DEFAULT_TYPOGRAPHY, type Typography } from './lib/typography'
@@ -74,10 +70,7 @@ function App() {
         DEFAULT_TYPOGRAPHY,
     )
     // Keep the window out of screen shares and recordings (Zoom, Meet, OBS...)
-    const [hiddenFromCapture, setHiddenFromCapture] = usePersistentState(
-        'hiddenFromCapture',
-        true,
-    )
+    const [hiddenFromCapture, setHiddenFromCapture] = usePersistentState('hiddenFromCapture', true)
     const [isSpeechActive, setIsSpeechActive] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [isAdjusting, setIsAdjusting] = useState(false)
@@ -255,9 +248,12 @@ function App() {
     useMcpBridge({
         load_script: ({ text, mode }) => {
             requireConnector()
-            if (typeof text !== 'string' || !text.trim()) throw new Error('text must be a non-empty string')
+            if (typeof text !== 'string' || !text.trim())
+                throw new Error('text must be a non-empty string')
             const next =
-                mode === 'append' && content.trim() ? `${content.trimEnd()}\n\n---\n\n${text}` : text
+                mode === 'append' && content.trim()
+                    ? `${content.trimEnd()}\n\n---\n\n${text}`
+                    : text
             stopListening()
             setIsEditing(false)
             setContent(next)
@@ -333,7 +329,8 @@ function App() {
                 applied.push('speechLanguage')
             }
             const ignored = Object.keys(changes).filter((k) => !applied.includes(k))
-            if (!applied.length) throw new Error(`Nothing to change. Invalid or unknown: ${ignored.join(', ')}`)
+            if (!applied.length)
+                throw new Error(`Nothing to change. Invalid or unknown: ${ignored.join(', ')}`)
             return { applied, ignored }
         },
         control: ({ action }) => {
@@ -523,14 +520,7 @@ function App() {
             target instanceof HTMLSelectElement
 
         const onKeyDown = (e: KeyboardEvent) => {
-            if (
-                e.ctrlKey ||
-                e.metaKey ||
-                e.altKey ||
-                isTyping(e.target) ||
-                isEditing ||
-                tourActive
-            )
+            if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target) || isEditing || tourActive)
                 return
             switch (e.key) {
                 case ' ':
@@ -608,12 +598,9 @@ function App() {
     // behind the window shows) the text gets a halo to stay legible on it
     const displayTextColor = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const textHalo =
-        autoContrast && bgOpacity < HALO_BELOW_OPACITY
-            ? bestOutline(displayTextColor)
-            : undefined
+        autoContrast && bgOpacity < HALO_BELOW_OPACITY ? bestOutline(displayTextColor) : undefined
 
-    const toolbarTopOffset =
-        titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
+    const toolbarTopOffset = titleBarVisible && titleBarPosition === 'top' ? titleBarHeight : 0
 
     // Distance from the bottom of the frame to the status row
     const statusBottom = (titleBarVisible && titleBarPosition === 'bottom' ? titleBarHeight : 0) + 6
@@ -667,7 +654,6 @@ function App() {
                             onPositionChange={setTitleBarPosition}
                         />
                     )}
-
 
                     {/* In the status row, clear of the text */}
                     <button
@@ -756,125 +742,133 @@ function App() {
                 </div>
 
                 <OpenTowardsContext.Provider value={openTowards}>
-                <Toolbar
-                    // Shown once the window has made room, so it does not
-                    // flash over the text first
-                    visible={toolbarVisible && toolbarReady}
-                    isAdjusting={isAdjusting}
-                    placement={toolbarPlacement}
-                    isRecognizing={isRecognizing}
-                    isSpeechActive={isSpeechActive}
-                    isPaused={isPaused}
-                    content={content}
-                    language={language}
-                    langMenuOpen={langMenuOpen}
-                    micMenuOpen={micMenuOpen}
-                    microphones={microphones}
-                    selectedMic={activeMic}
-                    micLevel={micLevel}
-                    onMicChange={(id) => {
-                        setSelectedMic(id)
-                        setMicMenuOpen(false)
-                    }}
-                    onPasteText={handlePasteText}
-                    onImport={handleImport}
-                    onClear={handleClear}
-                    isEditing={isEditing}
-                    onToggleEdit={handleToggleEdit}
-                    onToggleListen={handleToggleListen}
-                    onTogglePause={() => setIsPaused((v) => !v)}
-                    onShowTutorial={showTutorial}
-                    isCountingDown={countdown !== null}
-                    isDownloadingModel={speechModel.downloading}
-                    onLanguageChange={(val) => {
-                        setLanguage(val)
-                        setLangMenuOpen(false)
-                    }}
-                    onLangMenuToggle={() => {
-                        setLangMenuOpen((v) => !v)
-                        setMicMenuOpen(false)
-                    }}
-                    onMicMenuToggle={() => {
-                        if (!micMenuOpen) refreshMicrophones()
-                        setMicMenuOpen((v) => !v)
-                        setLangMenuOpen(false)
-                    }}
-                    appearance={
-                        <AppearancePanel
-                            fontSize={fontSize}
-                            bgColor={bgColor}
-                            bgOpacity={bgOpacity}
-                            textColor={textColor}
-                            onBgColorChange={setBgColor}
-                            onBgOpacityChange={setBgOpacity}
-                            onTextColorChange={setTextColor}
-                            typography={typography}
-                            onTypographyChange={setTypography}
-                            autoContrast={autoContrast}
-                            onToggleAutoContrast={() => setAutoContrast((v) => !v)}
-                            onAdjustStart={() => handleAdjustStart()}
-                            onFontSizeChange={setFontSize}
-                        />
-                    }
-                    settings={
-                        <SettingsPanel
-                            titleBarVisible={titleBarVisible}
-                            hiddenFromCapture={hiddenFromCapture}
-                            uiLanguage={uiLanguage}
-                            onUiLanguageChange={(val) => {
-                                // Swap the welcome script along with the language, unless it was edited
-                                if (UI_LANGUAGES.some((l) => l.messages.sampleScript === content)) {
-                                    setContent(getMessages(val).sampleScript)
-                                    reset()
+                    <Toolbar
+                        // Shown once the window has made room, so it does not
+                        // flash over the text first
+                        visible={toolbarVisible && toolbarReady}
+                        isAdjusting={isAdjusting}
+                        placement={toolbarPlacement}
+                        isRecognizing={isRecognizing}
+                        isSpeechActive={isSpeechActive}
+                        isPaused={isPaused}
+                        content={content}
+                        language={language}
+                        langMenuOpen={langMenuOpen}
+                        micMenuOpen={micMenuOpen}
+                        microphones={microphones}
+                        selectedMic={activeMic}
+                        micLevel={micLevel}
+                        onMicChange={(id) => {
+                            setSelectedMic(id)
+                            setMicMenuOpen(false)
+                        }}
+                        onPasteText={handlePasteText}
+                        onImport={handleImport}
+                        onClear={handleClear}
+                        isEditing={isEditing}
+                        onToggleEdit={handleToggleEdit}
+                        onToggleListen={handleToggleListen}
+                        onTogglePause={() => setIsPaused((v) => !v)}
+                        onShowTutorial={showTutorial}
+                        isCountingDown={countdown !== null}
+                        isDownloadingModel={speechModel.downloading}
+                        onLanguageChange={(val) => {
+                            setLanguage(val)
+                            setLangMenuOpen(false)
+                        }}
+                        onLangMenuToggle={() => {
+                            setLangMenuOpen((v) => !v)
+                            setMicMenuOpen(false)
+                        }}
+                        onMicMenuToggle={() => {
+                            if (!micMenuOpen) refreshMicrophones()
+                            setMicMenuOpen((v) => !v)
+                            setLangMenuOpen(false)
+                        }}
+                        appearance={
+                            <AppearancePanel
+                                fontSize={fontSize}
+                                bgColor={bgColor}
+                                bgOpacity={bgOpacity}
+                                textColor={textColor}
+                                onBgColorChange={setBgColor}
+                                onBgOpacityChange={setBgOpacity}
+                                onTextColorChange={setTextColor}
+                                typography={typography}
+                                onTypographyChange={setTypography}
+                                autoContrast={autoContrast}
+                                onToggleAutoContrast={() => setAutoContrast((v) => !v)}
+                                onAdjustStart={() => handleAdjustStart()}
+                                onFontSizeChange={setFontSize}
+                            />
+                        }
+                        settings={
+                            <SettingsPanel
+                                titleBarVisible={titleBarVisible}
+                                hiddenFromCapture={hiddenFromCapture}
+                                uiLanguage={uiLanguage}
+                                onUiLanguageChange={(val) => {
+                                    // Swap the welcome script along with the language, unless it was edited
+                                    if (
+                                        UI_LANGUAGES.some(
+                                            (l) => l.messages.sampleScript === content,
+                                        )
+                                    ) {
+                                        setContent(getMessages(val).sampleScript)
+                                        reset()
+                                    }
+                                    setUiLanguage(val)
+                                }}
+                                // The window gives up (or takes back) just the title bar's
+                                // height, so the text stays where it is on screen
+                                onToggleTitleBar={() => {
+                                    const delta = titleBarVisible
+                                        ? -TITLE_BAR_HEIGHT
+                                        : TITLE_BAR_HEIGHT
+                                    resizeFrame(delta, titleBarPosition).catch((e) =>
+                                        console.error(e),
+                                    )
+                                    setTitleBarVisible((v) => !v)
+                                }}
+                                onShowTutorial={showTutorial}
+                                targetMinutes={targetMinutes}
+                                onTargetMinutesChange={setTargetMinutes}
+                                readingLine={readingLine}
+                                onToggleReadingLine={() => setReadingLine((v) => !v)}
+                                scrolling={scrolling}
+                                onScrollingChange={setScrolling}
+                                clickThrough={clickThrough}
+                                onToggleClickThrough={() => setClickThrough((v) => !v)}
+                                autoUpdate={autoUpdate}
+                                onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
+                                updater={updater}
+                                shortcutsEnabled={shortcutsEnabled}
+                                shortcutBindings={shortcutBindings}
+                                failedShortcuts={failedShortcuts}
+                                onToggleShortcuts={() => setShortcutsEnabled((v) => !v)}
+                                onShortcutChange={(action, accelerator) =>
+                                    setShortcutOverrides((o) =>
+                                        accelerator === GLOBAL_SHORTCUTS[action]
+                                            ? Object.fromEntries(
+                                                  Object.entries(o).filter(([a]) => a !== action),
+                                              )
+                                            : { ...o, [action]: accelerator },
+                                    )
                                 }
-                                setUiLanguage(val)
-                            }}
-                            // The window gives up (or takes back) just the title bar's
-                            // height, so the text stays where it is on screen
-                            onToggleTitleBar={() => {
-                                const delta = titleBarVisible ? -TITLE_BAR_HEIGHT : TITLE_BAR_HEIGHT
-                                resizeFrame(delta, titleBarPosition).catch((e) => console.error(e))
-                                setTitleBarVisible((v) => !v)
-                            }}
-                            onShowTutorial={showTutorial}
-                            targetMinutes={targetMinutes}
-                            onTargetMinutesChange={setTargetMinutes}
-                            readingLine={readingLine}
-                            onToggleReadingLine={() => setReadingLine((v) => !v)}
-                            scrolling={scrolling}
-                            onScrollingChange={setScrolling}
-                            clickThrough={clickThrough}
-                            onToggleClickThrough={() => setClickThrough((v) => !v)}
-                            autoUpdate={autoUpdate}
-                            onToggleAutoUpdate={() => setAutoUpdate((v) => !v)}
-                            updater={updater}
-                            shortcutsEnabled={shortcutsEnabled}
-                            shortcutBindings={shortcutBindings}
-                            failedShortcuts={failedShortcuts}
-                            onToggleShortcuts={() => setShortcutsEnabled((v) => !v)}
-                            onShortcutChange={(action, accelerator) =>
-                                setShortcutOverrides((o) =>
-                                    accelerator === GLOBAL_SHORTCUTS[action]
-                                        ? Object.fromEntries(
-                                              Object.entries(o).filter(([a]) => a !== action),
-                                          )
-                                        : { ...o, [action]: accelerator },
-                                )
-                            }
-                            onResetShortcuts={() => setShortcutOverrides({})}
-                            onRecordingShortcut={setRecordingShortcut}
-                            countdownSeconds={countdownSeconds}
-                            onCountdownSecondsChange={setCountdownSeconds}
-                            aiConnectorEnabled={aiConnectorEnabled}
-                            onToggleAiConnector={() => setAiConnectorEnabled((v) => !v)}
-                            onReset={() => {
-                                clearPersistentState()
-                                window.location.reload()
-                            }}
-                            onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
-                        />
-                    }
-                />
+                                onResetShortcuts={() => setShortcutOverrides({})}
+                                onRecordingShortcut={setRecordingShortcut}
+                                countdownSeconds={countdownSeconds}
+                                onCountdownSecondsChange={setCountdownSeconds}
+                                aiConnectorEnabled={aiConnectorEnabled}
+                                onToggleAiConnector={() => setAiConnectorEnabled((v) => !v)}
+                                onReset={() => {
+                                    clearPersistentState()
+                                    window.location.reload()
+                                }}
+                                onToggleHiddenFromCapture={() => setHiddenFromCapture((v) => !v)}
+                            />
+                        }
+                    />
                 </OpenTowardsContext.Provider>
             </div>
         </I18nProvider>

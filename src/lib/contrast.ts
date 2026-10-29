@@ -32,9 +32,7 @@ export function contrastRatio(a: string, b: string): number {
 
 // Black or white, whichever stands out more against the color
 export function bestOutline(hex: string): string {
-    return contrastRatio(hex, '#000000') >= contrastRatio(hex, '#ffffff')
-        ? '#000000'
-        : '#ffffff'
+    return contrastRatio(hex, '#000000') >= contrastRatio(hex, '#ffffff') ? '#000000' : '#ffffff'
 }
 
 function mix(a: RGB, b: RGB, t: number): RGB {

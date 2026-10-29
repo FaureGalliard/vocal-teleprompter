@@ -24,7 +24,9 @@ describe('splitCards', () => {
     it('gives every segment its exact position in the text', () => {
         for (const card of splitCards(SCRIPT, 'en-US')) {
             for (const segment of card.segments) {
-                expect(SCRIPT.slice(segment.offset, segment.offset + segment.text.length)).toBe(segment.text)
+                expect(SCRIPT.slice(segment.offset, segment.offset + segment.text.length)).toBe(
+                    segment.text,
+                )
             }
         }
     })

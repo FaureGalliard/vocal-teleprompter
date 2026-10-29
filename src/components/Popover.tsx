@@ -1,4 +1,11 @@
-import { createContext, useContext, useLayoutEffect, useState, type ReactNode, type RefObject } from 'react'
+import {
+    createContext,
+    useContext,
+    useLayoutEffect,
+    useState,
+    type ReactNode,
+    type RefObject,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -48,11 +55,22 @@ export function Popover({
     useLayoutEffect(() => {
         const rect = anchor.current?.getBoundingClientRect()
         if (!open || !rect) return
-        const left = Math.max(GAP, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - GAP))
+        const left = Math.max(
+            GAP,
+            Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - GAP),
+        )
         setPlace(
             towards === 'down'
-                ? { left, top: rect.bottom + GAP, maxHeight: window.innerHeight - rect.bottom - 2 * GAP }
-                : { left, bottom: window.innerHeight - rect.top + GAP, maxHeight: rect.top - 2 * GAP },
+                ? {
+                      left,
+                      top: rect.bottom + GAP,
+                      maxHeight: window.innerHeight - rect.bottom - 2 * GAP,
+                  }
+                : {
+                      left,
+                      bottom: window.innerHeight - rect.top + GAP,
+                      maxHeight: rect.top - 2 * GAP,
+                  },
         )
     }, [open, towards, width, anchor])
 

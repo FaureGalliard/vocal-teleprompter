@@ -39,7 +39,11 @@ export function acceleratorFromEvent(e: KeyboardEvent): string | null {
     else if (/^Digit[0-9]$/.test(code)) key = code.slice(5)
     else if (/^F([1-9]|1[0-9]|2[0-4])$/.test(code)) key = code
     else if (code.startsWith('Arrow')) key = code.slice(5)
-    else if (['Space', 'Enter', 'Tab', 'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete'].includes(code))
+    else if (
+        ['Space', 'Enter', 'Tab', 'Home', 'End', 'PageUp', 'PageDown', 'Insert', 'Delete'].includes(
+            code,
+        )
+    )
         key = code
     if (!key) return null
 

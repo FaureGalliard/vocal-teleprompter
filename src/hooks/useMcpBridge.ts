@@ -21,8 +21,8 @@ export function useMcpBridge(handlers: McpHandlers) {
 
     useEffect(() => {
         const respond = (id: number, result: unknown, error?: string) =>
-            invoke('mcp_respond', { id, result: result ?? null, error: error ?? null }).catch(
-                (e) => console.error('Could not answer the AI connector:', e),
+            invoke('mcp_respond', { id, result: result ?? null, error: error ?? null }).catch((e) =>
+                console.error('Could not answer the AI connector:', e),
             )
 
         const unlisten = listen<McpRequest>('mcp-request', async ({ payload }) => {

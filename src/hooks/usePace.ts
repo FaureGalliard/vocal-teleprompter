@@ -43,14 +43,14 @@ export function usePace({
     const minutes = elapsedMs / 60000
     // Too little data in the first seconds for a meaningful rate
     const wpm = elapsedMs > 10000 && spokenWords > 0 ? spokenWords / minutes : null
-    const remainingMs =
-        (totalWords - spokenWords) / (wpm ?? DEFAULT_WPM) * 60000
+    const remainingMs = ((totalWords - spokenWords) / (wpm ?? DEFAULT_WPM)) * 60000
 
     let status: PaceStatus | null = null
     if (targetMinutes > 0 && elapsedMs > 10000 && totalWords > 0) {
         const expected = totalWords * Math.min(1, minutes / targetMinutes)
         const diff = (spokenWords - expected) / totalWords
-        status = diff > PACE_TOLERANCE ? 'slow-down' : diff < -PACE_TOLERANCE ? 'speed-up' : 'on-pace'
+        status =
+            diff > PACE_TOLERANCE ? 'slow-down' : diff < -PACE_TOLERANCE ? 'speed-up' : 'on-pace'
     }
 
     return {

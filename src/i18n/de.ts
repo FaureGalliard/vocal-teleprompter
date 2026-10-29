@@ -40,7 +40,8 @@ export const de: Messages = {
         readingLine: 'Leselinie',
         readingLineHint: 'Hält die aktuelle Zeile oben, nah an deiner Kamera',
         clickThrough: 'Klicks durchlassen',
-        clickThroughHint: (keys: string) => `Klicks gehen an die App dahinter. Ausschalten mit ${keys} oder über das Tray-Symbol`,
+        clickThroughHint: (keys: string) =>
+            `Klicks gehen an die App dahinter. Ausschalten mit ${keys} oder über das Tray-Symbol`,
         countdown: 'Countdown',
         countdownHint: 'Sekunden zum Bereitmachen, bevor das Zuhören beginnt',
         countdownOff: 'Aus',
@@ -66,7 +67,8 @@ export const de: Messages = {
         lookTitle: 'Mach es dir passend',
         look: 'Textgröße, Farben, automatischer Kontrast und Typografie.',
         settingsTitle: 'Einstellungen',
-        settings: 'Wie der Text scrollt, Countdown, Ausblenden bei Bildschirmfreigabe, Sprache der Oberfläche und mehr.',
+        settings:
+            'Wie der Text scrollt, Countdown, Ausblenden bei Bildschirmfreigabe, Sprache der Oberfläche und mehr.',
         canvasTitle: 'Bearbeiten oder springen',
         canvas: 'Klicke auf ein Wort, um ab dort weiterzulesen. Klicke es erneut an, oder klicke zwischen zwei Wörter, um das Skript genau dort zu bearbeiten.',
         menuTitle: 'Werkzeugleiste',
@@ -124,7 +126,13 @@ export const de: Messages = {
 
     typography: {
         title: 'Typografie',
-        fonts: { sans: 'Sans', serif: 'Serif', mono: 'Mono', rounded: 'Rund', legible: 'Gut lesbar' },
+        fonts: {
+            sans: 'Sans',
+            serif: 'Serif',
+            mono: 'Mono',
+            rounded: 'Rund',
+            legible: 'Gut lesbar',
+        },
         weights: { 400: 'Normal', 600: 'Halbfett', 700: 'Fett' },
         lineHeight: 'Zeilenabstand',
         width: 'Textbreite',
@@ -170,7 +178,8 @@ export const de: Messages = {
         title: 'Bildlauf',
         ahead: 'Zeilen darunter',
         fixed: 'Feste Zeile',
-        aheadHint: 'Der Text bleibt stehen und rückt nur nach, damit unten einige Zeilen sichtbar bleiben',
+        aheadHint:
+            'Der Text bleibt stehen und rückt nur nach, damit unten einige Zeilen sichtbar bleiben',
         fixedHint: 'Die gelesene Zeile bleibt auf gleicher Höhe',
         linesBelow: 'Zeilen darunter',
         position: 'Position der Zeile',
@@ -208,7 +217,8 @@ export const de: Messages = {
         'language-not-supported': 'Sprache wird nicht unterstützt',
         network: 'Netzwerkfehler, neuer Versuch…',
         'model-missing': 'Das Sprachmodell für diese Sprache ist noch nicht installiert',
-        'model-unreadable': 'Das Sprachmodell konnte nicht geladen werden; lösche es und lade es neu',
+        'model-unreadable':
+            'Das Sprachmodell konnte nicht geladen werden; lösche es und lade es neu',
         'microphone-unavailable': 'Dieses Mikrofon ist nicht verfügbar; wähle ein anderes',
     },
 }

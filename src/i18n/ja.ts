@@ -40,7 +40,8 @@ export const ja: Messages = {
         readingLine: '読み上げライン',
         readingLineHint: '現在の行をカメラに近い上部に保ちます',
         clickThrough: 'クリックを透過',
-        clickThroughHint: (keys: string) => `クリックが背後のアプリに届きます。${keys} かトレイアイコンで解除`,
+        clickThroughHint: (keys: string) =>
+            `クリックが背後のアプリに届きます。${keys} かトレイアイコンで解除`,
         countdown: 'カウントダウン',
         countdownHint: '聞き取り開始前に準備する秒数',
         countdownOff: 'オフ',
@@ -124,7 +125,13 @@ export const ja: Messages = {
 
     typography: {
         title: 'タイポグラフィ',
-        fonts: { sans: 'ゴシック', serif: '明朝', mono: '等幅', rounded: '丸ゴシック', legible: '読みやすい' },
+        fonts: {
+            sans: 'ゴシック',
+            serif: '明朝',
+            mono: '等幅',
+            rounded: '丸ゴシック',
+            legible: '読みやすい',
+        },
         weights: { 400: '標準', 600: 'やや太字', 700: '太字' },
         lineHeight: '行間',
         width: 'テキストの幅',

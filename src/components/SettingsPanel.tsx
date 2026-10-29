@@ -26,7 +26,6 @@ import type { Scrolling } from '../lib/scrolling'
 const PANEL_WIDTH = 288
 const COUNTDOWN_OPTIONS = [0, 3, 5, 10]
 
-
 interface SettingsPanelProps {
     uiLanguage: string
     hiddenFromCapture: boolean
@@ -138,7 +137,8 @@ export default function SettingsPanel({
         if (!open) return
         const onMouseDown = (e: MouseEvent) => {
             const target = e.target as Node
-            if (!ref.current?.contains(target) && !panelRef.current?.contains(target)) setOpen(false)
+            if (!ref.current?.contains(target) && !panelRef.current?.contains(target))
+                setOpen(false)
         }
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key !== 'Escape') return
@@ -181,7 +181,10 @@ export default function SettingsPanel({
                 panelRef={panelRef}
                 open={open}
                 width={PANEL_WIDTH}>
-                <Section title={t.settings.sectionReading} first />
+                <Section
+                    title={t.settings.sectionReading}
+                    first
+                />
                 <div className="px-4 py-2.5 flex flex-col gap-2">
                     <div className="flex items-center gap-3">
                         <span className="text-white/50 flex-shrink-0">
@@ -241,7 +244,10 @@ export default function SettingsPanel({
                                 step={0.05}
                                 value={scrolling.anchor}
                                 onChange={(e) =>
-                                    onScrollingChange({ ...scrolling, anchor: Number(e.target.value) })
+                                    onScrollingChange({
+                                        ...scrolling,
+                                        anchor: Number(e.target.value),
+                                    })
                                 }
                                 className="accent-[#445ade]"
                             />

@@ -27,7 +27,10 @@ interface State {
 }
 
 // Lets the browser paint the pinned frame before the window changes size
-const nextPaint = () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+const nextPaint = () =>
+    new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    )
 
 // While `open`, grows the window with a transparent area below the
 // teleprompter so the toolbar and its panels sit outside the text instead of
@@ -93,7 +96,9 @@ export function useWindowExpansion(open: boolean) {
                 await win.setResizable(true)
             }
         }
-        const growing = grow().catch((e) => console.error('Could not make room for the toolbar:', e))
+        const growing = grow().catch((e) =>
+            console.error('Could not make room for the toolbar:', e),
+        )
 
         return () => {
             cancelled = true
@@ -123,9 +128,12 @@ export function useWindowExpansion(open: boolean) {
         if (frame) {
             const resized = { width: frame.width, height: frame.height + delta }
             frameRef.current = resized
-            setState((s) => (s.expansion ? { ...s, expansion: { ...s.expansion, frame: resized } } : s))
+            setState((s) =>
+                s.expansion ? { ...s, expansion: { ...s.expansion, frame: resized } } : s,
+            )
         }
-        if (edge === 'top') await win.setPosition(new LogicalPosition(position.x, position.y - delta))
+        if (edge === 'top')
+            await win.setPosition(new LogicalPosition(position.x, position.y - delta))
         await win.setSize(new LogicalSize(size.width, size.height + delta))
     }, [])
 

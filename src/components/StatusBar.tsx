@@ -33,7 +33,8 @@ const STATUS_COLOR: Record<PaceStatus, string> = {
 const RADIUS = 6
 const RING = 2 * Math.PI * RADIUS
 
-const pill = 'flex items-center gap-1 h-6 px-1 rounded-full bg-[#1a1a1a]/80 text-white/70 text-[10px]'
+const pill =
+    'flex items-center gap-1 h-6 px-1 rounded-full bg-[#1a1a1a]/80 text-white/70 text-[10px]'
 const arrow =
     'flex items-center justify-center w-5 h-5 rounded-full hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors'
 

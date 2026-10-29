@@ -16,7 +16,11 @@ const segment = (active: boolean) =>
         active ? 'bg-[#445ade] text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'
     }`
 
-export default function TypographyControls({ value, onChange, onAdjustStart }: TypographyControlsProps) {
+export default function TypographyControls({
+    value,
+    onChange,
+    onAdjustStart,
+}: TypographyControlsProps) {
     const t = useT()
     const set = (patch: Partial<Typography>) => onChange({ ...value, ...patch })
 

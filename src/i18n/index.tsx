@@ -32,16 +32,8 @@ export function getMessages(language: string): Messages {
 
 const I18nContext = createContext<Messages>(en)
 
-export function I18nProvider({
-    language,
-    children,
-}: {
-    language: string
-    children: ReactNode
-}) {
-    return (
-        <I18nContext.Provider value={getMessages(language)}>{children}</I18nContext.Provider>
-    )
+export function I18nProvider({ language, children }: { language: string; children: ReactNode }) {
+    return <I18nContext.Provider value={getMessages(language)}>{children}</I18nContext.Provider>
 }
 
 export function useT(): Messages {

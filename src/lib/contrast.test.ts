@@ -20,7 +20,9 @@ describe('ensureContrast', () => {
         ['#888888', '#777777'],
         ['#ff0000', '#00ff00'],
     ])('brings %s on %s up to the minimum', (text, background) => {
-        expect(contrastRatio(ensureContrast(text, background), background)).toBeGreaterThanOrEqual(MIN_CONTRAST)
+        expect(contrastRatio(ensureContrast(text, background), background)).toBeGreaterThanOrEqual(
+            MIN_CONTRAST,
+        )
     })
 })
 

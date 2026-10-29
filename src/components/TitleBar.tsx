@@ -22,16 +22,12 @@ const TitleBar = forwardRef<HTMLDivElement, TitleBarProps>(
                     className="flex items-center justify-between pl-3 bg-[#1a1a1a] text-white select-none font-sans"
                     style={{ height: TITLE_BAR_HEIGHT }}>
                     <div className="flex items-center gap-2 pointer-events-none">
-                        <span className="text-[11px] text-white/40 font-medium">
-                            {t.appName}
-                        </span>
+                        <span className="text-[11px] text-white/40 font-medium">{t.appName}</span>
                     </div>
 
                     <div className="flex items-center h-full">
                         <button
-                            onClick={() =>
-                                onPositionChange(position === 'top' ? 'bottom' : 'top')
-                            }
+                            onClick={() => onPositionChange(position === 'top' ? 'bottom' : 'top')}
                             className="h-full px-3 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all text-xs"
                             title={position === 'top' ? t.titleBar.moveDown : t.titleBar.moveUp}>
                             {position === 'top' ? (

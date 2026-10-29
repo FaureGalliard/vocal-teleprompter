@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import { AlertTriangle, Keyboard, RotateCcw } from 'lucide-react'
 import { useT } from '../i18n'
 import Switch from './Switch'
-import { GLOBAL_SHORTCUTS, type GlobalAction, type ShortcutBindings } from '../hooks/useGlobalShortcuts'
+import {
+    GLOBAL_SHORTCUTS,
+    type GlobalAction,
+    type ShortcutBindings,
+} from '../hooks/useGlobalShortcuts'
 import { acceleratorFromEvent, displayShortcut } from '../lib/shortcuts'
 
 interface ShortcutsSectionProps {

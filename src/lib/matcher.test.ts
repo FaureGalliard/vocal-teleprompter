@@ -70,7 +70,8 @@ describe('nextPosition', () => {
 
     it('never moves backwards while reading', () => {
         const { positions } = readAloud(SCRIPT, [SCRIPT])
-        for (let i = 1; i < positions.length; i++) expect(positions[i]).toBeGreaterThanOrEqual(positions[i - 1])
+        for (let i = 1; i < positions.length; i++)
+            expect(positions[i]).toBeGreaterThanOrEqual(positions[i - 1])
     })
 
     // What Vosk returned for the English test recording (src-tauri/tests/fixtures)
@@ -136,10 +137,14 @@ describe('nextPosition', () => {
     })
 
     it('ignores accents and case in Spanish', () => {
-        const script = 'Buenos días a todos. Hoy les voy a mostrar cómo reducimos el tiempo de entrega a la mitad.'
+        const script =
+            'Buenos días a todos. Hoy les voy a mostrar cómo reducimos el tiempo de entrega a la mitad.'
         const { current, last } = readAloud(
             script,
-            ['buenos dias a todos', 'hoy les voy a mostrar como reducimos el tiempo de entrega a la mitad'],
+            [
+                'buenos dias a todos',
+                'hoy les voy a mostrar como reducimos el tiempo de entrega a la mitad',
+            ],
             'es-ES',
         )
         expect(current).toBe(last)
@@ -163,7 +168,11 @@ describe('nextPosition', () => {
 
     it('follows Japanese, which is written without spaces', () => {
         const script = '今日はいい天気ですね。散歩に行きましょう。'
-        const { current, last } = readAloud(script, ['今日はいい天気ですね', '散歩に行きましょう'], 'ja-JP')
+        const { current, last } = readAloud(
+            script,
+            ['今日はいい天気ですね', '散歩に行きましょう'],
+            'ja-JP',
+        )
         expect(current).toBe(last)
     })
 })
