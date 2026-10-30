@@ -1,5 +1,7 @@
 mod backdrop;
 mod behind;
+#[cfg(target_os = "linux")]
+mod desktop_entry;
 mod input;
 mod mcp;
 pub mod speech;
@@ -103,6 +105,8 @@ pub fn run() {
             if let Some(win) = app.get_webview_window("main") {
                 let _ = win.set_skip_taskbar(false);
             }
+            #[cfg(target_os = "linux")]
+            desktop_entry::ensure();
             input::watch(app.handle().clone());
             if let Err(e) = mcp::bridge::start(app.handle()) {
                 eprintln!("AI connector bridge unavailable: {e}");
