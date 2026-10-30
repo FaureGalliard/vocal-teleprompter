@@ -160,24 +160,9 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
 /// so the GNOME Shell extension does it and hands back the pixels
 #[cfg(target_os = "linux")]
 pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
-    use std::sync::OnceLock;
-    use zbus::blocking::Connection;
-
-    static BUS: OnceLock<Result<Connection, String>> = OnceLock::new();
-    let bus = BUS
-        .get_or_init(|| Connection::session().map_err(|e| e.to_string()))
-        .as_ref()?;
-    let reply = bus
-        .call_method(
-            Some("io.github.FaureGalliard.VocalTeleprompter.Shell"),
-            "/io/github/FaureGalliard/VocalTeleprompter/Shell",
-            Some("io.github.FaureGalliard.VocalTeleprompter.Shell"),
-            "Behind",
-            &(),
-        )
-        .map_err(|e| e.to_string())?;
+    let reply = crate::gnome_shell::call("Behind", &())?;
     let (width, height, stride, channels, pixels): (i32, i32, i32, i32, Vec<u8>) =
-        reply.body().deserialize().map_err(|e| e.to_string())?;
+        reply.deserialize().map_err(|e| e.to_string())?;
     if width <= 0 || height <= 0 || !(3..=4).contains(&channels) {
         return Err("Unexpected picture from the shell".into());
     }

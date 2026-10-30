@@ -2,6 +2,8 @@ mod backdrop;
 mod behind;
 #[cfg(target_os = "linux")]
 mod desktop_entry;
+#[cfg(target_os = "linux")]
+mod gnome_shell;
 mod input;
 mod mcp;
 pub mod speech;
@@ -98,6 +100,12 @@ pub fn run() {
             mcp::clients::is_mcp_client_connected,
             mcp::clients::mcp_config_snippet
         ])
+        .on_window_event(|window, event| {
+            #[cfg(target_os = "linux")]
+            gnome_shell::keep_above(window, event);
+            #[cfg(not(target_os = "linux"))]
+            let _ = (window, event);
+        })
         .setup(|app| {
             // Most Linux desktops have no tray, so the window has to stay in
             // the dock and Alt+Tab to be found again after minimizing it
