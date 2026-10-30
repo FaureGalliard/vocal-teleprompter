@@ -92,6 +92,8 @@ function App() {
         currentWordIndex,
         pace,
         goToCard: script.goToCard,
+        library: actions.library,
+        openScript: actions.openScript,
     })
 
     const tour = useTour(t, settings, () => {

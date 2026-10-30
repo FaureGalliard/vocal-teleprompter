@@ -99,8 +99,10 @@ fn tools() -> Value {
             "name": "load_script",
             "title": "Load script",
             "description": format!(
-                "Put a script in the teleprompter, replacing the current one or appending \
-                 to it. Listening stops and the position goes back to the start.\n\n{FORMAT_GUIDE}"
+                "Put a script in the teleprompter. By default it becomes a new script in \
+                 the user's library and goes on screen (the one there stays saved); with \
+                 mode append its slides are added after the current script instead. \
+                 Listening stops and the position goes back to the start.\n\n{FORMAT_GUIDE}"
             ),
             "inputSchema": {
                 "type": "object",
@@ -112,7 +114,7 @@ fn tools() -> Value {
                     "mode": {
                         "type": "string",
                         "enum": ["replace", "append"],
-                        "description": "replace (default) or append as new slides after the current script",
+                        "description": "replace (default: a new saved script on screen) or append as new slides after the current script",
                     },
                 },
                 "required": ["text"],
@@ -124,6 +126,25 @@ fn tools() -> Value {
             "description": "Read the script currently in the teleprompter, to review or improve it.",
             "annotations": { "readOnlyHint": true },
             "inputSchema": { "type": "object", "properties": {} },
+        },
+        {
+            "name": "list_scripts",
+            "title": "List saved scripts",
+            "description": "The scripts saved in the user's library, latest first: id, title (first line), slides, words, estimated minutes, when it was last changed, and which one is on screen.",
+            "annotations": { "readOnlyHint": true },
+            "inputSchema": { "type": "object", "properties": {} },
+        },
+        {
+            "name": "open_script",
+            "title": "Open a saved script",
+            "description": "Put a saved script on screen, by its id from list_scripts. The one there stays saved. Listening stops.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "string", "description": "The script's id, from list_scripts" },
+                },
+                "required": ["id"],
+            },
         },
         {
             "name": "get_status",
@@ -156,6 +177,18 @@ fn tools() -> Value {
                 "properties": {
                     "hideFromScreenSharing": { "type": "boolean", "description": "Keep the window out of screen shares, recordings and screenshots" },
                     "fontSize": { "type": "integer", "minimum": 6, "maximum": 200, "description": "Text size in pixels" },
+                    "textColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Text color as #rrggbb; with a see-through background each letter adapts from it" },
+                    "backgroundColor": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$", "description": "Background color as #rrggbb" },
+                    "backgroundOpacity": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Background opacity in percent; below 85 the slides show through and the text adapts to them" },
+                    "softenBehind": { "type": "integer", "minimum": 0, "maximum": 100, "description": "How much what shows through a see-through background is blurred, like frosted glass, in percent" },
+                    "font": { "type": "string", "enum": ["sans", "serif", "mono", "rounded", "legible"], "description": "Typeface" },
+                    "fontWeight": { "type": "integer", "enum": [400, 600, 700], "description": "Regular, semibold or bold" },
+                    "lineSpacing": { "type": "number", "minimum": 1.1, "maximum": 2.6, "description": "Line height as a multiple of the text size" },
+                    "textWidth": { "type": "integer", "minimum": 40, "maximum": 100, "description": "Share of the window width the text may use, in percent" },
+                    "textAlign": { "type": "string", "enum": ["center", "left"] },
+                    "scrolling": { "type": "string", "enum": ["ahead", "fixed"], "description": "ahead: the text holds still until the current line nears the bottom; fixed: the current line stays at one height" },
+                    "linesBelow": { "type": "integer", "minimum": 1, "maximum": 6, "description": "In ahead scrolling, lines kept visible below the current one" },
+                    "titleBar": { "type": "boolean", "description": "Show the title bar" },
                     "targetMinutes": { "type": "integer", "minimum": 0, "maximum": 180, "description": "Target duration of the talk; 0 turns it off" },
                     "countdownSeconds": { "type": "integer", "enum": [0, 3, 5, 10], "description": "Countdown before listening starts; 0 turns it off" },
                     "readingLine": { "type": "boolean", "description": "Hold the current line near the top, close to the camera" },
