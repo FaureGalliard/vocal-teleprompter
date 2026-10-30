@@ -2,6 +2,10 @@
 
 Back to the [README](../README.md).
 
+- 🎨 **Reads over anything**: with a see-through background (the default), what is behind
+  the window is softened like frosted glass, and every letter takes the color that stands
+  out most from what is right behind it, so the prompter can sit anywhere on your slides.
+  Clicks and key presses anywhere make it look again right away.
 - 🃏 **Slide cards**: put a line with `---` between slides and each part becomes a card.
   The current card stands out, the bottom bar shows *Slide 3 / 12*, and it moves on as
   soon as you say the last word of the slide.

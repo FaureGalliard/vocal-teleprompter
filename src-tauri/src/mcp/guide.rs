@@ -52,8 +52,10 @@ elapsed time, words per minute, time left and pace against the target.
 ## Features worth knowing
 - Hide from screen sharing (on by default): Zoom, Meet, Teams, OBS and \
 screenshots leave the window out, while the speaker still sees it.
-- Automatic contrast keeps the text readable; with a see-through background \
-the text gets a halo.
+- Automatic contrast keeps the text readable. With a see-through background \
+(the default) the prompter can sit anywhere on the slides: what shows through \
+is softened like frosted glass (Appearance > Soften what is behind) and every \
+letter takes the color that stands out most from what is right behind it.
 - Click-through lets clicks reach the app behind the window. Turned off with \
 Ctrl+Alt+K or from the tray icon.
 - Reading line holds the current line near the top, close to the camera.
