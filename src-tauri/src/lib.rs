@@ -77,6 +77,12 @@ pub fn run() {
             mcp::clients::mcp_config_snippet
         ])
         .setup(|app| {
+            // Most Linux desktops have no tray, so the window has to stay in
+            // the dock and Alt+Tab to be found again after minimizing it
+            #[cfg(target_os = "linux")]
+            if let Some(win) = app.get_webview_window("main") {
+                let _ = win.set_skip_taskbar(false);
+            }
             input::watch(app.handle().clone());
             if let Err(e) = mcp::bridge::start(app.handle()) {
                 eprintln!("AI connector bridge unavailable: {e}");
