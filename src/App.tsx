@@ -210,6 +210,7 @@ function App() {
                         fontSize={settings.fontSize}
                         textColor={displayTextColor}
                         seen={colors.seen}
+                        halo={colors.halo}
                         readingLine={settings.readingLine}
                         scrolling={settings.scrolling}
                         typography={settings.typography}
