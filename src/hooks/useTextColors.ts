@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import { bestOutline, ensureContrast } from '../lib/contrast'
-import { IS_LINUX } from '../lib/platform'
+import { ensureContrast } from '../lib/contrast'
 import { useBackdrop } from './useBackdrop'
 import { useBackdropView } from './useBackdropView'
 import type { Settings } from './useSettings'
@@ -22,11 +21,7 @@ export function useTextColors(settings: Settings, editing: boolean) {
     const { bgOpacity } = settings
     const display = autoContrast ? ensureContrast(textColor, bgColor) : textColor
     const seeThrough = bgOpacity < SEE_THROUGH_BELOW && (autoContrast || backdropSoften > 0)
-    // Linux cannot leave the window out of a capture of the screen, so there
-    // the background is not looked at: a halo around the letters keeps them
-    // readable over anything instead
-    const looking = seeThrough && !IS_LINUX
-    const { backdrop, place, moving, hurry } = useBackdrop(looking, !hiddenFromCapture)
+    const { backdrop, place, moving, hurry } = useBackdrop(seeThrough, !hiddenFromCapture)
     const view = useBackdropView(
         backdrop,
         place,
@@ -48,6 +43,5 @@ export function useTextColors(settings: Settings, editing: boolean) {
         // Out of date while the window moves: faded out until it settles
         glassShown: !moving,
         opacity: bgOpacity,
-        halo: autoContrast && seeThrough && !looking ? bestOutline(display) : null,
     }
 }

@@ -39,8 +39,6 @@ interface CanvasProps {
     // well over it; null when the background is solid or it can't be seen
     // Counts the looks at what is behind the window, null when there are none
     seen: number | null
-    // Color of a halo around the letters when the background cannot be seen
-    halo: string | null
     // Hold the current line at a fixed height, near a top-mounted camera
     readingLine: boolean
     scrolling: Scrolling
@@ -68,7 +66,6 @@ export default function Canvas({
     fontSize,
     textColor,
     seen,
-    halo,
     readingLine,
     scrolling,
     typography,
@@ -136,7 +133,6 @@ export default function Canvas({
         maxWidth: `${typography.width}%`,
         marginLeft: 'auto',
         marginRight: 'auto',
-        textShadow: halo ? `0 0 3px ${halo}, 0 0 6px ${halo}cc, 0 1px 2px ${halo}` : undefined,
     }
     const renderSegment = (segment: CardSegment, s: number) => {
         const i = segment.word
