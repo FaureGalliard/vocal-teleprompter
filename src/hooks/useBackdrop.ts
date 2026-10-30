@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
+import { IS_LINUX } from '../lib/platform'
 
 // Physical pixels between samples: plenty for the color behind a letter
 const STEP = 2
@@ -18,6 +19,11 @@ const CHANGED_MS = 120
 // After a click, a key or the wheel anywhere: what most slide changes follow,
 // so look right away instead of waiting for the next round
 const INPUT_MS = 80
+// On Linux GNOME Shell paints each look on the thread that draws the whole
+// desktop, so looks are spaced out there: never closer than this, even
+// while what is behind keeps changing (a video), and a steady one less often
+const LINUX_GAP_MS = 400
+const LINUX_EVERY_MS = 1000
 
 // What is behind the window, while `enabled` (a see-through background).
 // Hidden from screen capture, each look covers the whole monitor, so moving
@@ -79,8 +85,10 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         // Asked for a look while one was underway: take the next one soon
         let soon = false
         let timer: ReturnType<typeof setTimeout>
+        let lastLook = 0
         const next = (ms: number) => {
             clearTimeout(timer)
+            if (IS_LINUX) ms = Math.max(ms, LINUX_GAP_MS - (performance.now() - lastLook))
             if (!stopped) timer = setTimeout(capture, ms)
         }
         const capture = async () => {
@@ -95,7 +103,9 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
                 console.warn('Could not see behind the window:', e)
             }
             busy = false
-            next(soon ? CHANGED_MS : shown ? SHOWN_EVERY_MS : EVERY_MS)
+            lastLook = performance.now()
+            const steady = IS_LINUX ? LINUX_EVERY_MS : shown ? SHOWN_EVERY_MS : EVERY_MS
+            next(soon ? CHANGED_MS : steady)
         }
         capture()
         const soonish = (ms: number) => {
