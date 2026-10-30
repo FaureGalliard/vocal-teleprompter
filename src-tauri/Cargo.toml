@@ -59,6 +59,10 @@ windows = { version = "0.62", features = [
 [target.'cfg(target_os = "linux")'.dependencies]
 # Whether the desktop shows tray icons at all
 zbus = "5"
+# The screen sharing portal: asking the user, and following GNOME's streams
+gtk = "0.18"
+async-channel = "2"
+futures-util = "0.3"
 
 [dev-dependencies]
 vosk = "0.3"

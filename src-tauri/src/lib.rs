@@ -6,6 +6,8 @@ mod desktop_entry;
 mod gnome_shell;
 mod input;
 mod mcp;
+#[cfg(target_os = "linux")]
+mod screencast_portal;
 pub mod speech;
 
 use tauri::{
@@ -79,6 +81,13 @@ fn set_tray_labels(
 /// opening the window
 pub fn run_mcp_server() {
     mcp::server::run()
+}
+
+/// `vocal-teleprompter --screencast-portal`: share the screen with video
+/// calls leaving the prompter out, instead of opening the window
+#[cfg(target_os = "linux")]
+pub fn run_screencast_portal() {
+    screencast_portal::run()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
