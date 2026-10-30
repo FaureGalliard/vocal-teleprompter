@@ -112,14 +112,15 @@ async function behind(actor) {
         height: frame.height,
     });
     const [, , , scale] = global.stage.get_capture_final_size(rect);
-    // Skipped by this one paint only: the screen is not redrawn in between
-    const opacity = actor.opacity;
-    actor.opacity = 0;
+    // Left out of this one paint only: the screen is not redrawn in between.
+    // The override leaves the opacity itself alone, which a fade-in may be
+    // animating, so it never sticks at a value taken halfway through.
+    actor.set_opacity_override(0);
     let content;
     try {
         content = global.stage.paint_to_content(rect, scale, null, Clutter.PaintFlag.NO_CURSORS);
     } finally {
-        actor.opacity = opacity;
+        actor.set_opacity_override(-1);
     }
     const stream = Gio.MemoryOutputStream.new_resizable();
     const pixbuf = await Shell.Screenshot.composite_to_stream(
