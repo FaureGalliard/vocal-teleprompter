@@ -1,6 +1,6 @@
 [package]
 name = "vocal-teleprompter"
-version = "1.4.0"
+version = "1.5.0"
 description = "Voice-synced teleprompter that scrolls your script as you speak"
 authors = ["FaureGalliard"]
 license = "MIT"
