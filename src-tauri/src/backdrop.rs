@@ -9,7 +9,6 @@
 
 use tauri::ipc::Response;
 use tauri::WebviewWindow;
-use xcap::Monitor;
 
 /// Returns every `step`-th pixel of what is behind the window, as
 /// `[cols: u32][rows: u32][x: i32][y: i32][r g b ...]` (little endian; x and
@@ -53,7 +52,15 @@ fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
     out
 }
 
+#[cfg(target_os = "linux")]
+fn capture(_window: &WebviewWindow, _step: u32) -> Result<Response, String> {
+    Err("Not available on this system".into())
+}
+
+#[cfg(not(target_os = "linux"))]
 fn capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
+    use xcap::Monitor;
+
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let monitor = Monitor::from_point(position.x, position.y).map_err(|e| e.to_string())?;
     let (x, y) = (

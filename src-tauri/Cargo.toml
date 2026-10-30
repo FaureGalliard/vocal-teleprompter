@@ -38,6 +38,10 @@ vosk = "0.3"
 cpal = "0.18"
 ureq = "3"
 zip = { version = "4", default-features = false, features = ["deflate"] }
+
+# Linux cannot leave a window out of a screen capture, so there the prompter
+# does not look behind itself
+[target.'cfg(not(target_os = "linux"))'.dependencies]
 xcap = "0.9"
 
 [target.'cfg(windows)'.dependencies]
