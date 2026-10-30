@@ -25,3 +25,6 @@ dist-ssr
 
 # Speech models for the tests (scripts/fetch-speech-models.ps1)
 .speech-models
+
+# Raw recordings and slides for the README media, kept out of git and the app
+/media-raw
