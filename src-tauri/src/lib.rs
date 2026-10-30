@@ -108,6 +108,8 @@ pub fn run() {
             }
             #[cfg(target_os = "linux")]
             desktop_entry::ensure();
+            #[cfg(target_os = "linux")]
+            gnome_shell::watch_moves(app.handle().clone());
             input::watch(app.handle().clone());
             if let Err(e) = mcp::bridge::start(app.handle()) {
                 eprintln!("AI connector bridge unavailable: {e}");

@@ -30,7 +30,9 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
     const [place, setPlace] = useState<Place | null>(null)
     const [moving, setMoving] = useState(false)
-    const hurryRef = useRef<() => void>(() => {})
+    const hurryRef = useRef<(ms?: number) => void>(() => {})
+    // Dragged, as the GNOME Shell extension tells: no looks until it stops
+    const draggedRef = useRef(false)
 
     // Where the window is, kept up to date as it moves and resizes
     useEffect(() => {
@@ -49,10 +51,21 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         const resized = win.onResized(({ payload }) =>
             setPlace((p) => p && { ...p, width: payload.width, height: payload.height }),
         )
+        // Wayland tells no app that its window moves; the GNOME Shell
+        // extension tells when a drag starts and ends instead. The window
+        // only knows where it is again by looking, so it does not look while
+        // dragged, and looks right away once let go.
+        const dragged = listen<boolean>('window-moving', ({ payload }) => {
+            clearTimeout(still)
+            draggedRef.current = payload
+            setMoving(payload)
+            if (!payload) hurryRef.current(0)
+        })
         return () => {
             clearTimeout(still)
             moved.then((off) => off())
             resized.then((off) => off())
+            dragged.then((off) => off())
         }
     }, [enabled])
 
@@ -71,6 +84,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             if (!stopped) timer = setTimeout(capture, ms)
         }
         const capture = async () => {
+            if (draggedRef.current) return next(EVERY_MS)
             busy = true
             soon = false
             try {
@@ -88,7 +102,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             if (busy) soon = true
             else next(ms)
         }
-        hurryRef.current = () => soonish(CHANGED_MS)
+        hurryRef.current = (ms = CHANGED_MS) => soonish(ms)
         // Clicked, typed or scrolled somewhere: the screen is likely changing
         const input = listen('user-input', () => soonish(INPUT_MS))
         return () => {
