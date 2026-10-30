@@ -24,9 +24,14 @@ pub async fn capture_backdrop(
     shown: bool,
 ) -> Result<Response, String> {
     let step = step.max(1);
+    // Linux cannot hide the window from screen captures, so there it always
+    // shows in them and only what is behind it is ever looked at
+    #[cfg(not(target_os = "linux"))]
     if !shown {
         return capture(&window, step);
     }
+    #[cfg(target_os = "linux")]
+    let _ = shown;
     let behind = crate::behind::draw(&window)?;
     let (cols, rows) = (
         (behind.width as u32).div_ceil(step),
@@ -50,11 +55,6 @@ fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
     out.extend_from_slice(&x.to_le_bytes());
     out.extend_from_slice(&y.to_le_bytes());
     out
-}
-
-#[cfg(target_os = "linux")]
-fn capture(_window: &WebviewWindow, _step: u32) -> Result<Response, String> {
-    Err("Not available on this system".into())
 }
 
 #[cfg(not(target_os = "linux"))]

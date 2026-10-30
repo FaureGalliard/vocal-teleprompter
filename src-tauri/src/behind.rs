@@ -156,7 +156,55 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
     })
 }
 
-#[cfg(not(windows))]
+/// On Linux only the compositor can leave a window out of what it paints,
+/// so the GNOME Shell extension does it and hands back the pixels
+#[cfg(target_os = "linux")]
+pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
+    use std::sync::OnceLock;
+    use zbus::blocking::Connection;
+
+    static BUS: OnceLock<Result<Connection, String>> = OnceLock::new();
+    let bus = BUS
+        .get_or_init(|| Connection::session().map_err(|e| e.to_string()))
+        .as_ref()?;
+    let reply = bus
+        .call_method(
+            Some("io.github.FaureGalliard.VocalTeleprompter.Shell"),
+            "/io/github/FaureGalliard/VocalTeleprompter/Shell",
+            Some("io.github.FaureGalliard.VocalTeleprompter.Shell"),
+            "Behind",
+            &(),
+        )
+        .map_err(|e| e.to_string())?;
+    let (width, height, stride, channels, pixels): (i32, i32, i32, i32, Vec<u8>) =
+        reply.body().deserialize().map_err(|e| e.to_string())?;
+    if width <= 0 || height <= 0 || !(3..=4).contains(&channels) {
+        return Err("Unexpected picture from the shell".into());
+    }
+    let (stride, channels) = (stride as usize, channels as usize);
+    if pixels.len() < stride * (height as usize - 1) + width as usize * channels {
+        return Err("Short picture from the shell".into());
+    }
+
+    let mut bgra = Vec::with_capacity((width * height * 4) as usize);
+    for row in pixels.chunks(stride).take(height as usize) {
+        for px in row[..width as usize * channels].chunks_exact(channels) {
+            bgra.extend_from_slice(&[px[2], px[1], px[0], 255]);
+        }
+    }
+    // Wayland tells no app where its window is: placed where the app
+    // believes it is, so the frontend finds it under itself
+    let position = window.inner_position().map_err(|e| e.to_string())?;
+    Ok(Behind {
+        x: position.x,
+        y: position.y,
+        width,
+        height,
+        bgra,
+    })
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
 pub fn draw(_window: &WebviewWindow) -> Result<Behind, String> {
     Err("Not available on this system".into())
 }
