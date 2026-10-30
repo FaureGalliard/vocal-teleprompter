@@ -31,7 +31,7 @@ No fixed speed, no foot pedal. Speech recognition finds where you are in the scr
 scrolls there, word by word. Pause, slow down or ad-lib, and it waits for you. Works with
 any microphone, in 9 languages, entirely on your computer.
 
-<!-- VOICE VIDEO: the user-attachments link of demo-voice.mp4 goes on its own line here -->
+https://github.com/user-attachments/assets/0620d961-fcf3-4c5d-8243-a8b373366173
 
 ## 🎨 It reads over anything
 
@@ -63,7 +63,7 @@ prompter, split into slides and sized to your time. Connect Claude Desktop, Clau
 Cursor or VS Code in one click from **Settings → AI connector**.
 [How it works →](docs/mcp.md)
 
-https://github.com/user-attachments/assets/57b0c4c3-3a7a-4cbe-851b-12351ad642f2
+https://github.com/user-attachments/assets/5312b16a-3dc5-4533-b50f-fe2cc388f4d4
 
 ## 🧰 Everything else a speaker needs
 
