@@ -30,8 +30,9 @@ export function useWindowBehavior(settings: Settings, t: Messages) {
     }, [setClickThrough])
 
     useEffect(() => {
-        getCurrentWindow()
-            .setContentProtected(hiddenFromCapture)
-            .catch((e) => console.error(e))
+        // Through the app, which on Linux asks the GNOME Shell extension
+        invoke('set_hidden_from_capture', { hidden: hiddenFromCapture }).catch((e) =>
+            console.error(e),
+        )
     }, [hiddenFromCapture])
 }

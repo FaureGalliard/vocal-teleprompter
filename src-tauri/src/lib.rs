@@ -42,6 +42,21 @@ fn tray_shown() -> bool {
     true
 }
 
+/// Leaves the window out of screenshots and screen shares, or lets it show
+#[tauri::command]
+fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let _ = window;
+        gnome_shell::set_hidden_from_capture(hidden);
+        Ok(())
+    }
+    #[cfg(not(target_os = "linux"))]
+    window
+        .set_content_protected(hidden)
+        .map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 fn set_tray_labels(
     items: tauri::State<'_, TrayItems>,
@@ -79,6 +94,7 @@ pub fn run() {
         .manage(speech::SpeechEngine::default())
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
+            set_hidden_from_capture,
             backdrop::capture_backdrop,
             speech::list_microphones,
             speech::speech_start,
@@ -95,7 +111,7 @@ pub fn run() {
         ])
         .on_window_event(|window, event| {
             #[cfg(target_os = "linux")]
-            gnome_shell::keep_above(window, event);
+            gnome_shell::on_shown(window, event);
             #[cfg(not(target_os = "linux"))]
             let _ = (window, event);
         })

@@ -1,7 +1,9 @@
 //! The GNOME Shell extension in linux/gnome-shell-extension, which does on
 //! Wayland what only the compositor can: see behind the window, keep it
-//! above the others and tell when it is being moved.
+//! above the others, leave it out of screen shares and tell when it is
+//! being moved.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 use tauri::Runtime;
 use zbus::blocking::Connection;
@@ -27,16 +29,35 @@ where
         .map_err(|e| e.to_string())
 }
 
-/// Keeps the window above the others once it is on screen (Wayland ignores
-/// the app's own request). Without the extension the window stays where
-/// the desktop puts it.
-pub fn keep_above<R: Runtime>(window: &tauri::Window<R>, event: &tauri::WindowEvent) {
+// Whether the window should be left out of screenshots and screen shares
+static HIDDEN: AtomicBool = AtomicBool::new(true);
+
+fn apply_hidden() -> Result<(), String> {
+    call("SetHiddenFromCapture", &(HIDDEN.load(Ordering::Relaxed),)).map(drop)
+}
+
+/// Leaves the window out of screenshots and screen shares, or lets it show.
+/// Applied again once the window is on screen, in case it was not yet.
+pub fn set_hidden_from_capture(hidden: bool) {
+    HIDDEN.store(hidden, Ordering::Relaxed);
+    std::thread::spawn(|| {
+        let _ = apply_hidden();
+    });
+}
+
+/// Once the window is on screen: keeps it above the others (Wayland
+/// ignores the app's own request) and hidden from capture as asked.
+/// Without the extension the window stays where the desktop puts it.
+pub fn on_shown<R: Runtime>(window: &tauri::Window<R>, event: &tauri::WindowEvent) {
     static DONE: OnceLock<()> = OnceLock::new();
     if window.label() == "main" && matches!(event, tauri::WindowEvent::Focused(true)) {
         DONE.get_or_init(|| {
             std::thread::spawn(|| {
                 if let Err(e) = call("SetAbove", &(true,)) {
                     eprintln!("Could not keep the window above the others: {e}");
+                }
+                if let Err(e) = apply_hidden() {
+                    eprintln!("Could not hide the window from capture: {e}");
                 }
             });
         });
