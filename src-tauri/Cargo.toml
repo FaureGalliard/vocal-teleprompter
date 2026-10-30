@@ -56,5 +56,9 @@ windows = { version = "0.62", features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+# Whether the desktop shows tray icons at all
+zbus = "5"
+
 [dev-dependencies]
 vosk = "0.3"

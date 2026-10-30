@@ -5807,6 +5807,7 @@ dependencies = [
  "vosk",
  "windows",
  "xcap",
+ "zbus",
  "zip",
 ]
 

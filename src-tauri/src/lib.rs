@@ -18,6 +18,26 @@ struct TrayItems {
     quit: MenuItem<Wry>,
 }
 
+/// Whether something on the desktop shows tray icons. GNOME shows none
+/// without an extension, and the tray library then falls back to a GTK
+/// status icon that cannot work on Wayland and only logs errors.
+fn tray_shown() -> bool {
+    #[cfg(target_os = "linux")]
+    {
+        use zbus::blocking::{fdo::DBusProxy, Connection};
+        let watcher = zbus::names::BusName::try_from("org.kde.StatusNotifierWatcher").unwrap();
+        Connection::session()
+            .and_then(|bus| {
+                DBusProxy::new(&bus)?
+                    .name_has_owner(watcher)
+                    .map_err(Into::into)
+            })
+            .unwrap_or(false)
+    }
+    #[cfg(not(target_os = "linux"))]
+    true
+}
+
 #[tauri::command]
 fn set_tray_labels(
     items: tauri::State<'_, TrayItems>,
@@ -101,49 +121,51 @@ pub fn run() {
                 quit: quit.clone(),
             });
 
-            TrayIconBuilder::new()
-                .icon(app.default_window_icon().unwrap().clone())
-                .tooltip("Vocal Teleprompter")
-                .menu(&menu)
-                .show_menu_on_left_click(false)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
-                        if let Some(win) = app.get_webview_window("main") {
-                            let _ = win.unminimize();
-                            let _ = win.show();
-                            let _ = win.set_focus();
-                        }
-                    }
-                    "hide" => {
-                        if let Some(win) = app.get_webview_window("main") {
-                            let _ = win.hide();
-                        }
-                    }
-                    "click_through" => {
-                        let _ = app.emit("toggle-click-through", ());
-                    }
-                    "quit" => app.exit(0),
-                    _ => {}
-                })
-                .on_tray_icon_event(|tray, event| {
-                    if let TrayIconEvent::Click {
-                        button: MouseButton::Left,
-                        ..
-                    } = event
-                    {
-                        let app = tray.app_handle();
-                        if let Some(win) = app.get_webview_window("main") {
-                            if win.is_visible().unwrap_or(false) {
-                                let _ = win.hide();
-                            } else {
+            if tray_shown() {
+                TrayIconBuilder::new()
+                    .icon(app.default_window_icon().unwrap().clone())
+                    .tooltip("Vocal Teleprompter")
+                    .menu(&menu)
+                    .show_menu_on_left_click(false)
+                    .on_menu_event(|app, event| match event.id.as_ref() {
+                        "show" => {
+                            if let Some(win) = app.get_webview_window("main") {
                                 let _ = win.unminimize();
                                 let _ = win.show();
                                 let _ = win.set_focus();
                             }
                         }
-                    }
-                })
-                .build(app)?;
+                        "hide" => {
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.hide();
+                            }
+                        }
+                        "click_through" => {
+                            let _ = app.emit("toggle-click-through", ());
+                        }
+                        "quit" => app.exit(0),
+                        _ => {}
+                    })
+                    .on_tray_icon_event(|tray, event| {
+                        if let TrayIconEvent::Click {
+                            button: MouseButton::Left,
+                            ..
+                        } = event
+                        {
+                            let app = tray.app_handle();
+                            if let Some(win) = app.get_webview_window("main") {
+                                if win.is_visible().unwrap_or(false) {
+                                    let _ = win.hide();
+                                } else {
+                                    let _ = win.unminimize();
+                                    let _ = win.show();
+                                    let _ = win.set_focus();
+                                }
+                            }
+                        }
+                    })
+                    .build(app)?;
+            }
             Ok(())
         })
         .run(tauri::generate_context!())
