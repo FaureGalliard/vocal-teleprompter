@@ -134,7 +134,7 @@ pub fn run() {
             #[cfg(target_os = "linux")]
             desktop_entry::ensure();
             #[cfg(target_os = "linux")]
-            gnome_shell::watch_moves(app.handle().clone());
+            gnome_shell::watch_signals(app.handle().clone());
             #[cfg(target_os = "linux")]
             gnome_shell::watch_extension();
             input::watch(app.handle().clone());

@@ -95,10 +95,11 @@ pub fn watch_extension() {
     });
 }
 
-/// Emits `window-moving` with true when the window starts being moved or
-/// resized and false when it stops, which on Wayland only the compositor
-/// knows
-pub fn watch_moves<R: Runtime>(app: tauri::AppHandle<R>) {
+/// Passes on what on Wayland only the compositor knows: `window-moving`,
+/// true when the window starts being moved or resized and false when it
+/// stops, and `user-input` after a click, a key or the wheel anywhere, as
+/// `input` does on Windows
+pub fn watch_signals<R: Runtime>(app: tauri::AppHandle<R>) {
     use tauri::Emitter;
     use zbus::blocking::MessageIterator;
     use zbus::message::Type;
@@ -109,20 +110,27 @@ pub fn watch_moves<R: Runtime>(app: tauri::AppHandle<R>) {
             let rule = MatchRule::builder()
                 .msg_type(Type::Signal)
                 .interface(NAME)
-                .and_then(|r| r.member("Moving"))
                 .map_err(|e| e.to_string())?
                 .build();
             let signals =
                 MessageIterator::for_match_rule(rule, bus()?, None).map_err(|e| e.to_string())?;
             for signal in signals.flatten() {
-                if let Ok(moving) = signal.body().deserialize::<bool>() {
-                    let _ = app.emit("window-moving", moving);
+                match signal.header().member().map(|m| m.as_str()) {
+                    Some("Moving") => {
+                        if let Ok(moving) = signal.body().deserialize::<bool>() {
+                            let _ = app.emit("window-moving", moving);
+                        }
+                    }
+                    Some("UserInput") => {
+                        let _ = app.emit("user-input", ());
+                    }
+                    _ => {}
                 }
             }
             Ok(())
         };
         if let Err(e) = watch() {
-            eprintln!("Could not follow the window's moves: {e}");
+            eprintln!("Could not follow the GNOME Shell extension: {e}");
         }
     });
 }

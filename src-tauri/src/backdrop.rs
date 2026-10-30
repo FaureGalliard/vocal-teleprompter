@@ -24,15 +24,28 @@ pub async fn capture_backdrop(
     shown: bool,
 ) -> Result<Response, String> {
     let step = step.max(1);
-    // Linux cannot hide the window from screen captures, so there it always
-    // shows in them and only what is behind it is ever looked at
-    #[cfg(not(target_os = "linux"))]
-    if !shown {
-        return capture(&window, step);
-    }
+    // On Linux the GNOME Shell extension leaves the window out of what it
+    // paints either way, so there only what is behind it is looked at
     #[cfg(target_os = "linux")]
-    let _ = shown;
-    let behind = crate::behind::draw(&window)?;
+    {
+        let _ = shown;
+        let (cols, rows, x, y, rgb) = crate::behind::look(&window, step)?;
+        let mut out = header(cols, rows, x, y);
+        out.extend_from_slice(&rgb);
+        Ok(Response::new(out))
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        if !shown {
+            return capture(&window, step);
+        }
+        shown_capture(&window, step)
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
+    let behind = crate::behind::draw(window)?;
     let (cols, rows) = (
         (behind.width as u32).div_ceil(step),
         (behind.height as u32).div_ceil(step),
