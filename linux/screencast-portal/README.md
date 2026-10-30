@@ -21,6 +21,8 @@ cp linux/screencast-portal/gnome-portals.conf ~/.config/xdg-desktop-portal/
 sed "s|@EXEC@|$PWD/src-tauri/target/debug/vocal-teleprompter|" \
   linux/screencast-portal/org.freedesktop.impl.portal.desktop.vocalteleprompter.service \
   > ~/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.vocalteleprompter.service
+# the session bus only sees new services once told to look again
+busctl --user call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus ReloadConfig
 systemctl --user restart xdg-desktop-portal
 ```
 
