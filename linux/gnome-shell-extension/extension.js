@@ -10,6 +10,7 @@
 // process that owns them, so this gives no app a way to read the screen.
 
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
@@ -25,13 +26,27 @@ const OBJECT_PATH = '/io/github/FaureGalliard/VocalTeleprompter/Shell';
 const APP = 'vocal-teleprompter';
 const HIDE_EFFECT = 'vocal-teleprompter-hidden-from-capture';
 
-// Paints the window on the monitors but not in paints made offscreen,
-// which have no monitor view: screenshots and recordings or screen shares
-// drawn from the scene
+// Where a monitor is being painted right now, between the stage's
+// before-paint and after-paint (the paint context tells no JS code which
+// monitor, if any, it paints)
+let monitorFramebuffer = null;
+
+// Paints the window on the monitors but not in paints made offscreen into
+// another framebuffer: screenshots, and the recordings or screen shares
+// drawn from the scene. Any doubt paints it, so it never vanishes from the
+// screen.
 const HiddenFromCapture = GObject.registerClass(
     class HiddenFromCapture extends Clutter.Effect {
         vfunc_paint(node, paintContext, flags) {
-            if (paintContext.get_stage_view())
+            let onMonitor = true;
+            try {
+                const framebuffer = paintContext.get_framebuffer();
+                onMonitor =
+                    framebuffer === monitorFramebuffer || framebuffer instanceof Cogl.Onscreen;
+            } catch (e) {
+                logError(e, 'Could not tell where the prompter is painted');
+            }
+            if (onMonitor)
                 super.vfunc_paint(node, paintContext, flags);
         }
     },
@@ -180,12 +195,20 @@ export default class VocalTeleprompterExtension extends Extension {
         this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this._service);
         this._dbus.export(Gio.DBus.session, OBJECT_PATH);
         const moving = value => (display, window) => {
-            if (window.get_wm_class() === APP)
+            if (window?.get_wm_class() === APP)
                 this._dbus.emit_signal('Moving', new GLib.Variant('(b)', [value]));
         };
         this._grabSignals = [
             global.display.connect('grab-op-begin', moving(true)),
             global.display.connect('grab-op-end', moving(false)),
+        ];
+        this._paintSignals = [
+            global.stage.connect('before-paint', (stage, view) => {
+                monitorFramebuffer = view.get_framebuffer();
+            }),
+            global.stage.connect('after-paint', () => {
+                monitorFramebuffer = null;
+            }),
         ];
         this._owner = Gio.bus_own_name_on_connection(
             Gio.DBus.session,
@@ -204,6 +227,9 @@ export default class VocalTeleprompterExtension extends Extension {
         }
         this._grabSignals.forEach(id => global.display.disconnect(id));
         this._grabSignals = null;
+        this._paintSignals.forEach(id => global.stage.disconnect(id));
+        this._paintSignals = null;
+        monitorFramebuffer = null;
         Gio.bus_unown_name(this._owner);
         this._dbus.unexport();
         this._dbus = null;
