@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import type { Microphone } from '../hooks/useMicrophones'
 import type { useListeningSession } from '../hooks/useListeningSession'
 import type { Settings } from '../hooks/useSettings'
+import type { useLibrary } from '../hooks/useLibrary'
 import BarButton, { ghost, ICON, primary } from './BarButton'
 import LanguageMenu from './LanguageMenu'
 import MicrophoneMenu from './MicrophoneMenu'
@@ -32,6 +33,9 @@ interface ToolbarProps {
     onPasteText: () => void
     onImport: () => void
     onClear: () => void
+    library: ReturnType<typeof useLibrary>
+    onNewScript: () => void
+    onOpenScript: (id: string) => void
     onToggleEdit: () => void
     onShowTutorial: () => void
     // Panels built by App, which owns their state
@@ -63,6 +67,9 @@ function ToolbarBar({
     onPasteText,
     onImport,
     onClear,
+    library,
+    onNewScript,
+    onOpenScript,
     onToggleEdit,
     onShowTutorial,
     appearance,
@@ -139,6 +146,9 @@ function ToolbarBar({
                 onPasteText={onPasteText}
                 onImport={onImport}
                 onClear={onClear}
+                library={library}
+                onNewScript={onNewScript}
+                onOpenScript={onOpenScript}
                 onShowTutorial={onShowTutorial}
             />
         </motion.div>

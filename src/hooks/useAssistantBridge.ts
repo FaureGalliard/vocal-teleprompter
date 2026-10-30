@@ -23,8 +23,9 @@ export function useAssistantBridge({
     settings: Settings
     session: ReturnType<typeof useListeningSession>
     content: string
-    // Replaces the script, out of editing and back at its start
-    loadScript: (text: string) => void
+    // Puts a script on screen: a new one in the library, or (`asNew` false)
+    // the current one changed
+    loadScript: (text: string, asNew?: boolean) => void
     currentCard: number
     currentWordIndex: number
     pace: ReturnType<typeof usePace>
@@ -52,7 +53,7 @@ export function useAssistantBridge({
                     ? `${content.trimEnd()}\n\n---\n\n${text}`
                     : text
             session.stopListening()
-            loadScript(next)
+            loadScript(next, mode !== 'append')
             return { loaded: true, ...describeScript(next) }
         },
         get_script: () => {
