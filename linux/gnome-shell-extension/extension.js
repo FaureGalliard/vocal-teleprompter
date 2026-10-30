@@ -25,6 +25,8 @@ const OBJECT_PATH = '/io/github/FaureGalliard/VocalTeleprompter/Shell';
 // The app id on Wayland, the WM_CLASS through XWayland
 const APP = 'vocal-teleprompter';
 const HIDE_EFFECT = 'vocal-teleprompter-hidden-from-capture';
+// Input after this long without any counts as a new burst of input
+const INPUT_PAUSE_MS = 80;
 
 // Where a monitor is being painted right now, between the stage's
 // before-paint and after-paint (the paint context tells no JS code which
@@ -63,6 +65,17 @@ const IFACE = `<node>
       <arg type="i" direction="out" name="channels"/>
       <arg type="ay" direction="out" name="pixels"/>
     </method>
+    <!-- The same at a fraction of the physical size (0.5: every second
+         pixel), which is all the prompter looks at, for a fraction of the
+         work -->
+    <method name="BehindAt">
+      <arg type="d" direction="in" name="fraction"/>
+      <arg type="i" direction="out" name="width"/>
+      <arg type="i" direction="out" name="height"/>
+      <arg type="i" direction="out" name="stride"/>
+      <arg type="i" direction="out" name="channels"/>
+      <arg type="ay" direction="out" name="pixels"/>
+    </method>
     <!-- Keeps the caller's window above the others, or lets it go -->
     <method name="SetAbove">
       <arg type="b" direction="in" name="above"/>
@@ -76,19 +89,30 @@ const IFACE = `<node>
     <method name="SetHiddenFromCapture">
       <arg type="b" direction="in" name="hidden"/>
     </method>
+    <!-- The user clicked, typed, scrolled or moved the mouse after a pause,
+         when the screen is likely about to change (a slide moves on) -->
+    <signal name="UserInput"/>
     <property name="Version" type="u" access="read"/>
   </interface>
 </node>`;
 
 class Service {
     get Version() {
-        return 1;
+        return 2;
     }
 
-    async BehindAsync(params, invocation) {
+    BehindAsync(params, invocation) {
+        this._behind(1, invocation);
+    }
+
+    BehindAtAsync([fraction], invocation) {
+        this._behind(Math.min(Math.max(fraction, 0.05), 1), invocation);
+    }
+
+    async _behind(fraction, invocation) {
         try {
             const actor = await this._callerActor(invocation);
-            const pixbuf = await behind(actor);
+            const pixbuf = await behind(actor, fraction);
             invocation.return_value(
                 GLib.Variant.new_tuple([
                     new GLib.Variant('i', pixbuf.get_width()),
@@ -158,7 +182,7 @@ class Service {
 }
 
 // Paints the scene under the window with the window left out, offscreen
-async function behind(actor) {
+async function behind(actor, fraction) {
     const frame = actor.meta_window.get_frame_rect();
     const rect = new Mtk.Rectangle({
         x: frame.x,
@@ -173,7 +197,8 @@ async function behind(actor) {
     actor.set_opacity_override(0);
     let content;
     try {
-        content = global.stage.paint_to_content(rect, scale, null, Clutter.PaintFlag.NO_CURSORS);
+        content = global.stage.paint_to_content(
+            rect, scale * fraction, null, Clutter.PaintFlag.NO_CURSORS);
     } finally {
         actor.set_opacity_override(-1);
     }
@@ -210,6 +235,19 @@ export default class VocalTeleprompterExtension extends Extension {
                 monitorFramebuffer = null;
             }),
         ];
+        // Once per burst of input: the first event after a short pause.
+        // GNOME restarts its idle time on any input, including what goes
+        // to the apps, which no event filter of an extension gets to see.
+        const idle = global.backend.get_core_idle_monitor();
+        this._activeWatch = 0;
+        this._idleWatch = idle.add_idle_watch(INPUT_PAUSE_MS, () => {
+            if (this._activeWatch)
+                return;
+            this._activeWatch = idle.add_user_active_watch(() => {
+                this._activeWatch = 0;
+                this._dbus?.emit_signal('UserInput', null);
+            });
+        });
         this._owner = Gio.bus_own_name_on_connection(
             Gio.DBus.session,
             BUS_NAME,
@@ -230,6 +268,10 @@ export default class VocalTeleprompterExtension extends Extension {
         this._paintSignals.forEach(id => global.stage.disconnect(id));
         this._paintSignals = null;
         monitorFramebuffer = null;
+        const idle = global.backend.get_core_idle_monitor();
+        idle.remove_watch(this._idleWatch);
+        if (this._activeWatch)
+            idle.remove_watch(this._activeWatch);
         Gio.bus_unown_name(this._owner);
         this._dbus.unexport();
         this._dbus = null;
