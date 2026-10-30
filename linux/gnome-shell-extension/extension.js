@@ -35,6 +35,11 @@ const IFACE = `<node>
     <method name="SetAbove">
       <arg type="b" direction="in" name="above"/>
     </method>
+    <!-- The prompter window started (true) or stopped (false) being moved
+         or resized, which Wayland tells no app about its own window -->
+    <signal name="Moving">
+      <arg type="b" name="moving"/>
+    </signal>
     <property name="Version" type="u" access="read"/>
   </interface>
 </node>`;
@@ -139,6 +144,14 @@ export default class VocalTeleprompterExtension extends Extension {
         this._service = new Service();
         this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this._service);
         this._dbus.export(Gio.DBus.session, OBJECT_PATH);
+        const moving = value => (display, window) => {
+            if (window.get_wm_class() === APP)
+                this._dbus.emit_signal('Moving', new GLib.Variant('(b)', [value]));
+        };
+        this._grabSignals = [
+            global.display.connect('grab-op-begin', moving(true)),
+            global.display.connect('grab-op-end', moving(false)),
+        ];
         this._owner = Gio.bus_own_name_on_connection(
             Gio.DBus.session,
             BUS_NAME,
@@ -149,6 +162,8 @@ export default class VocalTeleprompterExtension extends Extension {
     }
 
     disable() {
+        this._grabSignals.forEach(id => global.display.disconnect(id));
+        this._grabSignals = null;
         Gio.bus_unown_name(this._owner);
         this._dbus.unexport();
         this._dbus = null;
