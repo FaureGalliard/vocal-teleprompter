@@ -1,7 +1,7 @@
 name: Release
 
-# Pushing a version tag (v1.2.0) builds the Windows installers, signs the
-# updater artifacts and opens a draft release with them and latest.json.
+# Pushing a version tag (v1.2.0) builds the Windows installers and the Linux
+# packages, signs the updater artifacts and opens a draft release with them and latest.json.
 # Publishing the draft is what makes installed apps see the update.
 on:
   push:
@@ -19,9 +19,23 @@ jobs:
 
   release:
     needs: test
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      # The oldest Ubuntu still supported, so the packages run on as many
+      # distributions as possible
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev libasound2-dev libxcb1-dev libxrandr-dev libdbus-1-dev \
+            libpipewire-0.3-dev libwayland-dev libegl-dev libgbm-dev patchelf
 
       - uses: pnpm/action-setup@v4
 
@@ -53,9 +67,18 @@ jobs:
       # Same installer under a name that never changes, so a plain link to
       # releases/latest/download/VocalTeleprompter-Setup.exe always works
       - name: Upload installer with a fixed name
+        if: runner.os == 'Windows'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cp src-tauri/target/release/bundle/nsis/*-setup.exe VocalTeleprompter-Setup.exe
           gh release upload "${{ github.ref_name }}" VocalTeleprompter-Setup.exe --clobber
+
+      - name: Upload AppImage with a fixed name
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp src-tauri/target/release/bundle/appimage/*.AppImage VocalTeleprompter.AppImage
+          gh release upload "${{ github.ref_name }}" VocalTeleprompter.AppImage --clobber
