@@ -1,0 +1,7 @@
+{
+    "uuid": "vocal-teleprompter@faure-galliard.github.io",
+    "name": "Vocal Teleprompter",
+    "description": "Lets Vocal Teleprompter see what is behind its window, to color its text so it reads over anything, and stay above other windows.",
+    "shell-version": ["51"],
+    "url": "https://github.com/FaureGalliard/vocal-teleprompter"
+}
