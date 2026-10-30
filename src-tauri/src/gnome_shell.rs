@@ -45,23 +45,54 @@ pub fn set_hidden_from_capture(hidden: bool) {
     });
 }
 
-/// Once the window is on screen: keeps it above the others (Wayland
-/// ignores the app's own request) and hidden from capture as asked.
-/// Without the extension the window stays where the desktop puts it.
-pub fn on_shown<R: Runtime>(window: &tauri::Window<R>, event: &tauri::WindowEvent) {
-    static DONE: OnceLock<()> = OnceLock::new();
-    if window.label() == "main" && matches!(event, tauri::WindowEvent::Focused(true)) {
-        DONE.get_or_init(|| {
-            std::thread::spawn(|| {
-                if let Err(e) = call("SetAbove", &(true,)) {
-                    eprintln!("Could not keep the window above the others: {e}");
-                }
-                if let Err(e) = apply_hidden() {
-                    eprintln!("Could not hide the window from capture: {e}");
-                }
-            });
-        });
+// The window is on screen, so the extension can find it
+static SHOWN: AtomicBool = AtomicBool::new(false);
+
+/// Keeps the window above the others (Wayland ignores the app's own
+/// request) and hidden from capture as asked. Without the extension the
+/// window stays where the desktop puts it.
+fn apply_all() {
+    if let Err(e) = call("SetAbove", &(true,)) {
+        eprintln!("Could not keep the window above the others: {e}");
     }
+    if let Err(e) = apply_hidden() {
+        eprintln!("Could not hide the window from capture: {e}");
+    }
+}
+
+/// Applies everything once the window is on screen
+pub fn on_shown<R: Runtime>(window: &tauri::Window<R>, event: &tauri::WindowEvent) {
+    if window.label() == "main"
+        && matches!(event, tauri::WindowEvent::Focused(true))
+        && !SHOWN.swap(true, Ordering::Relaxed)
+    {
+        std::thread::spawn(apply_all);
+    }
+}
+
+/// Applies everything again whenever the extension starts, turned on or
+/// reloaded after the app, which would otherwise lose it until restarted
+pub fn watch_extension() {
+    use zbus::blocking::fdo::DBusProxy;
+
+    std::thread::spawn(|| {
+        let watch = || -> Result<(), String> {
+            let dbus = DBusProxy::new(bus()?).map_err(|e| e.to_string())?;
+            let changes = dbus
+                .receive_name_owner_changed_with_args(&[(0, NAME)])
+                .map_err(|e| e.to_string())?;
+            for change in changes {
+                let started = change.args().is_ok_and(|a| a.new_owner().is_some());
+                if started && SHOWN.load(Ordering::Relaxed) {
+                    apply_all();
+                }
+            }
+            Ok(())
+        };
+        if let Err(e) = watch() {
+            eprintln!("Could not watch for the GNOME Shell extension: {e}");
+        }
+    });
 }
 
 /// Emits `window-moving` with true when the window starts being moved or
