@@ -3,12 +3,16 @@
 // prompter asks over D-Bus; the scene is painted offscreen with the
 // prompter left out, so nothing on screen changes.
 //
+// It also keeps the prompter above other windows, leaves it out of
+// screenshots and screen shares, and tells when it is being dragged.
+//
 // Only the prompter's own windows can be looked behind, and only by the
 // process that owns them, so this gives no app a way to read the screen.
 
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 import Mtk from 'gi://Mtk';
 import Shell from 'gi://Shell';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -19,6 +23,19 @@ const BUS_NAME = 'io.github.FaureGalliard.VocalTeleprompter.Shell';
 const OBJECT_PATH = '/io/github/FaureGalliard/VocalTeleprompter/Shell';
 // The app id on Wayland, the WM_CLASS through XWayland
 const APP = 'vocal-teleprompter';
+const HIDE_EFFECT = 'vocal-teleprompter-hidden-from-capture';
+
+// Paints the window on the monitors but not in paints made offscreen,
+// which have no monitor view: screenshots and recordings or screen shares
+// drawn from the scene
+const HiddenFromCapture = GObject.registerClass(
+    class HiddenFromCapture extends Clutter.Effect {
+        vfunc_paint(node, paintContext, flags) {
+            if (paintContext.get_stage_view())
+                super.vfunc_paint(node, paintContext, flags);
+        }
+    },
+);
 
 const IFACE = `<node>
   <interface name="io.github.FaureGalliard.VocalTeleprompter.Shell">
@@ -40,6 +57,10 @@ const IFACE = `<node>
     <signal name="Moving">
       <arg type="b" name="moving"/>
     </signal>
+    <!-- Leaves the caller's window out of screenshots and screen shares -->
+    <method name="SetHiddenFromCapture">
+      <arg type="b" direction="in" name="hidden"/>
+    </method>
     <property name="Version" type="u" access="read"/>
   </interface>
 </node>`;
@@ -78,6 +99,20 @@ class Service {
                 window.make_above();
             else
                 window.unmake_above();
+            invocation.return_value(null);
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
+        }
+    }
+
+    async SetHiddenFromCaptureAsync([hidden], invocation) {
+        try {
+            const actor = await this._callerActor(invocation);
+            const effect = actor.get_effect(HIDE_EFFECT);
+            if (hidden && !effect)
+                actor.add_effect_with_name(HIDE_EFFECT, new HiddenFromCapture());
+            else if (!hidden && effect)
+                actor.remove_effect(effect);
             invocation.return_value(null);
         } catch (e) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
@@ -162,6 +197,11 @@ export default class VocalTeleprompterExtension extends Extension {
     }
 
     disable() {
+        for (const actor of global.get_window_actors()) {
+            const effect = actor.get_effect(HIDE_EFFECT);
+            if (effect)
+                actor.remove_effect(effect);
+        }
         this._grabSignals.forEach(id => global.display.disconnect(id));
         this._grabSignals = null;
         Gio.bus_unown_name(this._owner);
