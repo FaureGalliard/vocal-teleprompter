@@ -97,8 +97,14 @@ const IFACE = `<node>
 </node>`;
 
 class Service {
+    constructor(clients) {
+        // Told about every prompter that calls, so the work done for one
+        // happens only while one runs
+        this._clients = clients;
+    }
+
     get Version() {
-        return 2;
+        return 3;
     }
 
     BehindAsync(params, invocation) {
@@ -152,6 +158,7 @@ class Service {
                 actor.add_effect_with_name(HIDE_EFFECT, new HiddenFromCapture());
             else if (!hidden && effect)
                 actor.remove_effect(effect);
+            this._clients.syncPaintWatch();
             invocation.return_value(null);
         } catch (e) {
             invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
@@ -160,6 +167,18 @@ class Service {
 
     // The prompter window of the process that sent the call
     async _callerActor(invocation) {
+        const sender = invocation.get_sender();
+        const pid = this._clients.pid(sender) ?? (await this._askPid(invocation));
+        const actor = global
+            .get_window_actors()
+            .find(a => a.meta_window.get_pid() === pid && a.meta_window.get_wm_class() === APP);
+        if (!actor)
+            throw new Error('No prompter window belongs to the caller');
+        this._clients.seen(sender, pid);
+        return actor;
+    }
+
+    async _askPid(invocation) {
         const reply = await invocation.get_connection().call(
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus',
@@ -172,12 +191,97 @@ class Service {
             null,
         );
         const [pid] = reply.deepUnpack();
-        const actor = global
-            .get_window_actors()
-            .find(a => a.meta_window.get_pid() === pid && a.meta_window.get_wm_class() === APP);
-        if (!actor)
-            throw new Error('No prompter window belongs to the caller');
-        return actor;
+        return pid;
+    }
+}
+
+// The prompters running, by bus name, and what is done only while there is
+// one: following the input, and the paint watch that hiding from capture
+// needs. Nothing of it runs in GNOME Shell while no prompter is open, as
+// GNOME Shell paints the whole desktop on the same thread.
+class Clients {
+    constructor(onInput) {
+        this._onInput = onInput;
+        this._clients = new Map();
+        this._idleWatch = 0;
+        this._activeWatch = 0;
+        this._paintSignals = null;
+    }
+
+    pid(name) {
+        return this._clients.get(name)?.pid;
+    }
+
+    seen(name, pid) {
+        if (this._clients.has(name))
+            return;
+        const watch = Gio.bus_watch_name_on_connection(
+            Gio.DBus.session, name, Gio.BusNameWatcherFlags.NONE, null,
+            () => this._gone(name));
+        this._clients.set(name, {pid, watch});
+        if (this._clients.size === 1)
+            this._followInput(true);
+    }
+
+    _gone(name) {
+        const client = this._clients.get(name);
+        if (!client)
+            return;
+        Gio.bus_unwatch_name(client.watch);
+        this._clients.delete(name);
+        if (this._clients.size === 0)
+            this._followInput(false);
+        this.syncPaintWatch();
+    }
+
+    // Once per burst of input: the first event after a short pause.
+    // GNOME restarts its idle time on any input, including what goes to
+    // the apps, which no event filter of an extension gets to see.
+    _followInput(follow) {
+        const idle = global.backend.get_core_idle_monitor();
+        if (follow && !this._idleWatch) {
+            this._idleWatch = idle.add_idle_watch(INPUT_PAUSE_MS, () => {
+                if (this._activeWatch)
+                    return;
+                this._activeWatch = idle.add_user_active_watch(() => {
+                    this._activeWatch = 0;
+                    this._onInput();
+                });
+            });
+        } else if (!follow && this._idleWatch) {
+            idle.remove_watch(this._idleWatch);
+            this._idleWatch = 0;
+            if (this._activeWatch)
+                idle.remove_watch(this._activeWatch);
+            this._activeWatch = 0;
+        }
+    }
+
+    // Where each monitor is painted, which the hiding effect compares with,
+    // is followed on every frame: only while some window uses the effect
+    syncPaintWatch() {
+        const needed = global.get_window_actors().some(a => a.get_effect(HIDE_EFFECT));
+        if (needed && !this._paintSignals) {
+            this._paintSignals = [
+                global.stage.connect('before-paint', (stage, view) => {
+                    monitorFramebuffer = view.get_framebuffer();
+                }),
+                global.stage.connect('after-paint', () => {
+                    monitorFramebuffer = null;
+                }),
+            ];
+        } else if (!needed && this._paintSignals) {
+            this._paintSignals.forEach(id => global.stage.disconnect(id));
+            this._paintSignals = null;
+            monitorFramebuffer = null;
+        }
+    }
+
+    destroy() {
+        for (const name of [...this._clients.keys()])
+            this._gone(name);
+        this._followInput(false);
+        this.syncPaintWatch();
     }
 }
 
@@ -216,7 +320,8 @@ async function behind(actor, fraction) {
 
 export default class VocalTeleprompterExtension extends Extension {
     enable() {
-        this._service = new Service();
+        this._clients = new Clients(() => this._dbus?.emit_signal('UserInput', null));
+        this._service = new Service(this._clients);
         this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this._service);
         this._dbus.export(Gio.DBus.session, OBJECT_PATH);
         const moving = value => (display, window) => {
@@ -227,27 +332,6 @@ export default class VocalTeleprompterExtension extends Extension {
             global.display.connect('grab-op-begin', moving(true)),
             global.display.connect('grab-op-end', moving(false)),
         ];
-        this._paintSignals = [
-            global.stage.connect('before-paint', (stage, view) => {
-                monitorFramebuffer = view.get_framebuffer();
-            }),
-            global.stage.connect('after-paint', () => {
-                monitorFramebuffer = null;
-            }),
-        ];
-        // Once per burst of input: the first event after a short pause.
-        // GNOME restarts its idle time on any input, including what goes
-        // to the apps, which no event filter of an extension gets to see.
-        const idle = global.backend.get_core_idle_monitor();
-        this._activeWatch = 0;
-        this._idleWatch = idle.add_idle_watch(INPUT_PAUSE_MS, () => {
-            if (this._activeWatch)
-                return;
-            this._activeWatch = idle.add_user_active_watch(() => {
-                this._activeWatch = 0;
-                this._dbus?.emit_signal('UserInput', null);
-            });
-        });
         this._owner = Gio.bus_own_name_on_connection(
             Gio.DBus.session,
             BUS_NAME,
@@ -265,13 +349,8 @@ export default class VocalTeleprompterExtension extends Extension {
         }
         this._grabSignals.forEach(id => global.display.disconnect(id));
         this._grabSignals = null;
-        this._paintSignals.forEach(id => global.stage.disconnect(id));
-        this._paintSignals = null;
-        monitorFramebuffer = null;
-        const idle = global.backend.get_core_idle_monitor();
-        idle.remove_watch(this._idleWatch);
-        if (this._activeWatch)
-            idle.remove_watch(this._activeWatch);
+        this._clients.destroy();
+        this._clients = null;
         Gio.bus_unown_name(this._owner);
         this._dbus.unexport();
         this._dbus = null;
