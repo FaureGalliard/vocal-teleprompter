@@ -1,14 +1,13 @@
 fn main() {
-    #[cfg(windows)]
     vosk::provide();
     tauri_build::build()
 }
 
-/// Speech recognition runs on Vosk, a native library. Its Windows build is
-/// downloaded once into `vosk/` (kept out of git), linked from there and
-/// copied next to the executables so `tauri dev` and `cargo test` find it.
-/// The English model is fetched there too, to ship inside the installer.
-#[cfg(windows)]
+/// Speech recognition runs on Vosk, a native library. Its build for the
+/// target system is downloaded once into `vosk/` (kept out of git), linked
+/// from there and copied next to the executables so `tauri dev` and
+/// `cargo test` find it. The English model is fetched there too, to ship
+/// inside the installer.
 mod vosk {
     use std::fs;
     use std::io::Read;
@@ -19,23 +18,44 @@ mod vosk {
     /// Bundled so the app understands English out of the box
     const BUNDLED_MODEL: &str = "vosk-model-small-en-us-0.15";
 
-    pub const DLLS: [&str; 4] = [
-        "libvosk.dll",
-        "libgcc_s_seh-1.dll",
-        "libstdc++-6.dll",
-        "libwinpthread-1.dll",
-    ];
+    /// The release folder for the target system, the file the linker needs
+    /// from it and the libraries the app loads at run time
+    fn release() -> (&'static str, &'static str, &'static [&'static str]) {
+        let os = std::env::var("CARGO_CFG_TARGET_OS").unwrap();
+        let arch = std::env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+        match (os.as_str(), arch.as_str()) {
+            ("windows", "x86_64") => (
+                "win64",
+                "libvosk.lib",
+                &[
+                    "libvosk.dll",
+                    "libgcc_s_seh-1.dll",
+                    "libstdc++-6.dll",
+                    "libwinpthread-1.dll",
+                ],
+            ),
+            ("linux", "x86_64") => ("linux-x86_64", "libvosk.so", &["libvosk.so"]),
+            ("linux", "aarch64") => ("linux-aarch64", "libvosk.so", &["libvosk.so"]),
+            _ => panic!("Vosk has no build for {os} on {arch}"),
+        }
+    }
 
     pub fn provide() {
+        let (name, link, libs) = release();
         let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        let dir = manifest.join("vosk").join(format!("vosk-win64-{VERSION}"));
-        if !dir.join("libvosk.lib").exists() {
+        let dir = manifest.join("vosk").join(format!("vosk-{name}-{VERSION}"));
+        if !dir.join(link).exists() {
             download(
                 &format!(
-                    "https://github.com/alphacep/vosk-api/releases/download/v{VERSION}/vosk-win64-{VERSION}.zip"
+                    "https://github.com/alphacep/vosk-api/releases/download/v{VERSION}/vosk-{name}-{VERSION}.zip"
                 ),
                 &manifest.join("vosk"),
             );
+        }
+        if std::env::var("CARGO_CFG_TARGET_OS").unwrap() == "linux" {
+            // Next to the executable while developing, and in the folder the
+            // .deb and the AppImage put the app's resources in once installed
+            println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN:$ORIGIN/../lib/vocal-teleprompter");
         }
         let models = manifest.join("vosk").join("models");
         if !models.join(BUNDLED_MODEL).join("am").exists() {
@@ -51,11 +71,11 @@ mod vosk {
         let out = PathBuf::from(std::env::var("OUT_DIR").unwrap());
         let profile_dir = out.ancestors().nth(3).unwrap().to_path_buf();
         for target in [profile_dir.clone(), profile_dir.join("deps")] {
-            for dll in DLLS {
-                let to = target.join(dll);
+            for lib in libs {
+                let to = target.join(lib);
                 if !to.exists() {
                     let _ = fs::create_dir_all(&target);
-                    fs::copy(dir.join(dll), &to).expect("copy Vosk DLL");
+                    fs::copy(dir.join(lib), &to).expect("copy Vosk library");
                 }
             }
         }
