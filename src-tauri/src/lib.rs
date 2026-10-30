@@ -44,6 +44,13 @@ pub fn run_mcp_server() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Wayland lets no window stay above the others or grab a global
+    // shortcut, so on a Wayland desktop the prompter runs through XWayland,
+    // unless the user picked a backend themselves
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("GDK_BACKEND").is_none() {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
