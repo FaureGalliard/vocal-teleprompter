@@ -189,7 +189,8 @@ const IFACE = `<node>
       <arg type="b" direction="in" name="hidden"/>
     </method>
     <!-- The user clicked, typed, scrolled or moved the mouse after a pause,
-         when the screen is likely about to change (a slide moves on) -->
+         when the screen is likely about to change (a slide moves on), and
+         again once that input pauses, when it has likely settled -->
     <signal name="UserInput"/>
     <property name="Version" type="u" access="read"/>
   </interface>
@@ -203,7 +204,7 @@ class Service {
     }
 
     get Version() {
-        return 5;
+        return 6;
     }
 
     BehindAsync(params, invocation) {
@@ -355,13 +356,19 @@ class Clients {
         this.syncPaintWatch();
     }
 
-    // Once per burst of input: the first event after a short pause.
-    // GNOME restarts its idle time on any input, including what goes to
-    // the apps, which no event filter of an extension gets to see.
+    // Twice per burst of input: on the first event after a short pause, and
+    // once it pauses again, so a mouse moved over a while (scrolling a page,
+    // dragging something) also tells where it ended up, not just where it
+    // started. GNOME restarts its idle time on any input, including what
+    // goes to the apps, which no event filter of an extension gets to see.
     _followInput(follow) {
         const idle = global.backend.get_core_idle_monitor();
         if (follow && !this._idleWatch) {
+            let started = false;
             this._idleWatch = idle.add_idle_watch(INPUT_PAUSE_MS, () => {
+                if (started)
+                    this._onInput();
+                started = true;
                 if (this._activeWatch)
                     return;
                 this._activeWatch = idle.add_user_active_watch(() => {
