@@ -51,10 +51,20 @@ function letters(root: HTMLElement) {
 
 const retire = (url: string | null) => url && setTimeout(() => URL.revokeObjectURL(url), 1000)
 
+// Has the browser take in a picture before it is shown: swapped in still
+// undecoded, the text painted from it was blank for a frame, a blink
+async function decoded(url: string) {
+    const image = new Image()
+    image.src = url
+    await image.decode().catch(() => {})
+}
+
 // Colors the text in `container` over each new look at the backdrop
 // (`version`, null when there is none): this thread only measures where the
 // pieces and letters sit, and the worker works out every color. Rounds that
 // come in while one is being worked on wait, and only the last of them runs.
+// A new map only replaces the one showing when it looks different, and once
+// decoded, so the text never blinks; the letters cross-fade to new colors.
 export function useBackdropPaint(
     container: RefObject<HTMLElement | null>,
     version: number | null,
@@ -90,13 +100,18 @@ export function useBackdropPaint(
                 letters: letters(root),
                 textColor: color.current,
                 scale,
+                showing: mapUrl.current !== null,
             })
+            const fresh = reply.map && URL.createObjectURL(reply.map)
+            if (fresh) await decoded(fresh)
             busy.current = false
-            if (active.current && reply.map) {
-                retire(mapUrl.current)
-                mapUrl.current = URL.createObjectURL(reply.map)
+            const url = fresh || (reply.kept ? mapUrl.current : null)
+            if (!active.current || !url) retire(fresh)
+            else {
+                if (fresh) retire(mapUrl.current)
+                mapUrl.current = url
                 setPaint({
-                    url: mapUrl.current,
+                    url,
                     width: reply.cols * (reply.step / scale),
                     height: reply.rows * (reply.step / scale),
                     offsets: new Map(pieces.map((p) => [p.at, [p.left, p.top]])),

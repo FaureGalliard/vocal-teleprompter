@@ -3,9 +3,10 @@
 Back to the [README](../README.md).
 
 - 🎨 **Reads over anything**: with a see-through background (the default), what is behind
-  the window is softened like frosted glass, and every letter takes the color that stands
-  out most from what is right behind it, so the prompter can sit anywhere on your slides.
-  Clicks and key presses anywhere make it look again right away.
+  the window is frosted like glass, live, and every letter takes the color that stands out
+  most from what is right behind it, so the prompter can sit anywhere on your slides. The
+  glass follows a video or a dragged window at once, on Windows 10 and 11 and on GNOME with
+  its extension; the letters follow as soon as what is behind changes.
 - 🃏 **Slide cards**: put a line with `---` between slides and each part becomes a card.
   The current card stands out, the bottom bar shows *Slide 3 / 12*, and it moves on as
   soon as you say the last word of the slide.
@@ -40,7 +41,9 @@ Back to the [README](../README.md).
 - ✍️ **Write right in the prompter**: open the script menu (document icon) and pick
   **Edit script**, then the check mark (or `Esc`) to go back to prompting.
 - 📋 **Paste or import** your script from the clipboard or a `.txt` file, from the same
-  menu. Line breaks are kept.
+  menu. Line breaks are kept. Each one starts a new script instead of replacing yours.
+- 📚 **A library of your scripts**: the script menu lists them, latest first, to switch
+  between them, start a new one or delete one. The script on screen is saved as you edit.
 - 🌐 **Interface in the same 9 languages** (English by default), tray menu included.
 - ⚙️ **Settings panel** behind the gear button, grouped into **Reading** (scrolling,
   reading line, countdown, target duration), **Window** (hiding from screen sharing,

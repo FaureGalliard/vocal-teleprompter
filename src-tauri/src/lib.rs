@@ -2,10 +2,16 @@ mod backdrop;
 mod behind;
 #[cfg(target_os = "linux")]
 mod desktop_entry;
+#[cfg(windows)]
+mod glass;
 #[cfg(target_os = "linux")]
 mod gnome_shell;
 mod input;
 mod mcp;
+#[cfg(windows)]
+mod region;
+#[cfg(windows)]
+mod screen_stream;
 #[cfg(target_os = "linux")]
 mod screencast_portal;
 pub mod speech;
@@ -59,26 +65,37 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
         .map_err(|e| e.to_string())
 }
 
-/// Frosted glass blurred by the desktop itself behind the window, live, but
-/// for `room` pixels at its bottom; a `radius` of 0 takes it away. Only the
-/// GNOME Shell extension can, so elsewhere this says false and the app
-/// draws its own glass from what it sees behind the window.
+/// Frosted glass blurred live behind the window by `radius`, but for `room`
+/// pixels at its bottom; a `radius` of 0 takes it away. The GNOME Shell
+/// extension draws it on Linux, the window itself on Windows 11 (see
+/// `glass`); Windows 10 blurs as much as it always does, and only while no
+/// room is kept. Elsewhere this says false and the app draws its own glass
+/// from what it sees behind the window.
 #[tauri::command]
-async fn set_glass(radius: i32, room: i32) -> bool {
+async fn set_glass(window: tauri::WebviewWindow, radius: i32, room: i32) -> bool {
     #[cfg(target_os = "linux")]
-    return gnome_shell::set_glass(radius, room);
-    #[cfg(not(target_os = "linux"))]
     {
-        let _ = (radius, room);
+        let _ = window;
+        gnome_shell::set_glass(radius, room)
+    }
+    #[cfg(windows)]
+    {
+        glass::set(&window, radius, room)
+    }
+    #[cfg(not(any(windows, target_os = "linux")))]
+    {
+        let _ = (window, radius, room);
         false
     }
 }
 
 /// Lets clicks reach the window only inside `rects` (x, y, width and height
 /// in CSS pixels) and go through to what is behind everywhere else, or
-/// reach all of it when None. On Linux the window keeps room for the
-/// toolbar below the teleprompter instead of growing for it, which is slow
-/// there, and that room takes no clicks while nothing is drawn in it.
+/// reach all of it when None. The window keeps room for the toolbar below
+/// the teleprompter instead of growing for it, which is slow on Linux and
+/// makes the glass flicker on Windows, and that room takes no clicks while
+/// nothing is drawn in it. Windows can only cut the window down, so there
+/// `rects` is also all the window shows (see `region`).
 #[tauri::command]
 fn set_input_region(
     window: tauri::WebviewWindow,
@@ -112,7 +129,9 @@ fn set_input_region(
             })
             .map_err(|e| e.to_string())
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(windows)]
+    return region::set(&window, rects);
+    #[cfg(not(any(windows, target_os = "linux")))]
     {
         let _ = (window, rects);
         Ok(())
@@ -167,6 +186,7 @@ pub fn run() {
             set_input_region,
             set_glass,
             backdrop::capture_backdrop,
+            backdrop::stop_backdrop,
             speech::list_microphones,
             speech::speech_start,
             speech::speech_stop,

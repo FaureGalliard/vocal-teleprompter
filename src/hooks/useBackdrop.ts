@@ -5,7 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 import { IS_LINUX } from '../lib/platform'
 import { lookDelay, spaced, type LookReason } from '../lib/lookPace'
-import { keptRoom } from './useWindowExpansion'
+import { roomBelow } from './useWindowExpansion'
 import { frameShare, withoutRoom } from '../lib/keptRoom'
 
 // Physical pixels between samples: plenty for the color behind a letter
@@ -16,16 +16,17 @@ const STILL_MS = 150
 const DRAGGED_CHECK_MS = 300
 
 // The teleprompter's own height in a window of `height` physical pixels,
-// without the room kept below it for the toolbar on Linux
+// without the room below it for the toolbar
 const frameHeight = (height: number) =>
-    withoutRoom(height, Math.round(keptRoom * window.devicePixelRatio))
+    withoutRoom(height, Math.round(roomBelow() * window.devicePixelRatio))
 
 // What is behind the window, while `enabled` (a see-through background).
 // Hidden from screen capture, each look covers the whole monitor, so moving
 // or resizing the window needs no new look: `place` says where it now is, to
 // cut that part out. `shown` in screen captures, each look covers just the
 // window, painted by the windows behind it so the prompter never blinks in a
-// recording, and a move brings a new one. Looks come at a steady pace, right
+// recording, and a move brings a new one. Where Windows streams the monitor,
+// a look only brings something when it changed, and Windows says when. Looks come at a steady pace, right
 // after a click or a key, and closely after a change (`hurry`), at the pace
 // lookPace sets for each system.
 export function useBackdrop(enabled: boolean, shown: boolean) {
@@ -40,6 +41,8 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
     // the window was: it counts as moving until a new look lands, so the
     // glass from the old spot does not show at the new one
     const staleRef = useRef(false)
+    const shownRef = useRef(shown)
+    shownRef.current = shown
 
     // Where the window is, kept up to date as it moves and resizes
     useEffect(() => {
@@ -49,11 +52,21 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             setPlace({ x: p.x, y: p.y, width: s.width, height: frameHeight(s.height) }),
         )
         let still: ReturnType<typeof setTimeout>
+        // Shown in screen captures, each look covers only where the window
+        // is, so as on Linux it does not look while moved, and looks right
+        // away once it holds still
         const moved = win.onMoved(({ payload }) => {
             setPlace((p) => p && { ...p, x: payload.x, y: payload.y })
             setMoving(true)
+            const held = shownRef.current && !IS_LINUX
+            if (held) draggedRef.current = true
             clearTimeout(still)
-            still = setTimeout(() => setMoving(false), STILL_MS)
+            still = setTimeout(() => {
+                setMoving(false)
+                if (!held) return
+                draggedRef.current = false
+                soonRef.current('dropped')
+            }, STILL_MS)
         })
         const resized = win.onResized(({ payload }) =>
             setPlace(
@@ -103,13 +116,15 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             soon = null
             try {
                 // Only behind the teleprompter, not the room kept below it
-                const share = frameShare(window.innerHeight, keptRoom)
+                const share = frameShare(window.innerHeight, roomBelow())
                 const buffer = await invoke<ArrayBuffer>('capture_backdrop', {
                     step: STEP,
                     shown,
                     share,
                 })
-                if (!stopped) setBackdrop(parseBackdrop(buffer, STEP))
+                // Null when Windows streams the monitor and nothing changed
+                const look = parseBackdrop(buffer, STEP)
+                if (!stopped && look) setBackdrop(look)
             } catch (e) {
                 // Unavailable: the text keeps its last colors
                 console.warn('Could not see behind the window:', e)
@@ -129,10 +144,15 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         }
         // Clicked, typed or scrolled somewhere: the screen is likely changing
         const input = listen('user-input', () => soonRef.current('input'))
+        // Windows streams the monitor and says when it changed, once until
+        // the next look
+        const changed = listen('backdrop-changed', () => soonRef.current('changed'))
         return () => {
             stopped = true
             clearTimeout(timer)
             input.then((off) => off())
+            changed.then((off) => off())
+            invoke('stop_backdrop').catch(() => {})
         }
     }, [enabled, shown])
 

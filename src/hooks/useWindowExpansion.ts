@@ -7,8 +7,8 @@ import {
 } from '@tauri-apps/api/window'
 import { invoke } from '@tauri-apps/api/core'
 import { whenPlaced } from './useWindowPlacement'
-import { IS_LINUX } from '../lib/platform'
-import { draggedHeight, inputRegion, keptWindowSize } from '../lib/keptRoom'
+import { IS_LINUX, KEEPS_ROOM } from '../lib/platform'
+import { draggedHeight, inputRegion, keptWindowSize, shownRegion } from '../lib/keptRoom'
 
 // Height of the toolbar plus a little air around it
 export const BAR_ROOM = 56
@@ -50,7 +50,7 @@ const nextPaint = () =>
 export function useWindowExpansion(open: boolean, clickThrough: boolean) {
     // Fixed for the whole run, so the same hooks are always called
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return IS_LINUX ? useKeptRoom(open, clickThrough) : useGrowingRoom(open)
+    return KEEPS_ROOM ? useKeptRoom(open, clickThrough) : useGrowingRoom(open)
 }
 
 function useGrowingRoom(open: boolean) {
@@ -94,6 +94,7 @@ function useGrowingRoom(open: boolean) {
             // Pin the frame where it is, then grow the window around it
             setState({ expansion: { frame, room }, ready: false })
             await nextPaint()
+            grownRoom = room
             await win.setResizable(false)
             await win.setSize(new LogicalSize(size.width, size.height + room))
             if (!cancelled) setState({ expansion: { frame, room }, ready: true })
@@ -101,6 +102,7 @@ function useGrowingRoom(open: boolean) {
             restoreRef.current = async () => {
                 const own = frameRef.current ?? frame
                 frameRef.current = null
+                grownRoom = 0
                 await win.setSize(new LogicalSize(own.width, own.height))
                 await win.setResizable(true)
             }
@@ -149,14 +151,23 @@ function useGrowingRoom(open: boolean) {
     return { ...state, resizeFrame, dragBottom: null }
 }
 
-// The room kept below the teleprompter on Linux, 0 while there is none, so
-// what is behind the window is only looked at behind the teleprompter
+// The room kept below the teleprompter on Linux and Windows, 0 while there
+// is none, so what is behind the window is only looked at behind the
+// teleprompter
 export let keptRoom = 0
 
-// Linux: growing the window takes a good part of a second there (every
-// resize has the compositor and WebKit redo the whole surface), so the
-// window keeps the room for the toolbar all the time, and opening the
-// toolbar only shows it. That room takes no clicks unless the toolbar is
+// The room the window has grown by below the teleprompter elsewhere, 0
+// while the toolbar is closed
+let grownRoom = 0
+
+// The room below the teleprompter, kept or grown, in CSS pixels
+export const roomBelow = () => keptRoom || grownRoom
+
+// Linux and Windows: growing the window takes a good part of a second on
+// Linux (every resize has the compositor and WebKit redo the whole
+// surface), and Windows draws no glass behind a window for a moment each
+// time it changes size, a flicker. So the window keeps the room for the
+// toolbar all the time, and opening the toolbar only shows it. That room takes no clicks unless the toolbar is
 // open: they go through to what is behind, as if the window ended where
 // the teleprompter does. The teleprompter is the window less that room, so
 // it follows the window as the user resizes it by its edges.
@@ -206,9 +217,11 @@ function useKeptRoom(open: boolean, clickThrough: boolean) {
     }, [])
 
     // Clicks reach the teleprompter, and the room only while the toolbar is
-    // in it; none at all in click-through mode
+    // in it; none at all in click-through mode. Windows can only cut the
+    // window down, which hides the room too, and has its own click-through.
     useEffect(() => {
-        const rects = inputRegion(expansion?.frame ?? null, open, clickThrough)
+        const frame = expansion?.frame ?? null
+        const rects = IS_LINUX ? inputRegion(frame, open, clickThrough) : shownRegion(frame, open)
         invoke('set_input_region', { rects }).catch((e) =>
             console.error('Could not let clicks through:', e),
         )

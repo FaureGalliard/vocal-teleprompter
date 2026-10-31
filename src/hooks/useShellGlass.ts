@@ -1,34 +1,32 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { IS_LINUX } from '../lib/platform'
-import { keptRoom } from './useWindowExpansion'
+import { shellGlass } from '../lib/shellGlass'
+import { roomBelow } from './useWindowExpansion'
 
-// Blur radius of the desktop's own glass at 100% softening, in pixels:
-// about as soft as the glass the app draws from its looks
-const MAX_RADIUS = 16
-
-// Frosted glass blurred live by the desktop itself behind the window (the
-// GNOME Shell extension on Linux), softened by `soften` (0-100) while
-// `enabled`. It follows a video or a drag at once, with no look behind the
-// window, and leaves out the room kept below the text for the toolbar.
-// True while the desktop draws it, so the app need not draw its own.
+// Frosted glass blurred live behind the window by the desktop or the window
+// itself (the GNOME Shell extension on Linux, the window's own composition
+// on Windows 11, the taskbar's blur on Windows 10), softened by `soften`
+// (0-100) while `enabled`. It follows a video or a drag at once, with no
+// look behind the window; only the letters wait for the looks. It leaves
+// out the room below the text for the toolbar, where it can (Windows 10
+// cannot, and leaves the glass to the app then). True while it is drawn,
+// so the app need not draw its own.
 export function useShellGlass(enabled: boolean, soften: number) {
     const [drawn, setDrawn] = useState(false)
-    const radius = enabled ? Math.round((soften / 100) * MAX_RADIUS) : 0
+    const radius = shellGlass(enabled, soften)
 
     useEffect(() => {
-        if (!IS_LINUX) return
         let stopped = false
         let room = -1
         const send = () => {
-            if (room === keptRoom) return
-            room = keptRoom
+            if (room === roomBelow()) return
+            room = roomBelow()
             invoke<boolean>('set_glass', { radius, room })
                 .then((ok) => !stopped && setDrawn(ok && radius > 0))
                 .catch(() => !stopped && setDrawn(false))
         }
         send()
-        // The room is only kept once the window has grown around the text
+        // The room is only there once the window has grown around the text
         window.addEventListener('resize', send)
         return () => {
             stopped = true
