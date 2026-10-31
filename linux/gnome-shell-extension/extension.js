@@ -54,6 +54,86 @@ const HiddenFromCapture = GObject.registerClass(
     },
 );
 
+// The frosted glass behind each prompter window that asked for one
+const glasses = new Map();
+
+// Frosted glass behind the prompter's text: what is under its window,
+// blurred by the GPU on every frame, so it follows a video or a drag at once
+// with no look behind the window. It sits right under the window, and stops
+// short of the room the window keeps below the text for its toolbar.
+class Glass {
+    constructor(windowActor) {
+        this._window = windowActor;
+        this._room = 0;
+        this._blur = new Shell.BlurEffect({
+            mode: Shell.BlurMode.BACKGROUND,
+            brightness: 1,
+            radius: 0,
+        });
+        this.actor = new Clutter.Actor({reactive: false});
+        this.actor.add_effect(this._blur);
+        windowActor.get_parent().insert_child_below(this.actor, windowActor);
+        // Gone with the window: minimized, on another workspace
+        windowActor.bind_property('visible', this.actor, 'visible',
+            GObject.BindingFlags.SYNC_CREATE);
+        const metaWindow = windowActor.meta_window;
+        const place = () => this._place();
+        this._signals = [
+            [metaWindow, metaWindow.connect('position-changed', place)],
+            [metaWindow, metaWindow.connect('size-changed', place)],
+            [global.display, global.display.connect('restacked', () => this._restack())],
+            [windowActor, windowActor.connect('destroy', () => this.destroy())],
+        ];
+        this.setHidden(!!windowActor.get_effect(HIDE_EFFECT));
+        glasses.set(windowActor, this);
+    }
+
+    set(radius, room) {
+        this._blur.radius = radius;
+        this._room = room;
+        this._place();
+    }
+
+    // Left out of screenshots and screen shares along with the window. The
+    // hiding goes first, so it can skip the blur too.
+    setHidden(hidden) {
+        const effect = this.actor.get_effect(HIDE_EFFECT);
+        if (hidden && !effect) {
+            this.actor.remove_effect(this._blur);
+            this.actor.add_effect_with_name(HIDE_EFFECT, new HiddenFromCapture());
+            this.actor.add_effect(this._blur);
+        } else if (!hidden && effect) {
+            this.actor.remove_effect(effect);
+        }
+    }
+
+    _place() {
+        const frame = this._window.meta_window.get_frame_rect();
+        this.actor.set_position(frame.x, frame.y);
+        this.actor.set_size(frame.width, Math.max(1, frame.height - this._room));
+    }
+
+    // Right under the window again, whatever was raised or lowered
+    _restack() {
+        const parent = this._window.get_parent();
+        if (parent && this.actor.get_parent() === parent)
+            parent.set_child_below_sibling(this.actor, this._window);
+    }
+
+    destroy() {
+        glasses.delete(this._window);
+        for (const [object, id] of this._signals) {
+            try {
+                object.disconnect(id);
+            } catch {
+                // Already gone with the window
+            }
+        }
+        this._signals = [];
+        this.actor.destroy();
+    }
+}
+
 const IFACE = `<node>
   <interface name="io.github.FaureGalliard.VocalTeleprompter.Shell">
     <!-- What is behind the caller's window, as rows of RGB or RGBA pixels
@@ -97,6 +177,13 @@ const IFACE = `<node>
     <signal name="Moving">
       <arg type="b" name="moving"/>
     </signal>
+    <!-- Frosted glass behind the caller's window but for the room pixels
+         at its bottom, blurred by radius pixels on every frame; a radius of
+         0 takes it away -->
+    <method name="SetGlass">
+      <arg type="i" direction="in" name="radius"/>
+      <arg type="i" direction="in" name="room"/>
+    </method>
     <!-- Leaves the caller's window out of screenshots and screen shares -->
     <method name="SetHiddenFromCapture">
       <arg type="b" direction="in" name="hidden"/>
@@ -116,7 +203,7 @@ class Service {
     }
 
     get Version() {
-        return 4;
+        return 5;
     }
 
     BehindAsync(params, invocation) {
@@ -169,6 +256,20 @@ class Service {
         }
     }
 
+    async SetGlassAsync([radius, room], invocation) {
+        try {
+            const actor = await this._callerActor(invocation);
+            radius = Math.min(Math.max(radius, 0), 100);
+            if (radius === 0)
+                glasses.get(actor)?.destroy();
+            else
+                (glasses.get(actor) ?? new Glass(actor)).set(radius, Math.max(room, 0));
+            invocation.return_value(null);
+        } catch (e) {
+            invocation.return_error_literal(Gio.DBusError, Gio.DBusError.FAILED, e.message);
+        }
+    }
+
     async SetHiddenFromCaptureAsync([hidden], invocation) {
         try {
             const actor = await this._callerActor(invocation);
@@ -177,6 +278,7 @@ class Service {
                 actor.add_effect_with_name(HIDE_EFFECT, new HiddenFromCapture());
             else if (!hidden && effect)
                 actor.remove_effect(effect);
+            glasses.get(actor)?.setHidden(hidden);
             this._clients.syncPaintWatch();
             invocation.return_value(null);
         } catch (e) {
@@ -315,16 +417,20 @@ async function behind(actor, fraction, share) {
         height: Math.max(1, Math.round(frame.height * share)),
     });
     const [, , , scale] = global.stage.get_capture_final_size(rect);
-    // Left out of this one paint only: the screen is not redrawn in between.
-    // The override leaves the opacity itself alone, which a fade-in may be
-    // animating, so it never sticks at a value taken halfway through.
+    // Left out of this one paint only, with its glass: the screen is not
+    // redrawn in between. The override leaves the opacity itself alone,
+    // which a fade-in may be animating, so it never sticks at a value taken
+    // halfway through.
+    const glass = glasses.get(actor)?.actor;
     actor.set_opacity_override(0);
+    glass?.set_opacity_override(0);
     let content;
     try {
         content = global.stage.paint_to_content(
             rect, scale * fraction, null, Clutter.PaintFlag.NO_CURSORS);
     } finally {
         actor.set_opacity_override(-1);
+        glass?.set_opacity_override(-1);
     }
     const stream = Gio.MemoryOutputStream.new_resizable();
     const pixbuf = await Shell.Screenshot.composite_to_stream(
@@ -362,6 +468,8 @@ export default class VocalTeleprompterExtension extends Extension {
     }
 
     disable() {
+        for (const glass of [...glasses.values()])
+            glass.destroy();
         for (const actor of global.get_window_actors()) {
             const effect = actor.get_effect(HIDE_EFFECT);
             if (effect)
