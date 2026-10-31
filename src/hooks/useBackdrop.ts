@@ -4,37 +4,21 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 import { IS_LINUX } from '../lib/platform'
+import { lookDelay, spaced, type LookReason } from '../lib/lookPace'
 import { keptRoom } from './useWindowExpansion'
+import { frameShare, withoutRoom } from '../lib/keptRoom'
 
 // Physical pixels between samples: plenty for the color behind a letter
 const STEP = 2
-const EVERY_MS = 300
-// While the window shows in screen captures the windows behind it paint
-// themselves for each look, which costs them some work: look a bit less often
-const SHOWN_EVERY_MS = 500
 // The window counts as moving until it has held still this long
 const STILL_MS = 150
-// After something changed behind the window: it may still be changing (a
-// slide transition), so look again soon to follow it
-const CHANGED_MS = 120
-// After a click, a key or the wheel anywhere: what most slide changes follow,
-// so look right away instead of waiting for the next round
-const INPUT_MS = 80
-// On Linux GNOME Shell paints each look on the thread that draws the whole
-// desktop, where it stalls everything on screen for a moment, so looks are
-// spaced out there: right after input anywhere or a drag, every half second
-// while what is behind keeps changing (a video), and only now and then while
-// it stays the same, never closer than the gap
-const LINUX_GAP_MS = 400
-const LINUX_CHANGING_MS = 500
-const LINUX_IDLE_MS = 2000
+// While dragged, how often to check whether it was let go
+const DRAGGED_CHECK_MS = 300
 
 // The teleprompter's own height in a window of `height` physical pixels,
 // without the room kept below it for the toolbar on Linux
-const frameHeight = (height: number) => {
-    const room = Math.round(keptRoom * window.devicePixelRatio)
-    return height > room ? height - room : height
-}
+const frameHeight = (height: number) =>
+    withoutRoom(height, Math.round(keptRoom * window.devicePixelRatio))
 
 // What is behind the window, while `enabled` (a see-through background).
 // Hidden from screen capture, each look covers the whole monitor, so moving
@@ -42,15 +26,14 @@ const frameHeight = (height: number) => {
 // cut that part out. `shown` in screen captures, each look covers just the
 // window, painted by the windows behind it so the prompter never blinks in a
 // recording, and a move brings a new one. Looks come at a steady pace, right
-// after a click or a key, and closely after a change (`hurry`); on Linux
-// further apart (see LINUX_GAP_MS).
+// after a click or a key, and closely after a change (`hurry`), at the pace
+// lookPace sets for each system.
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
     const [place, setPlace] = useState<Place | null>(null)
     const [moving, setMoving] = useState(false)
-    const hurryRef = useRef<(ms?: number) => void>(() => {})
-    // Something the user did may have changed the screen: look soon
-    const inputRef = useRef<(ms: number) => void>(() => {})
+    // Look again soon, for this reason
+    const soonRef = useRef<(reason: LookReason) => void>(() => {})
     // Dragged, as the GNOME Shell extension tells: no looks until it stops
     const draggedRef = useRef(false)
     // Let go after a drag on Linux, where the last look only covered where
@@ -87,7 +70,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             if (payload) setMoving(true)
             else if (IS_LINUX) staleRef.current = true
             else setMoving(false)
-            if (!payload) inputRef.current(0)
+            if (!payload) soonRef.current('dropped')
         })
         return () => {
             clearTimeout(still)
@@ -105,24 +88,22 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         let stopped = false
         let busy = false
         // Asked for a look while one was underway: take the next one soon
-        let soon = false
+        let soon: LookReason | null = null
         let timer: ReturnType<typeof setTimeout>
         let lastLook = 0
+        const context = { linux: IS_LINUX, shown }
         const next = (ms: number) => {
             clearTimeout(timer)
-            if (IS_LINUX) ms = Math.max(ms, LINUX_GAP_MS - (performance.now() - lastLook))
+            ms = spaced(ms, performance.now() - lastLook, IS_LINUX)
             if (!stopped) timer = setTimeout(capture, ms)
         }
         const capture = async () => {
-            if (draggedRef.current) return next(EVERY_MS)
+            if (draggedRef.current) return next(DRAGGED_CHECK_MS)
             busy = true
-            soon = false
+            soon = null
             try {
                 // Only behind the teleprompter, not the room kept below it
-                const share =
-                    keptRoom && window.innerHeight > keptRoom
-                        ? (window.innerHeight - keptRoom) / window.innerHeight
-                        : 1
+                const share = frameShare(window.innerHeight, keptRoom)
                 const buffer = await invoke<ArrayBuffer>('capture_backdrop', {
                     step: STEP,
                     shown,
@@ -139,18 +120,15 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             }
             busy = false
             lastLook = performance.now()
-            const steady = IS_LINUX ? LINUX_IDLE_MS : shown ? SHOWN_EVERY_MS : EVERY_MS
-            next(soon ? (IS_LINUX ? LINUX_CHANGING_MS : CHANGED_MS) : steady)
+            next(lookDelay(soon ? 'changed' : 'steady', context))
         }
         capture()
-        const soonish = (ms: number) => {
-            if (busy) soon = true
-            else next(ms)
+        soonRef.current = (reason) => {
+            if (busy) soon = reason
+            else next(lookDelay(reason, context))
         }
-        hurryRef.current = (ms = CHANGED_MS) => soonish(IS_LINUX ? LINUX_CHANGING_MS : ms)
-        inputRef.current = (ms) => soonish(ms)
         // Clicked, typed or scrolled somewhere: the screen is likely changing
-        const input = listen('user-input', () => inputRef.current(INPUT_MS))
+        const input = listen('user-input', () => soonRef.current('input'))
         return () => {
             stopped = true
             clearTimeout(timer)
@@ -160,7 +138,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
 
     // Look again soon, rather than at the usual pace: something changed, or
     // the window went to another monitor
-    const hurry = useCallback(() => hurryRef.current(), [])
+    const hurry = useCallback(() => soonRef.current('changed'), [])
 
     return { backdrop, place, moving, hurry }
 }
