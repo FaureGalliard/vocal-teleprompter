@@ -21,6 +21,7 @@
                 "skipTaskbar": true,
                 "alwaysOnTop": true,
                 "contentProtected": true,
+                "noRedirectionBitmap": true,
                 "shadow": false
             }
         ],

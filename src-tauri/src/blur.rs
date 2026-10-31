@@ -8,7 +8,9 @@
 //! clicked, so it cannot be used.) That call has two kinds of glass, and
 //! each Windows draws only one of them well: Windows 10 lags its acrylic
 //! behind a dragged window, and Windows 11 22H2 and later draw its plain
-//! blur as solid black.
+//! blur as solid black. Either glass only shows through where the window
+//! draws nothing, so the window has no redirection bitmap (see
+//! tauri.conf.json): left to show, that bitmap filled it with black.
 
 use tauri::WebviewWindow;
 use windows::Win32::Foundation::HWND;
@@ -167,6 +169,19 @@ mod tests {
         for build in [WINDOWS_10_22H2, WINDOWS_11_23H2] {
             assert_eq!(policy(build, false).unwrap().state, ACCENT_DISABLED);
         }
+    }
+
+    #[test]
+    fn the_window_has_no_bitmap_to_cover_the_glass_with_black() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        let window = &config["app"]["windows"][0];
+        assert_eq!(window["transparent"], true);
+        assert_eq!(window["noRedirectionBitmap"], true);
+        // Its windows list would replace this one, flag and all
+        let windows: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.windows.conf.json")).unwrap();
+        assert!(windows["app"]["windows"].is_null());
     }
 
     #[test]
