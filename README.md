@@ -20,6 +20,8 @@ runs offline, on Windows and Linux.
 
 ## ⬇️ Download for [Windows](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter-Setup.exe) · [Linux](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter.AppImage)
 
+Version **1.7.1** · [What's new](CHANGELOG.md)
+
 ![Vocal Teleprompter over a presentation](docs/media/hero.png)
 
 </div>
