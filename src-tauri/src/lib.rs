@@ -1,3 +1,5 @@
+#[cfg(windows)]
+mod acrylic;
 mod backdrop;
 mod behind;
 #[cfg(target_os = "linux")]
@@ -60,16 +62,31 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
 }
 
 /// Frosted glass blurred by the desktop itself behind the window, live, but
-/// for `room` pixels at its bottom; a `radius` of 0 takes it away. Only the
-/// GNOME Shell extension can, so elsewhere this says false and the app
-/// draws its own glass from what it sees behind the window.
+/// for `room` pixels at its bottom; a `radius` of 0 takes it away. The
+/// GNOME Shell extension blurs by `radius` and tints nothing; Windows 11
+/// blurs as much as it always does, tinted `dark` or light, and over the
+/// whole window. Elsewhere this says false and the app draws its own glass
+/// from what it sees behind the window.
 #[tauri::command]
-async fn set_glass(radius: i32, room: i32) -> bool {
+async fn set_glass(
+    window: tauri::WebviewWindow,
+    radius: i32,
+    room: i32,
+    dark: Option<bool>,
+) -> bool {
     #[cfg(target_os = "linux")]
-    return gnome_shell::set_glass(radius, room);
-    #[cfg(not(target_os = "linux"))]
     {
-        let _ = (radius, room);
+        let _ = (window, dark);
+        gnome_shell::set_glass(radius, room)
+    }
+    #[cfg(windows)]
+    {
+        let _ = room;
+        acrylic::set(&window, radius > 0, dark.unwrap_or(true))
+    }
+    #[cfg(not(any(windows, target_os = "linux")))]
+    {
+        let _ = (window, radius, room, dark);
         false
     }
 }

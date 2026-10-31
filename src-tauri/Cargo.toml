@@ -46,13 +46,17 @@ xcap = "0.9"
 
 [target.'cfg(windows)'.dependencies]
 # When the user last clicked, typed or scrolled, to look behind the window right then,
-# and the windows behind it painting themselves, so recordings never see it blink
+# the windows behind it painting themselves, so recordings never see it blink, and
+# the glass Windows 11 draws behind the window
 windows = { version = "0.62", features = [
+    "Wdk_System_SystemServices",
     "Win32_Foundation",
     "Win32_Graphics_Dwm",
     "Win32_Graphics_Gdi",
     "Win32_Storage_Xps",
+    "Win32_System_SystemInformation",
     "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
     "Win32_UI_WindowsAndMessaging",
 ] }
 
