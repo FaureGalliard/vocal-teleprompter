@@ -167,8 +167,7 @@ pub fn look(
     step: u32,
     share: f64,
 ) -> Result<(u32, u32, i32, i32, Vec<u8>), String> {
-    use crate::gnome_shell::call;
-    let unknown = |e: &String| e.contains("UnknownMethod");
+    use crate::gnome_shell::{call, missing};
     // Painted at the size the prompter looks at and only behind its text,
     // for a fraction of the work; older extensions paint the whole window,
     // the oldest only at full size, and every step-th pixel is picked here
@@ -176,9 +175,9 @@ pub fn look(
     let fraction = 1.0 / step as f64;
     let (reply, pick) = match call("BehindTop", &(fraction, share)) {
         Ok(reply) => (reply, 1),
-        Err(e) if unknown(&e) => match call("BehindAt", &(fraction,)) {
+        Err(e) if missing(&e) => match call("BehindAt", &(fraction,)) {
             Ok(reply) => (reply, 1),
-            Err(e) if unknown(&e) => (call("Behind", &())?, step as usize),
+            Err(e) if missing(&e) => (call("Behind", &())?, step as usize),
             Err(e) => return Err(e),
         },
         Err(e) => return Err(e),

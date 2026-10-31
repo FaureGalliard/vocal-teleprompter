@@ -29,6 +29,13 @@ where
         .map_err(|e| e.to_string())
 }
 
+/// Whether a call failed only because the extension lacks what was asked,
+/// being older than the app or not installed, so the app falls back to an
+/// older call or does without
+pub fn missing(error: &str) -> bool {
+    error.contains("UnknownMethod") || error.contains("ServiceUnknown")
+}
+
 // Whether the window should be left out of screenshots and screen shares
 static HIDDEN: AtomicBool = AtomicBool::new(true);
 
@@ -59,10 +66,7 @@ fn apply_glass() -> Result<(), String> {
 /// again once the window is on screen, in case it was not yet.
 pub fn set_glass(radius: i32, room: i32) -> bool {
     *GLASS.lock().unwrap() = (radius, room);
-    match apply_glass() {
-        Err(e) if e.contains("UnknownMethod") || e.contains("ServiceUnknown") => false,
-        _ => true,
-    }
+    !matches!(apply_glass(), Err(e) if missing(&e))
 }
 
 // The window is on screen, so the extension can find it
@@ -158,4 +162,25 @@ pub fn watch_signals<R: Runtime>(app: tauri::AppHandle<R>) {
             eprintln!("Could not follow the GNOME Shell extension: {e}");
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::missing;
+
+    #[test]
+    fn falls_back_only_when_the_extension_lacks_the_call() {
+        // An extension loaded before the app was updated: the app must fall
+        // back to the older call instead of losing the colors or the glass
+        assert!(missing(
+            "org.freedesktop.DBus.Error.UnknownMethod: No such method \u{201c}BehindTop\u{201d}"
+        ));
+        assert!(missing(
+            "org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable"
+        ));
+        // Any other failure is real, and the newer call is kept
+        assert!(!missing(
+            "org.freedesktop.DBus.Error.Failed: No prompter window belongs to the caller"
+        ));
+    }
 }
