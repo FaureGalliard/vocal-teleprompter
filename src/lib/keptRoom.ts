@@ -1,5 +1,5 @@
-// The room the window keeps below the teleprompter for its toolbar on Linux,
-// where growing the window for it each time is slow (see useWindowExpansion)
+// The room the window keeps below the teleprompter for its toolbar on Linux
+// and Windows, instead of growing for it each time (see useWindowExpansion)
 
 // The teleprompter never gets shorter than this by its bottom edge
 export const MIN_FRAME_HEIGHT = 60
@@ -33,6 +33,19 @@ export function inputRegion(
     clickThrough: boolean,
 ): number[][] | null {
     if (clickThrough) return []
+    if (!frame || toolbarOpen) return null
+    return [[0, 0, frame.width, frame.height]]
+}
+
+// What Windows shows of the window, as [x, y, width, height], which is also
+// what takes clicks there: only the teleprompter while the toolbar is
+// closed, so the empty room neither shows nor swallows clicks, and all of
+// it while the toolbar is open in the room (or with no room kept). Click-
+// through mode makes the whole window ignore the mouse on Windows instead.
+export function shownRegion(
+    frame: { width: number; height: number } | null,
+    toolbarOpen: boolean,
+): number[][] | null {
     if (!frame || toolbarOpen) return null
     return [[0, 0, frame.width, frame.height]]
 }

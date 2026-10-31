@@ -9,6 +9,8 @@ mod gnome_shell;
 mod input;
 mod mcp;
 #[cfg(windows)]
+mod region;
+#[cfg(windows)]
 mod screen_stream;
 #[cfg(target_os = "linux")]
 mod screencast_portal;
@@ -101,9 +103,11 @@ async fn pin_glass(window: tauri::WebviewWindow, height: Option<f64>) {
 
 /// Lets clicks reach the window only inside `rects` (x, y, width and height
 /// in CSS pixels) and go through to what is behind everywhere else, or
-/// reach all of it when None. On Linux the window keeps room for the
-/// toolbar below the teleprompter instead of growing for it, which is slow
-/// there, and that room takes no clicks while nothing is drawn in it.
+/// reach all of it when None. The window keeps room for the toolbar below
+/// the teleprompter instead of growing for it, which is slow on Linux and
+/// makes the glass flicker on Windows, and that room takes no clicks while
+/// nothing is drawn in it. Windows can only cut the window down, so there
+/// `rects` is also all the window shows (see `region`).
 #[tauri::command]
 fn set_input_region(
     window: tauri::WebviewWindow,
@@ -137,7 +141,9 @@ fn set_input_region(
             })
             .map_err(|e| e.to_string())
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(windows)]
+    return region::set(&window, rects);
+    #[cfg(not(any(windows, target_os = "linux")))]
     {
         let _ = (window, rects);
         Ok(())

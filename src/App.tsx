@@ -14,6 +14,7 @@ import UpdateBanner from './components/UpdateBanner'
 import { BAR_ROOM, useWindowExpansion } from './hooks/useWindowExpansion'
 import { useWindowPlacement } from './hooks/useWindowPlacement'
 import { usePassThroughGaps } from './hooks/usePassThroughGaps'
+import { KEEPS_ROOM } from './lib/platform'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import { useSettings } from './hooks/useSettings'
@@ -162,7 +163,7 @@ function App() {
         dragBottom,
     } = useWindowExpansion(toolbarVisible, settings.clickThrough)
     useWindowPlacement(toolbarVisible || expansion !== null)
-    usePassThroughGaps(expansion !== null)
+    usePassThroughGaps(expansion !== null && (toolbarVisible || !KEEPS_ROOM))
     const toolbarPlacement: React.CSSProperties = expansion
         ? { left: expansion.frame.width / 2, top: expansion.frame.height + (BAR_ROOM - 40) / 2 }
         : { left: '50%', bottom: statusBottom + 30 }
