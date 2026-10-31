@@ -112,7 +112,7 @@ GNOME, also install the extension from the same release, which lets the prompter
 behind its window and hide from screen sharing; the
 [extension's README](linux/gnome-shell-extension/README.md) says how.
 
-macOS is next, see the roadmap.
+macOS is next, see the roadmap. What's new in each version: the [changelog](CHANGELOG.md).
 
 ## 🗺️ Roadmap
 
