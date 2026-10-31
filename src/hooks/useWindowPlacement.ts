@@ -8,6 +8,8 @@ import {
     primaryMonitor,
 } from '@tauri-apps/api/window'
 import { loadPersistent, savePersistent } from './usePersistentState'
+import { keptRoom } from './useWindowExpansion'
+import { IS_LINUX } from '../lib/platform'
 
 // A strip a few lines tall, wide enough for a comfortable line length
 const DEFAULT_SIZE = { width: 1080, height: 165 }
@@ -33,10 +35,12 @@ export const whenPlaced = () => placed
 // It starts hidden and shows once in place, so it never appears somewhere
 // else first.
 // While `paused` the window is not at its own size (it grew for the
-// toolbar), so moves and resizes are not remembered.
+// toolbar), so moves and resizes are not remembered. On Linux the window
+// keeps that room all the time instead, and the size remembered is the
+// teleprompter's, without it.
 export function useWindowPlacement(paused: boolean) {
     const pausedRef = useRef(paused)
-    pausedRef.current = paused
+    pausedRef.current = paused && !IS_LINUX
 
     useEffect(() => {
         const win = getCurrentWindow()
@@ -86,12 +90,14 @@ export function useWindowPlacement(paused: boolean) {
                 const scale = await win.scaleFactor()
                 const position = await win.outerPosition()
                 const size = (await win.innerSize()).toLogical(scale)
+                // Not yet grown around the teleprompter: still its own size
+                const height = size.height > keptRoom ? size.height - keptRoom : size.height
                 if (pausedRef.current) return
                 savePersistent<Bounds>(KEY, {
                     x: position.x,
                     y: position.y,
                     width: size.width,
-                    height: size.height,
+                    height,
                 })
             }, 400)
         }

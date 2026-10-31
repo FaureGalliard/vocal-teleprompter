@@ -4,6 +4,7 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 import { IS_LINUX } from '../lib/platform'
+import { keptRoom } from './useWindowExpansion'
 
 // Physical pixels between samples: plenty for the color behind a letter
 const STEP = 2
@@ -25,6 +26,13 @@ const INPUT_MS = 80
 const LINUX_GAP_MS = 400
 const LINUX_EVERY_MS = 1000
 
+// The teleprompter's own height in a window of `height` physical pixels,
+// without the room kept below it for the toolbar on Linux
+const frameHeight = (height: number) => {
+    const room = Math.round(keptRoom * window.devicePixelRatio)
+    return height > room ? height - room : height
+}
+
 // What is behind the window, while `enabled` (a see-through background).
 // Hidden from screen capture, each look covers the whole monitor, so moving
 // or resizing the window needs no new look: `place` says where it now is, to
@@ -45,7 +53,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         if (!enabled) return
         const win = getCurrentWindow()
         Promise.all([win.innerPosition(), win.innerSize()]).then(([p, s]) =>
-            setPlace({ x: p.x, y: p.y, width: s.width, height: s.height }),
+            setPlace({ x: p.x, y: p.y, width: s.width, height: frameHeight(s.height) }),
         )
         let still: ReturnType<typeof setTimeout>
         const moved = win.onMoved(({ payload }) => {
@@ -55,7 +63,9 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             still = setTimeout(() => setMoving(false), STILL_MS)
         })
         const resized = win.onResized(({ payload }) =>
-            setPlace((p) => p && { ...p, width: payload.width, height: payload.height }),
+            setPlace(
+                (p) => p && { ...p, width: payload.width, height: frameHeight(payload.height) },
+            ),
         )
         // Wayland tells no app that its window moves; the GNOME Shell
         // extension tells when a drag starts and ends instead. The window

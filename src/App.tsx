@@ -155,7 +155,12 @@ function App() {
     // the toolbar and its panels never cover the text or get cut off. When it
     // cannot grow (maximized) the toolbar sits over the bottom of the text
     // instead, which then makes room for it.
-    const { expansion, ready: toolbarReady, resizeFrame } = useWindowExpansion(toolbarVisible)
+    const {
+        expansion,
+        ready: toolbarReady,
+        resizeFrame,
+        dragBottom,
+    } = useWindowExpansion(toolbarVisible, settings.clickThrough)
     useWindowPlacement(toolbarVisible || expansion !== null)
     usePassThroughGaps(expansion !== null)
     const toolbarPlacement: React.CSSProperties = expansion
@@ -177,7 +182,8 @@ function App() {
                     // Painted from the backdrop instead, when it is seen
                     outline={colors.seen ? 'transparent' : displayTextColor}
                     glass={colors.glass}
-                    glassShown={colors.glassShown}>
+                    glassShown={colors.glassShown}
+                    onBottomEdge={dragBottom}>
                     {titleBarVisible && (
                         <TitleBar
                             ref={titleBarRef}
