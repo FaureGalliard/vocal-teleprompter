@@ -29,8 +29,10 @@ runs offline, on Windows and Linux.
 ## 🎤 It follows your voice
 
 No fixed speed, no foot pedal. Speech recognition finds where you are in the script and
-scrolls there, word by word. Pause, slow down or ad-lib, and it waits for you. Works with
-any microphone, in 9 languages, entirely on your computer.
+scrolls there, word by word. Pause, slow down or ad-lib, and it waits for you; skip a
+sentence and it catches up, while a stray word that also comes later never sends it
+jumping ahead. Works with any microphone, in 9 languages, entirely on your computer, with a
+small offline speech model that leaves room for your call.
 
 https://github.com/user-attachments/assets/81646d99-4438-4440-b3b0-1bccc8ea6e0a
 
@@ -54,7 +56,8 @@ behind it. You never pick a color or hunt for an empty corner.
 
 Share your screen and only your slides go out. On Windows, Zoom, Google Meet, Teams, OBS,
 Discord and screenshots leave the prompter out, while you keep reading from it, right under
-your webcam. On Linux this takes the GNOME Shell extension (see Download).
+your webcam. On Linux, Wayland lets only the desktop hide a window, so on GNOME the
+prompter's own Shell extension does it (see Download).
 
 ![What you see vs. what your audience sees](docs/media/hidden-from-sharing.png)
 
