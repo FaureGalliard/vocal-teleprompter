@@ -89,18 +89,6 @@ async fn set_glass(window: tauri::WebviewWindow, radius: i32, room: i32) -> bool
     }
 }
 
-/// Holds the live glass at the teleprompter's `height` (logical pixels)
-/// while the window grows or shrinks around it for the toolbar, or lets it
-/// follow the window again with None. Answers once done, so the window
-/// changes size only then and the glass never covers the toolbar's room.
-#[tauri::command]
-async fn pin_glass(window: tauri::WebviewWindow, height: Option<f64>) {
-    #[cfg(windows)]
-    glass::pin(&window, height);
-    #[cfg(not(windows))]
-    let _ = (window, height);
-}
-
 /// Lets clicks reach the window only inside `rects` (x, y, width and height
 /// in CSS pixels) and go through to what is behind everywhere else, or
 /// reach all of it when None. The window keeps room for the toolbar below
@@ -197,7 +185,6 @@ pub fn run() {
             set_hidden_from_capture,
             set_input_region,
             set_glass,
-            pin_glass,
             backdrop::capture_backdrop,
             backdrop::stop_backdrop,
             speech::list_microphones,

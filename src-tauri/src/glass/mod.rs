@@ -72,16 +72,6 @@ pub fn set(window: &WebviewWindow, radius: i32, room: i32) -> bool {
     }
 }
 
-/// Holds the glass at the text's `height` while the window grows or
-/// shrinks around it for the toolbar, or lets it follow the window again.
-/// Only Windows 11's glass covers part of the window; Windows 10's covers
-/// all of it and is taken away while the toolbar is open anyway.
-pub fn pin(window: &WebviewWindow, height: Option<f64>) {
-    if way(build()) == Some(Way::Composition) {
-        composition::pin(window, height);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
