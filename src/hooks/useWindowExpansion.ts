@@ -8,6 +8,7 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import { whenPlaced } from './useWindowPlacement'
 import { IS_LINUX } from '../lib/platform'
+import { draggedHeight, inputRegion } from '../lib/keptRoom'
 
 // Height of the toolbar plus a little air around it
 export const BAR_ROOM = 56
@@ -148,9 +149,6 @@ function useGrowingRoom(open: boolean) {
     return { ...state, resizeFrame, dragBottom: null }
 }
 
-// The teleprompter never gets shorter than this by its bottom edge
-const MIN_FRAME_HEIGHT = 60
-
 // The room kept below the teleprompter on Linux, 0 while there is none, so
 // what is behind the window is only looked at behind the teleprompter
 export let keptRoom = 0
@@ -206,11 +204,7 @@ function useKeptRoom(open: boolean, clickThrough: boolean) {
     // Clicks reach the teleprompter, and the room only while the toolbar is
     // in it; none at all in click-through mode
     useEffect(() => {
-        const rects = clickThrough
-            ? []
-            : !expansion || open
-              ? null
-              : [[0, 0, expansion.frame.width, expansion.frame.height]]
+        const rects = inputRegion(expansion?.frame ?? null, open, clickThrough)
         invoke('set_input_region', { rects }).catch((e) =>
             console.error('Could not let clicks through:', e),
         )
@@ -240,12 +234,11 @@ function useKeptRoom(open: boolean, clickThrough: boolean) {
         edge.setPointerCapture(down.pointerId)
         let height = start.frame.height
         const onMove = (e: globalThis.PointerEvent) => {
-            height = Math.max(
-                MIN_FRAME_HEIGHT,
-                Math.min(
-                    window.innerHeight - BAR_ROOM,
-                    start.frame.height + e.clientY - down.clientY,
-                ),
+            height = draggedHeight(
+                start.frame.height,
+                e.clientY - down.clientY,
+                window.innerHeight,
+                BAR_ROOM,
             )
             setExpansion({
                 frame: { width: start.frame.width, height },

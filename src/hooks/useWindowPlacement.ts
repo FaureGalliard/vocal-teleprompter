@@ -9,6 +9,7 @@ import {
 } from '@tauri-apps/api/window'
 import { loadPersistent, savePersistent } from './usePersistentState'
 import { keptRoom } from './useWindowExpansion'
+import { withoutRoom } from '../lib/keptRoom'
 import { IS_LINUX } from '../lib/platform'
 
 // A strip a few lines tall, wide enough for a comfortable line length
@@ -91,7 +92,7 @@ export function useWindowPlacement(paused: boolean) {
                 const position = await win.outerPosition()
                 const size = (await win.innerSize()).toLogical(scale)
                 // Not yet grown around the teleprompter: still its own size
-                const height = size.height > keptRoom ? size.height - keptRoom : size.height
+                const height = withoutRoom(size.height, keptRoom)
                 if (pausedRef.current) return
                 savePersistent<Bounds>(KEY, {
                     x: position.x,
