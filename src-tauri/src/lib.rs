@@ -59,6 +59,48 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
         .map_err(|e| e.to_string())
 }
 
+/// Lets clicks reach the window only inside `rects` (x, y, width and height
+/// in CSS pixels) and go through to what is behind everywhere else, or
+/// reach all of it when None. On Linux the window keeps room for the
+/// toolbar below the teleprompter instead of growing for it, which is slow
+/// there, and that room takes no clicks while nothing is drawn in it.
+#[tauri::command]
+fn set_input_region(window: tauri::WebviewWindow, rects: Option<Vec<[f64; 4]>>) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let target = window.clone();
+        window
+            .run_on_main_thread(move || {
+                use gtk::cairo::{RectangleInt, Region};
+                use gtk::prelude::*;
+                let Ok(gtk_window) = target.gtk_window() else {
+                    return;
+                };
+                let region = rects.map(|rects| {
+                    let rects: Vec<RectangleInt> = rects
+                        .iter()
+                        .map(|[x, y, w, h]| {
+                            RectangleInt::new(
+                                x.floor() as i32,
+                                y.floor() as i32,
+                                w.ceil() as i32,
+                                h.ceil() as i32,
+                            )
+                        })
+                        .collect();
+                    Region::create_rectangles(&rects)
+                });
+                gtk_window.input_shape_combine_region(region.as_ref());
+            })
+            .map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = (window, rects);
+        Ok(())
+    }
+}
+
 #[tauri::command]
 fn set_tray_labels(
     items: tauri::State<'_, TrayItems>,
@@ -104,6 +146,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             set_tray_labels,
             set_hidden_from_capture,
+            set_input_region,
             backdrop::capture_backdrop,
             speech::list_microphones,
             speech::speech_start,
