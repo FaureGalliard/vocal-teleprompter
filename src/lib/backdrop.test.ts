@@ -5,6 +5,7 @@ import {
     colorMap,
     cropBackdrop,
     estimateBackground,
+    parseBackdrop,
     settle,
     type Backdrop,
     type Surface,
@@ -175,5 +176,24 @@ describe('the rewritten loops give the same as the plain way', () => {
             { x: 3, y: 1, width: 41, height: 21 },
         ])
             expect(cropBackdrop(backdrop, place)).toEqual(plain(place))
+    })
+})
+
+describe('parseBackdrop', () => {
+    it('reads the header and the pixels after it', () => {
+        const buffer = new ArrayBuffer(16 + 3)
+        const view = new DataView(buffer)
+        view.setUint32(0, 1, true)
+        view.setUint32(4, 1, true)
+        view.setInt32(8, -1920, true)
+        view.setInt32(12, 40, true)
+        new Uint8Array(buffer, 16).set([1, 2, 3])
+        const look = parseBackdrop(buffer, 2)
+        expect(look).toMatchObject({ cols: 1, rows: 1, x: -1920, y: 40, step: 2 })
+        expect([...look!.pixels]).toEqual([1, 2, 3])
+    })
+
+    it('brings nothing when the streamed monitor did not change', () => {
+        expect(parseBackdrop(new ArrayBuffer(0), 2)).toBeNull()
     })
 })

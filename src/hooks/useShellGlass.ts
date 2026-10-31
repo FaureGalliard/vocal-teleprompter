@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { IS_LINUX } from '../lib/platform'
-import { bestOutline } from '../lib/contrast'
+import { shellGlass } from '../lib/shellGlass'
 import { keptRoom } from './useWindowExpansion'
-
-// Blur radius of the desktop's own glass at 100% softening, in pixels:
-// about as soft as the glass the app draws from its looks
-const MAX_RADIUS = 16
 
 // Frosted glass blurred live by the desktop itself behind the window (the
 // GNOME Shell extension on Linux, Windows 11's acrylic), softened by `soften`
@@ -23,9 +19,13 @@ export function useShellGlass(
     toolbarOpen: boolean,
 ) {
     const [drawn, setDrawn] = useState(false)
-    const shown = enabled && (IS_LINUX || !toolbarOpen)
-    const radius = shown ? Math.round((soften / 100) * MAX_RADIUS) : 0
-    const dark = bestOutline(background) === '#ffffff'
+    const { radius, dark } = shellGlass({
+        enabled,
+        soften,
+        background,
+        toolbarOpen,
+        linux: IS_LINUX,
+    })
 
     useEffect(() => {
         let stopped = false

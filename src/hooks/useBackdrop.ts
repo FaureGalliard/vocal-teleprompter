@@ -122,8 +122,9 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
                     shown,
                     share,
                 })
-                // Empty when Windows streams the monitor and nothing changed
-                if (!stopped && buffer.byteLength) setBackdrop(parseBackdrop(buffer, STEP))
+                // Null when Windows streams the monitor and nothing changed
+                const look = parseBackdrop(buffer, STEP)
+                if (!stopped && look) setBackdrop(look)
             } catch (e) {
                 // Unavailable: the text keeps its last colors
                 console.warn('Could not see behind the window:', e)

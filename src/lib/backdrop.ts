@@ -28,7 +28,10 @@ export interface Surface {
 // What sits behind the text, as RGB per sample (0-255 floats)
 export type Background = Float32Array
 
-export function parseBackdrop(buffer: ArrayBuffer, step: number): Backdrop {
+// A look behind the window, or null when it brings nothing: the monitor is
+// streamed and did not change since the last look
+export function parseBackdrop(buffer: ArrayBuffer, step: number): Backdrop | null {
+    if (buffer.byteLength < 16) return null
     const view = new DataView(buffer)
     return {
         cols: view.getUint32(0, true),
