@@ -20,24 +20,52 @@ const WORST_SHARE = 0.05
 // A letter keeps its luminance unless another one stands out this much more
 const STICKINESS = 1.15
 
+// The contrast ratio of `y` against the worst twentieth of luminances
+// sorted from dark to light. The ratios fall toward `y` from both sides, so
+// the worst ones are those right around it, taken outward one at a time,
+// without working out and sorting a ratio for every luminance.
+function standOutSorted(y: number, sorted: Float64Array) {
+    if (!sorted.length) return 21
+    let hi = 0
+    for (let step = sorted.length; step > 0; step >>= 1)
+        while (hi + step <= sorted.length && sorted[hi + step - 1] < y) hi += step
+    let lo = hi - 1
+    let worst = 21
+    for (let n = Math.floor(sorted.length * WORST_SHARE); n >= 0; n--) {
+        const below = lo >= 0 ? ratio(y, sorted[lo]) : Infinity
+        const above = hi < sorted.length ? ratio(y, sorted[hi]) : Infinity
+        if (below <= above) {
+            worst = below
+            lo--
+        } else {
+            worst = above
+            hi++
+        }
+    }
+    return worst
+}
+
 // How well a letter of luminance `y` stands out from the luminances around
 // it: the contrast ratio against the worst twentieth of them
-export function standOut(y: number, around: number[]) {
-    const ratios = around.map((l) => ratio(y, l)).sort((a, b) => a - b)
-    return ratios[Math.floor(ratios.length * WORST_SHARE)] ?? 21
+export function standOut(y: number, around: ArrayLike<number>) {
+    return standOutSorted(y, Float64Array.from(around).sort())
 }
 
 // The luminance for a letter that stands out most from what surrounds it.
 // It sticks to `previous` unless something clearly better turns up, so the
 // letters don't flicker while the backdrop stays the same.
-export function pickLuminance(around: number[], previous?: number) {
+export function pickLuminance(around: ArrayLike<number>, previous?: number) {
+    const sorted = Float64Array.from(around).sort()
     let best = LEVELS[0]
     let bestScore = -1
     for (const y of LEVELS) {
-        const score = standOut(y, around)
-        if (score > bestScore) [best, bestScore] = [y, score]
+        const score = standOutSorted(y, sorted)
+        if (score > bestScore) {
+            best = y
+            bestScore = score
+        }
     }
-    if (previous !== undefined && standOut(previous, around) * STICKINESS >= bestScore)
+    if (previous !== undefined && standOutSorted(previous, sorted) * STICKINESS >= bestScore)
         return previous
     return best
 }

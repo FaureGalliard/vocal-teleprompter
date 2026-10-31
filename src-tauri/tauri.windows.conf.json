@@ -1,0 +1,11 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "bundle": {
+        "resources": {
+            "vosk/vosk-win64-0.3.45/libvosk.dll": "libvosk.dll",
+            "vosk/vosk-win64-0.3.45/libgcc_s_seh-1.dll": "libgcc_s_seh-1.dll",
+            "vosk/vosk-win64-0.3.45/libstdc++-6.dll": "libstdc++-6.dll",
+            "vosk/vosk-win64-0.3.45/libwinpthread-1.dll": "libwinpthread-1.dll"
+        }
+    }
+}

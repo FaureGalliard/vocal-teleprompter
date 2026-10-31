@@ -1,15 +1,18 @@
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { LANGUAGES } from '../constants/languages'
+import { applySettings, describeSettings } from '../lib/assistantSettings'
+import { scriptTitle } from '../lib/library'
 import { splitCards } from '../lib/cards'
 import { useMcpBridge } from './useMcpBridge'
 import { DEFAULT_WPM, type usePace } from './usePace'
 import type { useListeningSession } from './useListeningSession'
 import type { Settings } from './useSettings'
+import type { useLibrary } from './useLibrary'
 
 const minutesFor = (words: number) => Math.round((words / DEFAULT_WPM) * 10) / 10
 
 // Answers requests from AI assistants through the MCP connector: load or read
-// the script, report status, change settings and drive the prompter
+// the script, list and open saved scripts, report status, change settings
+// and drive the prompter
 export function useAssistantBridge({
     settings,
     session,
@@ -19,16 +22,21 @@ export function useAssistantBridge({
     currentWordIndex,
     pace,
     goToCard,
+    library,
+    openScript,
 }: {
     settings: Settings
     session: ReturnType<typeof useListeningSession>
     content: string
-    // Replaces the script, out of editing and back at its start
-    loadScript: (text: string) => void
+    // Puts a script on screen: a new one in the library, or (`asNew` false)
+    // the current one changed
+    loadScript: (text: string, asNew?: boolean) => void
     currentCard: number
     currentWordIndex: number
     pace: ReturnType<typeof usePace>
     goToCard: (index: number) => void
+    library: ReturnType<typeof useLibrary>
+    openScript: (id: string) => void
 }) {
     const describeScript = (text: string) => {
         const scriptCards = splitCards(text, settings.language)
@@ -52,7 +60,7 @@ export function useAssistantBridge({
                     ? `${content.trimEnd()}\n\n---\n\n${text}`
                     : text
             session.stopListening()
-            loadScript(next)
+            loadScript(next, mode !== 'append')
             return { loaded: true, ...describeScript(next) }
         },
         get_script: () => {
@@ -74,52 +82,38 @@ export function useAssistantBridge({
                 wordsPerMinute: pace.wpm === null ? null : Math.round(pace.wpm),
                 remainingMinutes: Math.round((pace.remainingMs / 60000) * 10) / 10,
                 pace: pace.status,
-                settings: {
-                    hideFromScreenSharing: settings.hiddenFromCapture,
-                    fontSize: settings.fontSize,
-                    countdownSeconds: settings.countdownSeconds,
-                    readingLine: settings.readingLine,
-                    autoContrast: settings.autoContrast,
-                    clickThrough: settings.clickThrough,
-                    windowVisible: !document.hidden,
-                },
+                settings: { ...describeSettings(settings), windowVisible: !document.hidden },
             }
         },
         update_settings: (changes) => {
             requireConnector()
-            const isBool = (v: unknown): v is boolean => typeof v === 'boolean'
-            const isInt = (v: unknown, min: number, max: number): v is number =>
-                Number.isInteger(v) && (v as number) >= min && (v as number) <= max
-            const applied: string[] = []
-            const apply = <T>(key: string, ok: boolean, set: (v: T) => void) => {
-                if (!ok) return
-                set(changes[key] as T)
-                applied.push(key)
-            }
-            apply(
-                'hideFromScreenSharing',
-                isBool(changes.hideFromScreenSharing),
-                settings.setHiddenFromCapture,
-            )
-            apply('fontSize', isInt(changes.fontSize, 6, 200), settings.setFontSize)
-            apply('targetMinutes', isInt(changes.targetMinutes, 0, 180), settings.setTargetMinutes)
-            apply(
-                'countdownSeconds',
-                isInt(changes.countdownSeconds, 0, 10),
-                settings.setCountdownSeconds,
-            )
-            apply('readingLine', isBool(changes.readingLine), settings.setReadingLine)
-            apply('autoContrast', isBool(changes.autoContrast), settings.setAutoContrast)
-            apply('clickThrough', isBool(changes.clickThrough), settings.setClickThrough)
-            apply(
-                'speechLanguage',
-                LANGUAGES.some((l) => l.value === changes.speechLanguage),
-                settings.setLanguage,
-            )
-            const ignored = Object.keys(changes).filter((k) => !applied.includes(k))
+            const { applied, ignored } = applySettings(settings, changes)
             if (!applied.length)
                 throw new Error(`Nothing to change. Invalid or unknown: ${ignored.join(', ')}`)
             return { applied, ignored }
+        },
+        list_scripts: () => {
+            requireConnector()
+            return {
+                scripts: library.scripts.map((saved) => ({
+                    id: saved.id,
+                    title: scriptTitle(saved.text),
+                    ...describeScript(saved.text),
+                    updatedAt: new Date(saved.updatedAt).toISOString(),
+                    onScreen: saved.id === library.currentId,
+                })),
+            }
+        },
+        open_script: ({ id }) => {
+            requireConnector()
+            const saved = library.scripts.find((s) => s.id === id)
+            if (!saved) throw new Error(`No saved script with id ${String(id)}. Use list_scripts.`)
+            openScript(saved.id)
+            return {
+                opened: saved.id,
+                title: scriptTitle(saved.text),
+                ...describeScript(saved.text),
+            }
         },
         control: ({ action }) => {
             requireConnector()

@@ -37,3 +37,47 @@ describe('atLuminance', () => {
         expect(contrastRatio(atLuminance('#3060ff', 0.9), '#000000')).toBeGreaterThan(15)
     })
 })
+
+// Regression: these ran a whole core in WebKit (1-2 s a look) until they were
+// rewritten without an array per sample; the rewrite must pick the same
+describe('picking stays the same as the plain way of working it out', () => {
+    let seed = 7
+    const random = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+    const plainStandOut = (y: number, around: number[]) => {
+        const ratio = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+        const ratios = around.map((l) => ratio(y, l)).sort((a, b) => a - b)
+        return ratios[Math.floor(ratios.length * 0.05)] ?? 21
+    }
+
+    it('judges a letter against its worst surroundings the same', () => {
+        for (let n = 0; n < 2000; n++) {
+            const around = Array.from(
+                { length: 1 + Math.floor(random() * 150) },
+                () => random() ** 2,
+            )
+            const y = random()
+            expect(standOut(y, around)).toBe(plainStandOut(y, around))
+        }
+        expect(standOut(0.5, [])).toBe(21)
+    })
+
+    it('picks the same luminance, sticking to the previous one alike', () => {
+        const levels = Array.from({ length: 41 }, (_, i) => (i / 40) ** 2.2)
+        for (let n = 0; n < 300; n++) {
+            const around = Array.from(
+                { length: 1 + Math.floor(random() * 100) },
+                () => random() ** 2,
+            )
+            let best = levels[0]
+            let bestScore = -1
+            for (const y of levels) {
+                const score = plainStandOut(y, around)
+                if (score > bestScore) [best, bestScore] = [y, score]
+            }
+            const previous = random()
+            const sticks = plainStandOut(previous, around) * 1.15 >= bestScore
+            expect(pickLuminance(around)).toBe(best)
+            expect(pickLuminance(around, previous)).toBe(sticks ? previous : best)
+        }
+    })
+})

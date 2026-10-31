@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { cursorPosition, getCurrentWindow } from '@tauri-apps/api/window'
+import { IS_LINUX } from '../lib/platform'
 
 // Nothing is drawn there: the page itself or a wrapper marked as layout only
 const isEmptySpace = (el: Element | null) =>
@@ -14,10 +15,12 @@ const isEmptySpace = (el: Element | null) =>
 // nothing, as if the window ended where its drawn parts do.
 // Windows can only make the whole window ignore the mouse, and then it hears
 // no mouse events at all, so the cursor is polled to tell when it is back
-// over something drawn.
+// over something drawn. Linux tells the window system which parts take
+// clicks instead (see useWindowExpansion), and Wayland never tells where
+// the cursor is outside the window anyway.
 export function usePassThroughGaps(active: boolean) {
     useEffect(() => {
-        if (!active) return
+        if (!active || IS_LINUX) return
         const win = getCurrentWindow()
         let ignoring = false
         let stopped = false

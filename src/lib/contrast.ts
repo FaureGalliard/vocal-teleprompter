@@ -35,8 +35,36 @@ export function bestOutline(hex: string): string {
     return contrastRatio(hex, '#000000') >= contrastRatio(hex, '#ffffff') ? '#000000' : '#ffffff'
 }
 
-function mix(a: RGB, b: RGB, t: number): RGB {
-    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+// Each 0-255 channel value made linear, as WCAG luminance needs, worked out
+// once: the colors below are looked at thousands of times per picture
+const LINEAR = Array.from({ length: 256 }, (_, v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+})
+
+// Luminance of a color whose channels are rounded as #rrggbb would round them
+const luminanceOf = (r: number, g: number, b: number) =>
+    0.2126 * LINEAR[Math.round(r)] + 0.7152 * LINEAR[Math.round(g)] + 0.0722 * LINEAR[Math.round(b)]
+
+const ratioOf = (la: number, lb: number) => (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+
+// `ensureContrast` with the background as 0-255 channels and the result as
+// rounded channels, for working through many colors without strings
+export function ensureContrastRgb(text: string, background: RGB, min = MIN_CONTRAST): RGB {
+    const from = parseHex(text)
+    const bg = luminanceOf(...background)
+    if (ratioOf(luminanceOf(...from), bg) >= min) return from
+    // Black or white, whichever stands out more against the background
+    const to: RGB = ratioOf(bg, 0) >= ratioOf(bg, 1) ? [0, 0, 0] : [255, 255, 255]
+    const mixed = (t: number) => from.map((v, k) => Math.round(v + (to[k] - v) * t)) as RGB
+    let lo = 0
+    let hi = 1
+    for (let i = 0; i < 12; i++) {
+        const mid = (lo + hi) / 2
+        if (ratioOf(luminanceOf(...mixed(mid)), bg) >= min) hi = mid
+        else lo = mid
+    }
+    return mixed(hi)
 }
 
 // Returns the text color unchanged when it already reads well on the
@@ -44,15 +72,5 @@ function mix(a: RGB, b: RGB, t: number): RGB {
 // the minimum ratio, so the chosen hue is kept as much as possible.
 export function ensureContrast(text: string, background: string, min = MIN_CONTRAST) {
     if (contrastRatio(text, background) >= min) return text
-    const target = bestOutline(background)
-    const from = parseHex(text)
-    const to = parseHex(target)
-    let lo = 0
-    let hi = 1
-    for (let i = 0; i < 12; i++) {
-        const mid = (lo + hi) / 2
-        if (contrastRatio(toHex(mix(from, to, mid)), background) >= min) hi = mid
-        else lo = mid
-    }
-    return toHex(mix(from, to, hi))
+    return toHex(ensureContrastRgb(text, parseHex(background), min))
 }

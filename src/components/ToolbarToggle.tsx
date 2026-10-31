@@ -4,7 +4,7 @@ import { Menu, X } from 'lucide-react'
 import { useT } from '../i18n'
 
 // Round button in the bottom corner, in the status row and clear of the
-// text: a click opens or closes the toolbar, holding it drags the window
+// text: a click opens or closes the toolbar, dragging it moves the window
 export default function ToolbarToggle({
     open,
     onToggle,
@@ -15,22 +15,28 @@ export default function ToolbarToggle({
     bottom: number
 }) {
     const t = useT()
-    const dragTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const isDraggingRef = useRef(false)
 
-    const onMouseDown = () => {
+    // Dragging starts once the mouse moves a few pixels with the button down,
+    // not after a delay: a slow click is still a click, and where the window
+    // manager takes over the mouse for the drag the release is never heard
+    const onMouseDown = (down: React.MouseEvent) => {
         isDraggingRef.current = false
-        dragTimeoutRef.current = setTimeout(() => {
+        const { clientX, clientY } = down
+        const onMove = (e: MouseEvent) => {
+            if (Math.hypot(e.clientX - clientX, e.clientY - clientY) < 4) return
+            stop()
             isDraggingRef.current = true
             getCurrentWindow()
                 .startDragging()
-                .catch((e) => console.error(e))
-        }, 120)
-    }
-
-    const onMouseUp = () => {
-        if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current)
-        dragTimeoutRef.current = null
+                .catch((err) => console.error(err))
+        }
+        const stop = () => {
+            window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('mouseup', stop)
+        }
+        window.addEventListener('mousemove', onMove)
+        window.addEventListener('mouseup', stop)
     }
 
     return (
@@ -38,7 +44,6 @@ export default function ToolbarToggle({
             data-tour="menu"
             aria-label={t.tour.menuTitle}
             onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
             onClick={() => !isDraggingRef.current && onToggle()}
             className={`fixed z-50 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer transition-colors shadow-lg ${
                 open

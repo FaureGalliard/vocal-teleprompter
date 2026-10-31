@@ -1,0 +1,13 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "bundle": {
+        "resources": {
+            "vosk/vosk-linux-x86_64-0.3.45/libvosk.so": "libvosk.so"
+        },
+        "linux": {
+            "deb": {
+                "section": "utils"
+            }
+        }
+    }
+}

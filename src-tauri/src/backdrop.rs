@@ -9,7 +9,6 @@
 
 use tauri::ipc::Response;
 use tauri::WebviewWindow;
-use xcap::Monitor;
 
 /// Returns every `step`-th pixel of what is behind the window, as
 /// `[cols: u32][rows: u32][x: i32][y: i32][r g b ...]` (little endian; x and
@@ -17,18 +16,40 @@ use xcap::Monitor;
 /// when hidden from capture, the window's own area when `shown` in screen
 /// captures. Picking single pixels rather than averaging keeps letters and
 /// background apart. Async, so it runs off the main thread, which is busy
-/// while the window is dragged.
+/// while the window is dragged. On Linux only the top `share` of the window
+/// is looked behind, where the text is (the rest is room for the toolbar).
 #[tauri::command]
 pub async fn capture_backdrop(
     window: WebviewWindow,
     step: u32,
     shown: bool,
+    share: Option<f64>,
 ) -> Result<Response, String> {
     let step = step.max(1);
-    if !shown {
-        return capture(&window, step);
+    // On Linux the GNOME Shell extension leaves the window out of what it
+    // paints either way, so there only what is behind it is looked at
+    #[cfg(target_os = "linux")]
+    {
+        let _ = shown;
+        let share = share.unwrap_or(1.0).clamp(0.01, 1.0);
+        let (cols, rows, x, y, rgb) = crate::behind::look(&window, step, share)?;
+        let mut out = header(cols, rows, x, y);
+        out.extend_from_slice(&rgb);
+        Ok(Response::new(out))
     }
-    let behind = crate::behind::draw(&window)?;
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = share;
+        if !shown {
+            return capture(&window, step);
+        }
+        shown_capture(&window, step)
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
+    let behind = crate::behind::draw(window)?;
     let (cols, rows) = (
         (behind.width as u32).div_ceil(step),
         (behind.height as u32).div_ceil(step),
@@ -53,7 +74,10 @@ fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
     out
 }
 
+#[cfg(not(target_os = "linux"))]
 fn capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
+    use xcap::Monitor;
+
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let monitor = Monitor::from_point(position.x, position.y).map_err(|e| e.to_string())?;
     let (x, y) = (

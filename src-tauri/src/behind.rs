@@ -8,6 +8,7 @@ use tauri::WebviewWindow;
 
 /// The window's inside on the desktop and what is behind it there, as BGRA
 /// rows of `width` pixels
+#[cfg(not(target_os = "linux"))]
 pub struct Behind {
     pub x: i32,
     pub y: i32,
@@ -156,7 +157,58 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
     })
 }
 
-#[cfg(not(windows))]
+/// What is behind the top `share` of the window (0-1), every `step`-th pixel
+/// as RGB rows, and where that area is: `(cols, rows, x, y, rgb)`. On Linux
+/// only the compositor can leave a window out of what it paints, so the
+/// GNOME Shell extension does it and hands back the pixels.
+#[cfg(target_os = "linux")]
+pub fn look(
+    window: &WebviewWindow,
+    step: u32,
+    share: f64,
+) -> Result<(u32, u32, i32, i32, Vec<u8>), String> {
+    use crate::gnome_shell::{call, missing};
+    // Painted at the size the prompter looks at and only behind its text,
+    // for a fraction of the work; older extensions paint the whole window,
+    // the oldest only at full size, and every step-th pixel is picked here
+    // instead. Anything below the text is cut off by the frontend.
+    let fraction = 1.0 / step as f64;
+    let (reply, pick) = match call("BehindTop", &(fraction, share)) {
+        Ok(reply) => (reply, 1),
+        Err(e) if missing(&e) => match call("BehindAt", &(fraction,)) {
+            Ok(reply) => (reply, 1),
+            Err(e) if missing(&e) => (call("Behind", &())?, step as usize),
+            Err(e) => return Err(e),
+        },
+        Err(e) => return Err(e),
+    };
+    // Borrowed in one piece: as a Vec it is decoded byte by byte, which
+    // took over a second for a small window
+    let (width, height, stride, channels, pixels): (i32, i32, i32, i32, &[u8]) =
+        reply.deserialize().map_err(|e| e.to_string())?;
+    if width <= 0 || height <= 0 || !(3..=4).contains(&channels) {
+        return Err("Unexpected picture from the shell".into());
+    }
+    let (width, height) = (width as usize, height as usize);
+    let (stride, channels) = (stride as usize, channels as usize);
+    if pixels.len() < stride * (height - 1) + width * channels {
+        return Err("Short picture from the shell".into());
+    }
+
+    let (cols, rows) = (width.div_ceil(pick), height.div_ceil(pick));
+    let mut rgb = Vec::with_capacity(cols * rows * 3);
+    for row in pixels.chunks(stride).step_by(pick).take(rows) {
+        for px in row[..width * channels].chunks_exact(channels).step_by(pick) {
+            rgb.extend_from_slice(&px[..3]);
+        }
+    }
+    // Wayland tells no app where its window is: placed where the app
+    // believes it is, so the frontend finds it under itself
+    let position = window.inner_position().map_err(|e| e.to_string())?;
+    Ok((cols as u32, rows as u32, position.x, position.y, rgb))
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
 pub fn draw(_window: &WebviewWindow) -> Result<Behind, String> {
     Err("Not available on this system".into())
 }

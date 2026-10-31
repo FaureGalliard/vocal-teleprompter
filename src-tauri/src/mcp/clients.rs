@@ -7,7 +7,12 @@ use std::path::{Path, PathBuf};
 const SERVER_NAME: &str = "vocal-teleprompter";
 
 fn server_entry(client: &str) -> Result<Value, String> {
-    let exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    // An AppImage runs from a folder mounted anew on every start, so point at
+    // the AppImage file itself
+    let exe = match std::env::var_os("APPIMAGE") {
+        Some(appimage) => PathBuf::from(appimage),
+        None => std::env::current_exe().map_err(|e| e.to_string())?,
+    };
     let mut entry = json!({ "command": exe.to_string_lossy(), "args": ["--mcp"] });
     // VS Code and Claude Code spell out the transport
     if client == "vscode" || client == "claude-code" {

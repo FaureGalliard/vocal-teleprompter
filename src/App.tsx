@@ -18,6 +18,7 @@ import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useUpdater } from './hooks/useUpdater'
 import { useSettings } from './hooks/useSettings'
 import { useScript } from './hooks/useScript'
+import { useScriptActions } from './hooks/useScriptActions'
 import { useSpeech } from './hooks/useSpeech'
 import { useAssistantBridge } from './hooks/useAssistantBridge'
 import { useWindowKeys } from './hooks/useWindowKeys'
@@ -27,7 +28,6 @@ import { useTextColors } from './hooks/useTextColors'
 import { clearPersistentState } from './hooks/usePersistentState'
 import { LANGUAGES } from './constants/languages'
 import { I18nProvider, UI_LANGUAGES, getMessages } from './i18n'
-import { readClipboard, readPickedFile } from './lib/scriptFiles'
 
 function App() {
     const settings = useSettings()
@@ -50,11 +50,19 @@ function App() {
     const { isSpeechActive, isPaused, countdown } = session
     const { listening: isRecognizing, error, heard: heardText } = speech.recognition
 
-    // Replaces the script, out of editing and back at its start
-    const loadScript = (text: string) => {
-        setIsEditing(false)
-        script.load(text)
+    // Listening and editing exclude each other: the script must hold still
+    const editAt = (caret: number | null) => {
+        session.stopListening()
+        setEditCaret(caret)
+        setIsEditing(true)
     }
+    const actions = useScriptActions({
+        script,
+        stopListening: session.stopListening,
+        setIsEditing,
+        editAt,
+        filesLabel: t.textFiles,
+    })
 
     const { failed: failedShortcuts } = useGlobalShortcuts({
         enabled: settings.shortcutsEnabled && !recordingShortcut,
@@ -79,11 +87,13 @@ function App() {
         settings,
         session,
         content,
-        loadScript,
+        loadScript: actions.load,
         currentCard,
         currentWordIndex,
         pace,
         goToCard: script.goToCard,
+        library: actions.library,
+        openScript: actions.openScript,
     })
 
     const tour = useTour(t, settings, () => {
@@ -113,21 +123,6 @@ function App() {
     useEffect(() => {
         if (settings.clickThrough) setToolbarVisible(false)
     }, [settings.clickThrough])
-
-    const readFrom = async (read: () => Promise<string | null>) => {
-        try {
-            const text = await read()
-            if (text) loadScript(text)
-        } catch (e) {
-            console.error(e)
-        }
-    }
-    // Listening and editing exclude each other: the script must hold still
-    const editAt = (caret: number | null) => {
-        session.stopListening()
-        setEditCaret(caret)
-        setIsEditing(true)
-    }
 
     const handleToggleListen = () => {
         if (countdown !== null) session.cancelCountdown()
@@ -160,7 +155,12 @@ function App() {
     // the toolbar and its panels never cover the text or get cut off. When it
     // cannot grow (maximized) the toolbar sits over the bottom of the text
     // instead, which then makes room for it.
-    const { expansion, ready: toolbarReady, resizeFrame } = useWindowExpansion(toolbarVisible)
+    const {
+        expansion,
+        ready: toolbarReady,
+        resizeFrame,
+        dragBottom,
+    } = useWindowExpansion(toolbarVisible, settings.clickThrough)
     useWindowPlacement(toolbarVisible || expansion !== null)
     usePassThroughGaps(expansion !== null)
     const toolbarPlacement: React.CSSProperties = expansion
@@ -182,7 +182,8 @@ function App() {
                     // Painted from the backdrop instead, when it is seen
                     outline={colors.seen ? 'transparent' : displayTextColor}
                     glass={colors.glass}
-                    glassShown={colors.glassShown}>
+                    glassShown={colors.glassShown}
+                    onBottomEdge={dragBottom}>
                     {titleBarVisible && (
                         <TitleBar
                             ref={titleBarRef}
@@ -278,12 +279,12 @@ function App() {
                         activeMic={activeMic}
                         onRefreshMicrophones={speech.refreshMicrophones}
                         onToggleListen={handleToggleListen}
-                        onPasteText={() => readFrom(readClipboard)}
-                        onImport={() => readFrom(() => readPickedFile(t.textFiles))}
-                        onClear={() => {
-                            session.stopListening()
-                            script.load('')
-                        }}
+                        onPasteText={actions.paste}
+                        onImport={actions.importFile}
+                        library={actions.library}
+                        onNewScript={actions.newScript}
+                        onOpenScript={actions.openScript}
+                        onClear={actions.clear}
                         onToggleEdit={() => (isEditing ? setIsEditing(false) : editAt(null))}
                         onShowTutorial={tour.show}
                         appearance={
@@ -305,7 +306,7 @@ function App() {
                                             (l) => l.messages.sampleScript === content,
                                         )
                                     )
-                                        loadScript(getMessages(val).sampleScript)
+                                        actions.load(getMessages(val).sampleScript, false)
                                     settings.setUiLanguage(val)
                                 }}
                                 // The window gives up (or takes back) just the title bar's

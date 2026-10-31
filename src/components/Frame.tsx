@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, PointerEvent, ReactNode } from 'react'
 import type { Expansion } from '../hooks/useWindowExpansion'
 import type { Glass } from '../hooks/useBackdropView'
 import GlassLayers from './GlassLayers'
@@ -13,6 +13,7 @@ export default function Frame({
     outline,
     glass,
     glassShown,
+    onBottomEdge,
     children,
 }: {
     expansion: Expansion | null
@@ -22,6 +23,8 @@ export default function Frame({
     // What is behind the window, softened, drawn under the background color
     glass: Glass | null
     glassShown: boolean
+    // Drags the bottom edge, where it is not the window's (Linux)
+    onBottomEdge?: ((down: PointerEvent<HTMLElement>) => void) | null
     children: ReactNode
 }) {
     const size = expansion?.frame
@@ -53,6 +56,20 @@ export default function Frame({
                 />
             )}
             {children}
+            {onBottomEdge && size && (
+                <div
+                    onPointerDown={onBottomEdge}
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 5,
+                        cursor: 'ns-resize',
+                        zIndex: 60,
+                    }}
+                />
+            )}
         </div>
     )
 }

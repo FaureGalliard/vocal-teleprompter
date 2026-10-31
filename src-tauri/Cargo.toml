@@ -1,6 +1,6 @@
 [package]
 name = "vocal-teleprompter"
-version = "1.5.0"
+version = "1.6.0"
 description = "Voice-synced teleprompter that scrolls your script as you speak"
 authors = ["FaureGalliard"]
 license = "MIT"
@@ -38,6 +38,10 @@ vosk = "0.3"
 cpal = "0.18"
 ureq = "3"
 zip = { version = "4", default-features = false, features = ["deflate"] }
+
+# Linux cannot leave a window out of a screen capture, so there the prompter
+# does not look behind itself
+[target.'cfg(not(target_os = "linux"))'.dependencies]
 xcap = "0.9"
 
 [target.'cfg(windows)'.dependencies]
@@ -51,6 +55,14 @@ windows = { version = "0.62", features = [
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
 ] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Whether the desktop shows tray icons at all
+zbus = "5"
+# The screen sharing portal: asking the user, and following GNOME's streams
+gtk = "0.18"
+async-channel = "2"
+futures-util = "0.3"
 
 [dev-dependencies]
 vosk = "0.3"

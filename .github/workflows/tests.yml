@@ -11,9 +11,21 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      # WebKitGTK for the window and ALSA for the microphone
+      - name: Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev libasound2-dev
 
       - uses: pnpm/action-setup@v4
 
@@ -62,5 +74,5 @@ jobs:
       - name: Rust and speech recognition tests
         shell: pwsh
         run: |
-          $env:VOSK_MODELS_DIR = "$PWD\.speech-models"
+          $env:VOSK_MODELS_DIR = Join-Path $PWD '.speech-models'
           cargo test --manifest-path src-tauri/Cargo.toml -- --nocapture

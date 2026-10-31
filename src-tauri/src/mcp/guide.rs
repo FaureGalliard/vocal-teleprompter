@@ -28,9 +28,12 @@ level meter to test it.
 color, automatic contrast, and typography (font, weight, line spacing, text \
 width, alignment).
 - Settings (gear) holds the rest.
-- Script menu (document icon): Edit script (write in place; the same \
-button, now a check mark, or Esc finishes), Paste from clipboard, Import a .txt file, Clear \
-script, and Show tutorial.
+- Script menu (document icon): New script, Edit script (write in place; \
+the same button, now a check mark, or Esc finishes), Paste from clipboard, \
+Import a .txt file, Clear script, the saved scripts (My scripts, latest \
+first, to switch between or delete), and Show tutorial. The script on \
+screen is always saved; pasting, importing or loading one from an \
+assistant starts a new one.
 
 ## Settings
 - Reading: scrolling (ahead: the text moves only as the current line nears \

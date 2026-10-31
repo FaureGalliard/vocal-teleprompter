@@ -67,13 +67,19 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
         let glass: Blob | null = null
         if (radius) {
             const image = new Uint8ClampedArray(cols * rows * 4)
-            for (let i = 0; i < cols * rows; i++)
-                image.set([behind[i * 3], behind[i * 3 + 1], behind[i * 3 + 2], 255], i * 4)
+            for (let i = 0; i < cols * rows; i++) {
+                image[i * 4] = behind[i * 3]
+                image[i * 4 + 1] = behind[i * 3 + 1]
+                image[i * 4 + 2] = behind[i * 3 + 2]
+                image[i * 4 + 3] = 255
+            }
             glass = await picture(image, cols, rows)
         }
         // The window's own background blended over it, eased in over time
         const fill = rgb(background)
-        const now = behind.map((v, i) => opacity * fill[i % 3] + (1 - opacity) * v)
+        const now = new Float32Array(behind.length)
+        for (let i = 0; i < behind.length; i++)
+            now[i] = opacity * fill[i % 3] + (1 - opacity) * behind[i]
         const sameSize = seen?.cols === cols && seen.rows === rows
         seen = { cols, rows, step, rgb: settle(sameSize ? seen!.rgb : null, now) }
         reply({ type: 'view', id, glass, cols, rows, step })

@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 
+// A dark control: WebKitGTK on Linux draws selects with the system theme,
+// light by default, which left white text on a white box
 export const selectClass =
-    'bg-white/10 text-white text-[11px] rounded-md px-2 py-1 outline-none cursor-pointer'
+    'bg-white/10 text-white text-[11px] rounded-md px-2 py-1 outline-none cursor-pointer [color-scheme:dark]'
 
 // One setting: icon, name, an optional hint, and its control on the right
 export function Row({

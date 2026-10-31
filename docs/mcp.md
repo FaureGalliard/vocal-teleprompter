@@ -52,11 +52,13 @@ What the assistant can do:
 
 | Tool | What it does |
 |---|---|
-| `load_script` | Puts a script in the prompter (replace or append slides) |
+| `load_script` | Puts a script in the prompter, as a new saved script (or appends slides to the current one) |
+| `list_scripts` | Lists the saved scripts, latest first, and which one is on screen |
+| `open_script` | Puts a saved script on screen |
 | `get_script` | Reads the current script, to review or improve it |
 | `get_status` | Slides, words, estimated time, target duration, language and live pace |
 | `control` | Start, pause, resume, stop, next or previous slide, show or hide the window |
-| `update_settings` | Hide from screen sharing, text size, target duration, countdown, reading line, contrast, click-through, speech language |
+| `update_settings` | Hide from screen sharing, text size and color, background color and opacity, frosted glass, contrast, font, weight, line spacing, text width and alignment, scrolling mode, reading line, countdown, target duration, title bar, click-through, speech language |
 
 It also ships an **app guide** (every feature and where it is, so the assistant can point
 you to it), a **format guide** (plain spoken text, `---` between slides, about 130
