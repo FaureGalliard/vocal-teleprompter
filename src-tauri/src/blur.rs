@@ -2,20 +2,66 @@
 //! GNOME, so it follows a video or a dragged window at once and only the
 //! letters wait for the looks behind the window. Windows blurs behind a
 //! window it is asked to through an undocumented call its own taskbar and
-//! Start menu use, on Windows 10 and 11 alike, whether the window has the
-//! focus or not. (Windows 11's documented acrylic backdrop turns into a flat
-//! gray as soon as the window loses the focus, which the prompter does
-//! whenever the slides are clicked, so it cannot be used.)
+//! Start menu use, whether the window has the focus or not. (Windows 11's
+//! documented acrylic backdrop turns into a flat gray as soon as the window
+//! loses the focus, which the prompter does whenever the slides are
+//! clicked, so it cannot be used.) That call has two kinds of glass, and
+//! each Windows draws only one of them well: Windows 10 lags its acrylic
+//! behind a dragged window, and Windows 11 22H2 and later draw its plain
+//! blur as solid black.
 
 use tauri::WebviewWindow;
 use windows::Win32::Foundation::HWND;
 
-/// The first Windows 10 build (1809) whose blur behind a window is reliable
+/// The first Windows 10 build (1809) whose glass behind a window is reliable
 const FIRST_BUILD: u32 = 17763;
+/// The first Windows 11 build (22H2) that draws the plain blur as black
+const ACRYLIC_BUILD: u32 = 22621;
 
-/// Whether a Windows of this build blurs behind the window
-fn blurs(build: u32) -> bool {
-    build >= FIRST_BUILD
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct AccentPolicy {
+    state: u32,
+    flags: u32,
+    // ABGR, Windows' tint over the glass
+    color: u32,
+    animation: u32,
+}
+
+const ACCENT_DISABLED: u32 = 0;
+const ACCENT_ENABLE_BLURBEHIND: u32 = 3;
+const ACCENT_ENABLE_ACRYLICBLURBEHIND: u32 = 4;
+/// Tint the plain blur with `color`, rather than solid black
+const ACCENT_TINTED: u32 = 2;
+
+/// What to ask a Windows of this build for, while `on`: its glass tinted
+/// with as little as it takes (the frame draws its own tint over it), or
+/// none. None when it has no glass worth drawing.
+fn policy(build: u32, on: bool) -> Option<AccentPolicy> {
+    let off = AccentPolicy {
+        state: ACCENT_DISABLED,
+        flags: 0,
+        color: 0,
+        animation: 0,
+    };
+    if build < FIRST_BUILD {
+        None
+    } else if !on {
+        Some(off)
+    } else if build >= ACRYLIC_BUILD {
+        // Acrylic with no tint at all draws nothing, so the faintest one
+        Some(AccentPolicy {
+            state: ACCENT_ENABLE_ACRYLICBLURBEHIND,
+            color: 1 << 24,
+            ..off
+        })
+    } else {
+        Some(AccentPolicy {
+            state: ACCENT_ENABLE_BLURBEHIND,
+            flags: ACCENT_TINTED,
+            ..off
+        })
+    }
 }
 
 /// The build of the running Windows, which only the kernel tells as it is
@@ -36,52 +82,28 @@ fn build() -> u32 {
 
 /// Blurs behind the window, or stops. True while Windows blurs it.
 pub fn set(window: &WebviewWindow, on: bool) -> bool {
-    if !blurs(build()) {
+    let Some(policy) = policy(build(), on) else {
         return false;
-    }
+    };
     let Ok(hwnd) = window.hwnd() else {
         return false;
     };
-    let drawn = unsafe { blur(HWND(hwnd.0), on) };
+    // As a number, which can go to another thread
+    let hwnd = hwnd.0 as isize;
+    let (done, drawn) = std::sync::mpsc::channel();
+    // On the thread that owns the window, as Tauri's own window effects do
+    let asked = window.run_on_main_thread(move || {
+        let _ = done.send(unsafe { apply(HWND(hwnd as *mut _), policy) });
+    });
+    let drawn = asked.is_ok() && drawn.recv().unwrap_or(false);
     if !drawn {
         eprintln!("Windows would not blur behind the window");
     }
     drawn && on
 }
 
-#[repr(C)]
-#[derive(Debug, PartialEq)]
-struct AccentPolicy {
-    state: u32,
-    flags: u32,
-    // ABGR, Windows' tint over the blur
-    color: u32,
-    animation: u32,
-}
-
-const ACCENT_DISABLED: u32 = 0;
-const ACCENT_ENABLE_BLURBEHIND: u32 = 3;
-/// Tint the blur with `color`, rather than solid black
-const ACCENT_TINTED: u32 = 2;
-
-/// What to ask Windows for: the blur, tinted with nothing (the frame draws
-/// its own tint over it), or no blur
-fn policy(on: bool) -> AccentPolicy {
-    AccentPolicy {
-        state: if on {
-            ACCENT_ENABLE_BLURBEHIND
-        } else {
-            ACCENT_DISABLED
-        },
-        flags: if on { ACCENT_TINTED } else { 0 },
-        color: 0,
-        animation: 0,
-    }
-}
-
-/// Turns the blur behind the window on or off, through the undocumented
-/// call the taskbar uses
-unsafe fn blur(hwnd: HWND, on: bool) -> bool {
+/// Hands the policy to Windows, through the undocumented call the taskbar uses
+unsafe fn apply(hwnd: HWND, mut policy: AccentPolicy) -> bool {
     use std::ffi::c_void;
     use windows::core::{s, w, BOOL};
     use windows::Win32::System::LibraryLoader::{GetModuleHandleW, GetProcAddress};
@@ -102,7 +124,6 @@ unsafe fn blur(hwnd: HWND, on: bool) -> bool {
         return false;
     };
     let call: SetWindowCompositionAttribute = std::mem::transmute(call);
-    let mut policy = policy(on);
     let mut data = Data {
         attribute: WCA_ACCENT_POLICY,
         data: &mut policy as *mut AccentPolicy as *mut c_void,
@@ -115,38 +136,42 @@ unsafe fn blur(hwnd: HWND, on: bool) -> bool {
 mod tests {
     use super::*;
 
+    const WINDOWS_10_22H2: u32 = 19045;
+    const WINDOWS_11_23H2: u32 = 22631;
+
     #[test]
-    fn the_blur_is_tinted_with_nothing_not_solid_black() {
+    fn windows_10_gets_the_plain_blur_tinted_with_nothing() {
         // Without the tint flag, Windows filled the window with black
-        let on = policy(true);
+        let on = policy(WINDOWS_10_22H2, true).unwrap();
         assert_eq!(on.state, ACCENT_ENABLE_BLURBEHIND);
         assert_eq!(on.flags, ACCENT_TINTED);
         assert_eq!(on.color >> 24, 0, "the tint must be fully transparent");
+        assert_eq!(policy(17763, true).unwrap().state, ACCENT_ENABLE_BLURBEHIND);
+        // The first Windows 11 lags acrylic like Windows 10 does
+        assert_eq!(policy(22000, true).unwrap().state, ACCENT_ENABLE_BLURBEHIND);
+    }
+
+    #[test]
+    fn windows_11_22h2_and_later_get_acrylic_not_a_black_blur() {
+        // Its plain blur filled the window with black
+        for build in [22621, WINDOWS_11_23H2, 26100] {
+            let on = policy(build, true).unwrap();
+            assert_eq!(on.state, ACCENT_ENABLE_ACRYLICBLURBEHIND);
+            // Barely tinted: acrylic with no tint at all draws nothing
+            assert_eq!(on.color >> 24, 1);
+        }
     }
 
     #[test]
     fn turning_it_off_asks_for_no_accent() {
-        assert_eq!(policy(false).state, ACCENT_DISABLED);
-    }
-
-    #[test]
-    fn windows_11_blurs_too_not_only_windows_10() {
-        // Windows 11 once drew a flat gray instead, whenever the prompter
-        // lost the focus
-        assert!(blurs(22631));
-        assert!(blurs(26100));
-        assert!(blurs(22000));
-    }
-
-    #[test]
-    fn windows_10_1809_and_later_blur() {
-        assert!(blurs(19045));
-        assert!(blurs(17763));
+        for build in [WINDOWS_10_22H2, WINDOWS_11_23H2] {
+            assert_eq!(policy(build, false).unwrap().state, ACCENT_DISABLED);
+        }
     }
 
     #[test]
     fn older_windows_10_draw_their_own_glass() {
-        assert!(!blurs(17134));
-        assert!(!blurs(0));
+        assert_eq!(policy(17134, true), None);
+        assert_eq!(policy(0, true), None);
     }
 }
