@@ -81,3 +81,15 @@ jobs:
         run: |
           cp src-tauri/target/release/bundle/appimage/*.AppImage VocalTeleprompter.AppImage
           gh release upload "${{ github.ref_name }}" VocalTeleprompter.AppImage --clobber
+
+      # The GNOME Shell extension, which the Linux packages do not install:
+      # gnome-extensions install takes this zip as it is
+      - name: Upload the GNOME Shell extension
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          zip -j vocal-teleprompter@faure-galliard.github.io.shell-extension.zip \
+            linux/gnome-shell-extension/extension.js linux/gnome-shell-extension/metadata.json
+          gh release upload "${{ github.ref_name }}" \
+            vocal-teleprompter@faure-galliard.github.io.shell-extension.zip --clobber
