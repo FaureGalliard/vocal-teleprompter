@@ -76,6 +76,18 @@ const IFACE = `<node>
       <arg type="i" direction="out" name="channels"/>
       <arg type="ay" direction="out" name="pixels"/>
     </method>
+    <!-- The same for just the top share of the window (0-1), where the
+         prompter's text is: the rest is room kept for its toolbar, and
+         painting it would be work for nothing -->
+    <method name="BehindTop">
+      <arg type="d" direction="in" name="fraction"/>
+      <arg type="d" direction="in" name="share"/>
+      <arg type="i" direction="out" name="width"/>
+      <arg type="i" direction="out" name="height"/>
+      <arg type="i" direction="out" name="stride"/>
+      <arg type="i" direction="out" name="channels"/>
+      <arg type="ay" direction="out" name="pixels"/>
+    </method>
     <!-- Keeps the caller's window above the others, or lets it go -->
     <method name="SetAbove">
       <arg type="b" direction="in" name="above"/>
@@ -104,7 +116,7 @@ class Service {
     }
 
     get Version() {
-        return 3;
+        return 4;
     }
 
     BehindAsync(params, invocation) {
@@ -115,10 +127,17 @@ class Service {
         this._behind(Math.min(Math.max(fraction, 0.05), 1), invocation);
     }
 
-    async _behind(fraction, invocation) {
+    BehindTopAsync([fraction, share], invocation) {
+        this._behind(
+            Math.min(Math.max(fraction, 0.05), 1),
+            invocation,
+            Math.min(Math.max(share, 0.01), 1));
+    }
+
+    async _behind(fraction, invocation, share = 1) {
         try {
             const actor = await this._callerActor(invocation);
-            const pixbuf = await behind(actor, fraction);
+            const pixbuf = await behind(actor, fraction, share);
             invocation.return_value(
                 GLib.Variant.new_tuple([
                     new GLib.Variant('i', pixbuf.get_width()),
@@ -285,14 +304,15 @@ class Clients {
     }
 }
 
-// Paints the scene under the window with the window left out, offscreen
-async function behind(actor, fraction) {
+// Paints the scene under the top `share` of the window with the window
+// left out, offscreen
+async function behind(actor, fraction, share) {
     const frame = actor.meta_window.get_frame_rect();
     const rect = new Mtk.Rectangle({
         x: frame.x,
         y: frame.y,
         width: frame.width,
-        height: frame.height,
+        height: Math.max(1, Math.round(frame.height * share)),
     });
     const [, , , scale] = global.stage.get_capture_final_size(rect);
     // Left out of this one paint only: the screen is not redrawn in between.

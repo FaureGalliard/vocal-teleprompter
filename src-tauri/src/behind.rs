@@ -157,20 +157,30 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
     })
 }
 
-/// What is behind the window, every `step`-th pixel as RGB rows, and where
-/// that area is: `(cols, rows, x, y, rgb)`. On Linux only the compositor can
-/// leave a window out of what it paints, so the GNOME Shell extension does
-/// it and hands back the pixels.
+/// What is behind the top `share` of the window (0-1), every `step`-th pixel
+/// as RGB rows, and where that area is: `(cols, rows, x, y, rgb)`. On Linux
+/// only the compositor can leave a window out of what it paints, so the
+/// GNOME Shell extension does it and hands back the pixels.
 #[cfg(target_os = "linux")]
-pub fn look(window: &WebviewWindow, step: u32) -> Result<(u32, u32, i32, i32, Vec<u8>), String> {
-    // Painted at the size the prompter looks at, for a fraction of the work;
-    // an older extension paints only at full size, and every step-th pixel
-    // is picked here instead
-    let (reply, pick) = match crate::gnome_shell::call("BehindAt", &(1.0 / step as f64,)) {
+pub fn look(
+    window: &WebviewWindow,
+    step: u32,
+    share: f64,
+) -> Result<(u32, u32, i32, i32, Vec<u8>), String> {
+    use crate::gnome_shell::call;
+    let unknown = |e: &String| e.contains("UnknownMethod");
+    // Painted at the size the prompter looks at and only behind its text,
+    // for a fraction of the work; older extensions paint the whole window,
+    // the oldest only at full size, and every step-th pixel is picked here
+    // instead. Anything below the text is cut off by the frontend.
+    let fraction = 1.0 / step as f64;
+    let (reply, pick) = match call("BehindTop", &(fraction, share)) {
         Ok(reply) => (reply, 1),
-        Err(e) if e.contains("UnknownMethod") => {
-            (crate::gnome_shell::call("Behind", &())?, step as usize)
-        }
+        Err(e) if unknown(&e) => match call("BehindAt", &(fraction,)) {
+            Ok(reply) => (reply, 1),
+            Err(e) if unknown(&e) => (call("Behind", &())?, step as usize),
+            Err(e) => return Err(e),
+        },
         Err(e) => return Err(e),
     };
     // Borrowed in one piece: as a Vec it is decoded byte by byte, which

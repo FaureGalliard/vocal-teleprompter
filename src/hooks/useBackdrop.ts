@@ -106,7 +106,16 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             busy = true
             soon = false
             try {
-                const buffer = await invoke<ArrayBuffer>('capture_backdrop', { step: STEP, shown })
+                // Only behind the teleprompter, not the room kept below it
+                const share =
+                    keptRoom && window.innerHeight > keptRoom
+                        ? (window.innerHeight - keptRoom) / window.innerHeight
+                        : 1
+                const buffer = await invoke<ArrayBuffer>('capture_backdrop', {
+                    step: STEP,
+                    shown,
+                    share,
+                })
                 if (!stopped) setBackdrop(parseBackdrop(buffer, STEP))
             } catch (e) {
                 // Unavailable: the text keeps its last colors

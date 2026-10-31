@@ -16,12 +16,14 @@ use tauri::WebviewWindow;
 /// when hidden from capture, the window's own area when `shown` in screen
 /// captures. Picking single pixels rather than averaging keeps letters and
 /// background apart. Async, so it runs off the main thread, which is busy
-/// while the window is dragged.
+/// while the window is dragged. On Linux only the top `share` of the window
+/// is looked behind, where the text is (the rest is room for the toolbar).
 #[tauri::command]
 pub async fn capture_backdrop(
     window: WebviewWindow,
     step: u32,
     shown: bool,
+    share: Option<f64>,
 ) -> Result<Response, String> {
     let step = step.max(1);
     // On Linux the GNOME Shell extension leaves the window out of what it
@@ -29,13 +31,15 @@ pub async fn capture_backdrop(
     #[cfg(target_os = "linux")]
     {
         let _ = shown;
-        let (cols, rows, x, y, rgb) = crate::behind::look(&window, step)?;
+        let share = share.unwrap_or(1.0).clamp(0.01, 1.0);
+        let (cols, rows, x, y, rgb) = crate::behind::look(&window, step, share)?;
         let mut out = header(cols, rows, x, y);
         out.extend_from_slice(&rgb);
         Ok(Response::new(out))
     }
     #[cfg(not(target_os = "linux"))]
     {
+        let _ = share;
         if !shown {
             return capture(&window, step);
         }
