@@ -6,6 +6,7 @@ import {
     cropBackdrop,
     estimateBackground,
     parseBackdrop,
+    samePicture,
     settle,
     type Backdrop,
     type Surface,
@@ -195,5 +196,27 @@ describe('parseBackdrop', () => {
 
     it('brings nothing when the streamed monitor did not change', () => {
         expect(parseBackdrop(new ArrayBuffer(0), 2)).toBeNull()
+    })
+})
+
+describe('samePicture', () => {
+    const map = (value: number) => new Uint8ClampedArray(4 * 6).fill(value)
+
+    it('keeps the map showing when the new one looks no different', () => {
+        // Swapping in a map that looked the same made the letters and the
+        // border blink while the browser took it in
+        expect(samePicture(map(120), map(120))).toBe(true)
+        expect(samePicture(map(120), map(126))).toBe(true)
+    })
+
+    it('swaps it when any point changes enough to see', () => {
+        const next = map(120)
+        next[13] = 127
+        expect(samePicture(map(120), next)).toBe(false)
+    })
+
+    it('swaps it when there is none yet or the window changed size', () => {
+        expect(samePicture(null, map(120))).toBe(false)
+        expect(samePicture(map(120), new Uint8ClampedArray(8).fill(120))).toBe(false)
     })
 })

@@ -183,6 +183,22 @@ export function blur(background: Background, cols: number, rows: number, radius 
     return pass(pass(background, 1, 0), 0, 1)
 }
 
+// Largest change in any channel up to which a color map counts as the one
+// already showing: handing the text a new map that looks no different only
+// made the letters and the border blink while the browser took it in
+const SAME_MAP_WITHIN = 6
+
+// Whether a new picture looks the same as the last one shown
+export function samePicture(
+    last: Uint8ClampedArray | null,
+    next: Uint8ClampedArray,
+    within = SAME_MAP_WITHIN,
+) {
+    if (!last || last.length !== next.length) return false
+    for (let i = 0; i < next.length; i++) if (Math.abs(next[i] - last[i]) > within) return false
+    return true
+}
+
 // Average change per channel past which a new look is taken at once
 const BIG_CHANGE = 20
 
