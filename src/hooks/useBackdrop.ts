@@ -5,7 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { parseBackdrop, type Backdrop, type Place } from '../lib/backdrop'
 import { IS_LINUX } from '../lib/platform'
 import { lookDelay, spaced, type LookReason } from '../lib/lookPace'
-import { keptRoom } from './useWindowExpansion'
+import { roomBelow } from './useWindowExpansion'
 import { frameShare, withoutRoom } from '../lib/keptRoom'
 
 // Physical pixels between samples: plenty for the color behind a letter
@@ -16,9 +16,9 @@ const STILL_MS = 150
 const DRAGGED_CHECK_MS = 300
 
 // The teleprompter's own height in a window of `height` physical pixels,
-// without the room kept below it for the toolbar on Linux
+// without the room below it for the toolbar
 const frameHeight = (height: number) =>
-    withoutRoom(height, Math.round(keptRoom * window.devicePixelRatio))
+    withoutRoom(height, Math.round(roomBelow() * window.devicePixelRatio))
 
 // What is behind the window, while `enabled` (a see-through background).
 // Hidden from screen capture, each look covers the whole monitor, so moving
@@ -104,7 +104,7 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             soon = null
             try {
                 // Only behind the teleprompter, not the room kept below it
-                const share = frameShare(window.innerHeight, keptRoom)
+                const share = frameShare(window.innerHeight, roomBelow())
                 const buffer = await invoke<ArrayBuffer>('capture_backdrop', {
                     step: STEP,
                     shown,

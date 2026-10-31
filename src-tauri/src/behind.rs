@@ -6,8 +6,8 @@
 
 use tauri::WebviewWindow;
 
-/// The window's inside on the desktop and what is behind it there, as BGRA
-/// rows of `width` pixels
+/// The top of the window's inside on the desktop and what is behind it
+/// there, as BGRA rows of `width` pixels
 #[cfg(not(target_os = "linux"))]
 pub struct Behind {
     pub x: i32,
@@ -17,8 +17,9 @@ pub struct Behind {
     pub bgra: Vec<u8>,
 }
 
+/// What is behind the top `share` (0-1) of the window
 #[cfg(windows)]
-pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
+pub fn draw(window: &WebviewWindow, share: f64) -> Result<Behind, String> {
     use std::ffi::c_void;
     use windows::Win32::Foundation::{HWND, RECT};
     use windows::Win32::Graphics::Dwm::{
@@ -39,13 +40,16 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
     let ours = HWND(window.hwnd().map_err(|e| e.to_string())?.0);
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let size = window.inner_size().map_err(|e| e.to_string())?;
+    let (width, height) = (
+        size.width as i32,
+        ((size.height as f64 * share).ceil() as i32).max(1),
+    );
     let area = RECT {
         left: position.x,
         top: position.y,
-        right: position.x + size.width as i32,
-        bottom: position.y + size.height as i32,
+        right: position.x + width,
+        bottom: position.y + height,
     };
-    let (width, height) = (size.width as i32, size.height as i32);
     let mut bgra = vec![0u8; (width * height * 4) as usize];
 
     let overlap = |a: &RECT, b: &RECT| {
@@ -209,6 +213,6 @@ pub fn look(
 }
 
 #[cfg(not(any(windows, target_os = "linux")))]
-pub fn draw(_window: &WebviewWindow) -> Result<Behind, String> {
+pub fn draw(_window: &WebviewWindow, _share: f64) -> Result<Behind, String> {
     Err("Not available on this system".into())
 }

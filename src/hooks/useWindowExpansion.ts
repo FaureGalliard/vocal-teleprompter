@@ -94,6 +94,7 @@ function useGrowingRoom(open: boolean) {
             // Pin the frame where it is, then grow the window around it
             setState({ expansion: { frame, room }, ready: false })
             await nextPaint()
+            grownRoom = room
             await win.setResizable(false)
             await win.setSize(new LogicalSize(size.width, size.height + room))
             if (!cancelled) setState({ expansion: { frame, room }, ready: true })
@@ -101,6 +102,7 @@ function useGrowingRoom(open: boolean) {
             restoreRef.current = async () => {
                 const own = frameRef.current ?? frame
                 frameRef.current = null
+                grownRoom = 0
                 await win.setSize(new LogicalSize(own.width, own.height))
                 await win.setResizable(true)
             }
@@ -152,6 +154,13 @@ function useGrowingRoom(open: boolean) {
 // The room kept below the teleprompter on Linux, 0 while there is none, so
 // what is behind the window is only looked at behind the teleprompter
 export let keptRoom = 0
+
+// The room the window has grown by below the teleprompter elsewhere, 0
+// while the toolbar is closed
+let grownRoom = 0
+
+// The room below the teleprompter, kept or grown, in CSS pixels
+export const roomBelow = () => keptRoom || grownRoom
 
 // Linux: growing the window takes a good part of a second there (every
 // resize has the compositor and WebKit redo the whole surface), so the

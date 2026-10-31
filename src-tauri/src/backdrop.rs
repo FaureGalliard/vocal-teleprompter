@@ -17,9 +17,9 @@ use tauri::WebviewWindow;
 /// captures. Picking single pixels rather than averaging keeps letters and
 /// background apart. Empty when the monitor is streamed (see
 /// `screen_stream`) and nothing changed since the last look. Async, so it
-/// runs off the main thread, which is busy while the window is dragged. On
-/// Linux only the top `share` of the window
-/// is looked behind, where the text is (the rest is room for the toolbar).
+/// runs off the main thread, which is busy while the window is dragged.
+/// Where only the window's own area is looked behind, only its top `share`
+/// is, where the text is (the rest is room for the toolbar).
 #[tauri::command]
 pub async fn capture_backdrop(
     window: WebviewWindow,
@@ -41,7 +41,6 @@ pub async fn capture_backdrop(
     }
     #[cfg(not(target_os = "linux"))]
     {
-        let _ = share;
         if !shown {
             // Streamed by Windows as it changes, where it can: an empty
             // answer then says nothing changed since the last look
@@ -51,7 +50,7 @@ pub async fn capture_backdrop(
             }
             return capture(&window, step);
         }
-        shown_capture(&window, step)
+        shown_capture(&window, step, share.unwrap_or(1.0).clamp(0.01, 1.0))
     }
 }
 
@@ -63,8 +62,8 @@ pub fn stop_backdrop() {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
-    let behind = crate::behind::draw(window)?;
+fn shown_capture(window: &WebviewWindow, step: u32, share: f64) -> Result<Response, String> {
+    let behind = crate::behind::draw(window, share)?;
     let (cols, rows) = (
         (behind.width as u32).div_ceil(step),
         (behind.height as u32).div_ceil(step),
