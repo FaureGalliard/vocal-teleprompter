@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { contrastRatio } from './contrast'
 import {
+    blur,
     colorMap,
     cropBackdrop,
     estimateBackground,
@@ -108,5 +109,71 @@ describe('cropBackdrop', () => {
 
     it('gives nothing once the window is on another monitor', () => {
         expect(cropBackdrop(monitor, { x: 500, y: 50, width: 2, height: 2 })).toBeNull()
+    })
+})
+
+// Regression: these made an array for every sample, which kept WebKit's
+// worker busy for over a second a look; the rewrite must give the same
+describe('the rewritten loops give the same as the plain way', () => {
+    let seed = 3
+    const random = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+
+    it('blurs the same', () => {
+        const [cols, rows] = [37, 23]
+        const background = Float32Array.from({ length: cols * rows * 3 }, () => random() * 255)
+        const pass = (from: Float32Array, dc: number, dr: number, radius: number) => {
+            const to = new Float32Array(from.length)
+            for (let r = 0; r < rows; r++)
+                for (let c = 0; c < cols; c++) {
+                    let n = 0
+                    const sum = [0, 0, 0]
+                    for (let d = -radius; d <= radius; d++) {
+                        const [cc, rr] = [c + d * dc, r + d * dr]
+                        if (cc < 0 || cc >= cols || rr < 0 || rr >= rows) continue
+                        for (let k = 0; k < 3; k++) sum[k] += from[(rr * cols + cc) * 3 + k]
+                        n++
+                    }
+                    for (let k = 0; k < 3; k++) to[(r * cols + c) * 3 + k] = sum[k] / n
+                }
+            return to
+        }
+        for (const radius of [1, 2, 4])
+            expect(blur(background, cols, rows, radius)).toEqual(
+                pass(pass(background, 1, 0, radius), 0, 1, radius),
+            )
+    })
+
+    it('crops the same, also with the window partly off the monitor', () => {
+        const backdrop: Backdrop = {
+            cols: 50,
+            rows: 30,
+            step: 2,
+            x: 0,
+            y: 0,
+            pixels: Uint8Array.from({ length: 50 * 30 * 3 }, () => random() * 255),
+        }
+        const plain = (place: { x: number; y: number; width: number; height: number }) => {
+            const { cols, rows, step, pixels } = backdrop
+            const left = Math.floor((place.x - backdrop.x) / step)
+            const top = Math.floor((place.y - backdrop.y) / step)
+            const [w, h] = [Math.ceil(place.width / step), Math.ceil(place.height / step)]
+            const out = new Uint8Array(w * h * 3)
+            for (let r = 0; r < h; r++)
+                for (let c = 0; c < w; c++) {
+                    const [sr, sc] = [top + r, left + c]
+                    if (sr < 0 || sr >= rows || sc < 0 || sc >= cols) continue
+                    for (let k = 0; k < 3; k++)
+                        out[(r * w + c) * 3 + k] = pixels[(sr * cols + sc) * 3 + k]
+                }
+            return { cols: w, rows: h, pixels: out }
+        }
+        for (const place of [
+            { x: 10, y: 10, width: 40, height: 20 },
+            { x: -20, y: -6, width: 60, height: 30 },
+            { x: 80, y: 40, width: 60, height: 40 },
+            { x: -30, y: 0, width: 200, height: 80 },
+            { x: 3, y: 1, width: 41, height: 21 },
+        ])
+            expect(cropBackdrop(backdrop, place)).toEqual(plain(place))
     })
 })
