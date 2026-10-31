@@ -21,14 +21,13 @@ const CHANGED_MS = 120
 // so look right away instead of waiting for the next round
 const INPUT_MS = 80
 // On Linux GNOME Shell paints each look on the thread that draws the whole
-// desktop, where it stalls everything on screen for a moment, so looks come
-// only when something likely changed: after input anywhere or a drag, and
-// for at most a few more rounds while what is behind keeps changing (a
-// slide transition, not a whole video), never closer than the gap. Changes
-// that come with no input at all are caught by a rare look on its own.
+// desktop, where it stalls everything on screen for a moment, so looks are
+// spaced out there: right after input anywhere or a drag, every half second
+// while what is behind keeps changing (a video), and only now and then while
+// it stays the same, never closer than the gap
 const LINUX_GAP_MS = 400
-const LINUX_FOLLOW_UPS = 3
-const LINUX_IDLE_MS = 10_000
+const LINUX_CHANGING_MS = 500
+const LINUX_IDLE_MS = 2000
 
 // The teleprompter's own height in a window of `height` physical pixels,
 // without the room kept below it for the toolbar on Linux
@@ -44,7 +43,7 @@ const frameHeight = (height: number) => {
 // window, painted by the windows behind it so the prompter never blinks in a
 // recording, and a move brings a new one. Looks come at a steady pace, right
 // after a click or a key, and closely after a change (`hurry`); on Linux
-// only then (see LINUX_FOLLOW_UPS).
+// further apart (see LINUX_GAP_MS).
 export function useBackdrop(enabled: boolean, shown: boolean) {
     const [backdrop, setBackdrop] = useState<Backdrop | null>(null)
     const [place, setPlace] = useState<Place | null>(null)
@@ -109,8 +108,6 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         let soon = false
         let timer: ReturnType<typeof setTimeout>
         let lastLook = 0
-        // Looks a change may still bring before the next input (Linux)
-        let followUps = LINUX_FOLLOW_UPS
         const next = (ms: number) => {
             clearTimeout(timer)
             if (IS_LINUX) ms = Math.max(ms, LINUX_GAP_MS - (performance.now() - lastLook))
@@ -143,21 +140,15 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             busy = false
             lastLook = performance.now()
             const steady = IS_LINUX ? LINUX_IDLE_MS : shown ? SHOWN_EVERY_MS : EVERY_MS
-            next(soon ? CHANGED_MS : steady)
+            next(soon ? (IS_LINUX ? LINUX_CHANGING_MS : CHANGED_MS) : steady)
         }
         capture()
         const soonish = (ms: number) => {
             if (busy) soon = true
             else next(ms)
         }
-        hurryRef.current = (ms = CHANGED_MS) => {
-            if (IS_LINUX && followUps-- <= 0) return
-            soonish(ms)
-        }
-        inputRef.current = (ms) => {
-            followUps = LINUX_FOLLOW_UPS
-            soonish(ms)
-        }
+        hurryRef.current = (ms = CHANGED_MS) => soonish(IS_LINUX ? LINUX_CHANGING_MS : ms)
+        inputRef.current = (ms) => soonish(ms)
         // Clicked, typed or scrolled somewhere: the screen is likely changing
         const input = listen('user-input', () => inputRef.current(INPUT_MS))
         return () => {
