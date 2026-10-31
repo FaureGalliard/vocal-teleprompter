@@ -14,6 +14,15 @@ export const withoutRoom = (height: number, room: number) =>
 export const frameShare = (height: number, room: number) =>
     room && height > room ? (height - room) / height : 1
 
+// The window's size once it keeps `room` below a teleprompter of `frame`,
+// or null while the window has no size yet (it starts hidden, and the page
+// in it is 0x0 until it is first shown): growing it then pinned the
+// teleprompter at 0x0 and left nothing on screen
+export function keptWindowSize(frame: { width: number; height: number }, room: number) {
+    if (!(frame.width > 0 && frame.height > 0)) return null
+    return { width: frame.width, height: frame.height + room }
+}
+
 // Which parts of the window take clicks, as [x, y, width, height]: none in
 // click-through mode, all of it while the toolbar is open in the room (or
 // with no room kept), and otherwise only the teleprompter, so clicks on the

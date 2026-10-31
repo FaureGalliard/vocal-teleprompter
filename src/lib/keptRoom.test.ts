@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { draggedHeight, frameShare, inputRegion, MIN_FRAME_HEIGHT, withoutRoom } from './keptRoom'
+import {
+    draggedHeight,
+    frameShare,
+    inputRegion,
+    keptWindowSize,
+    MIN_FRAME_HEIGHT,
+    withoutRoom,
+} from './keptRoom'
 
 const frame = { width: 1080, height: 165 }
 
@@ -53,5 +60,22 @@ describe('draggedHeight', () => {
     it('keeps the teleprompter usable and the toolbar room in the window', () => {
         expect(draggedHeight(165, -500, 661, 56)).toBe(MIN_FRAME_HEIGHT)
         expect(draggedHeight(165, 900, 661, 56)).toBe(661 - 56)
+    })
+})
+
+describe('keptWindowSize', () => {
+    it('grows the window by the room below the teleprompter', () => {
+        expect(keptWindowSize({ width: 1080, height: 165 }, 496)).toEqual({
+            width: 1080,
+            height: 661,
+        })
+    })
+
+    it('never grows a window that has no size yet', () => {
+        // Regression: the installed app read the size of the page before it
+        // had one, pinned the teleprompter at 0x0 and showed nothing at all
+        expect(keptWindowSize({ width: 0, height: 0 }, 496)).toBeNull()
+        expect(keptWindowSize({ width: 1080, height: 0 }, 496)).toBeNull()
+        expect(keptWindowSize({ width: NaN, height: 165 }, 496)).toBeNull()
     })
 })
