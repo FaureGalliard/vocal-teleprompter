@@ -8,7 +8,7 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import { whenPlaced } from './useWindowPlacement'
 import { IS_LINUX } from '../lib/platform'
-import { draggedHeight, inputRegion } from '../lib/keptRoom'
+import { draggedHeight, inputRegion, keptWindowSize } from '../lib/keptRoom'
 
 // Height of the toolbar plus a little air around it
 export const BAR_ROOM = 56
@@ -172,7 +172,7 @@ function useKeptRoom(open: boolean, clickThrough: boolean) {
         // The teleprompter is whatever the room leaves of the window
         const follow = () => {
             const room = roomRef.current
-            if (!room || window.innerHeight <= room) return
+            if (!room || window.innerWidth <= 0 || window.innerHeight <= room) return
             const frame = { width: window.innerWidth, height: window.innerHeight - room }
             setExpansion((e) =>
                 e && e.frame.width === frame.width && e.frame.height === frame.height
@@ -183,15 +183,19 @@ function useKeptRoom(open: boolean, clickThrough: boolean) {
         const keep = async () => {
             await whenPlaced()
             if (cancelled || (await win.isMaximized())) return
-            const frame = { width: window.innerWidth, height: window.innerHeight }
+            // The window's own size, as placed: the page in it may not have
+            // one yet, as the window has only just been shown
+            const frame = (await win.innerSize()).toLogical(await win.scaleFactor())
             const room = BAR_ROOM + PANEL_ROOM
+            const grown = keptWindowSize(frame, room)
+            if (cancelled || !grown) return
             // Pinned first, so the teleprompter does not stretch as the
             // window grows around it
             roomRef.current = room
             keptRoom = room
-            setExpansion({ frame, room })
+            setExpansion({ frame: { width: frame.width, height: frame.height }, room })
             await nextPaint()
-            await win.setSize(new LogicalSize(frame.width, frame.height + room))
+            await win.setSize(new LogicalSize(grown.width, grown.height))
         }
         keep().catch((e) => console.error('Could not keep room for the toolbar:', e))
         window.addEventListener('resize', follow)
