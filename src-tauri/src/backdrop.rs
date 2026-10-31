@@ -15,9 +15,11 @@ use tauri::WebviewWindow;
 /// y place the area on the desktop, in physical pixels): the whole monitor
 /// when hidden from capture, the window's own area when `shown` in screen
 /// captures. Picking single pixels rather than averaging keeps letters and
-/// background apart. Async, so it runs off the main thread, which is busy
-/// while the window is dragged. On Linux only the top `share` of the window
-/// is looked behind, where the text is (the rest is room for the toolbar).
+/// background apart. Empty when the monitor is streamed (see
+/// `screen_stream`) and nothing changed since the last look. Async, so it
+/// runs off the main thread, which is busy while the window is dragged.
+/// Where only the window's own area is looked behind, only its top `share`
+/// is, where the text is (the rest is room for the toolbar).
 #[tauri::command]
 pub async fn capture_backdrop(
     window: WebviewWindow,
@@ -39,17 +41,29 @@ pub async fn capture_backdrop(
     }
     #[cfg(not(target_os = "linux"))]
     {
-        let _ = share;
         if !shown {
+            // Streamed by Windows as it changes, where it can: an empty
+            // answer then says nothing changed since the last look
+            #[cfg(windows)]
+            if let Some(out) = crate::screen_stream::look(&window, step) {
+                return Ok(Response::new(out));
+            }
             return capture(&window, step);
         }
-        shown_capture(&window, step)
+        shown_capture(&window, step, share.unwrap_or(1.0).clamp(0.01, 1.0))
     }
 }
 
+/// Stops looking behind the window until the next `capture_backdrop`
+#[tauri::command]
+pub fn stop_backdrop() {
+    #[cfg(windows)]
+    crate::screen_stream::stop();
+}
+
 #[cfg(not(target_os = "linux"))]
-fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> {
-    let behind = crate::behind::draw(window)?;
+fn shown_capture(window: &WebviewWindow, step: u32, share: f64) -> Result<Response, String> {
+    let behind = crate::behind::draw(window, share)?;
     let (cols, rows) = (
         (behind.width as u32).div_ceil(step),
         (behind.height as u32).div_ceil(step),
@@ -65,7 +79,7 @@ fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> 
     Ok(Response::new(out))
 }
 
-fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
+pub(crate) fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
     let mut out = Vec::with_capacity(16 + (cols * rows * 3) as usize);
     out.extend_from_slice(&cols.to_le_bytes());
     out.extend_from_slice(&rows.to_le_bytes());

@@ -6,8 +6,8 @@
 
 use tauri::WebviewWindow;
 
-/// The window's inside on the desktop and what is behind it there, as BGRA
-/// rows of `width` pixels
+/// The top of the window's inside on the desktop and what is behind it
+/// there, as BGRA rows of `width` pixels
 #[cfg(not(target_os = "linux"))]
 pub struct Behind {
     pub x: i32,
@@ -17,8 +17,9 @@ pub struct Behind {
     pub bgra: Vec<u8>,
 }
 
+/// What is behind the top `share` (0-1) of the window
 #[cfg(windows)]
-pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
+pub fn draw(window: &WebviewWindow, share: f64) -> Result<Behind, String> {
     use std::ffi::c_void;
     use windows::Win32::Foundation::{HWND, RECT};
     use windows::Win32::Graphics::Dwm::{
@@ -39,13 +40,16 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
     let ours = HWND(window.hwnd().map_err(|e| e.to_string())?.0);
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let size = window.inner_size().map_err(|e| e.to_string())?;
+    let (width, height) = (
+        size.width as i32,
+        ((size.height as f64 * share).ceil() as i32).max(1),
+    );
     let area = RECT {
         left: position.x,
         top: position.y,
-        right: position.x + size.width as i32,
-        bottom: position.y + size.height as i32,
+        right: position.x + width,
+        bottom: position.y + height,
     };
-    let (width, height) = (size.width as i32, size.height as i32);
     let mut bgra = vec![0u8; (width * height * 4) as usize];
 
     let overlap = |a: &RECT, b: &RECT| {
@@ -131,14 +135,13 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
                 if PrintWindow(*hwnd, memory, PW_RENDERFULLCONTENT).as_bool() && !bits.is_null() {
                     let painted =
                         std::slice::from_raw_parts(bits as *const u8, (ww * wh * 4) as usize);
-                    // Only the visible frame (no invisible borders), inside our area
-                    for y in frame.top.max(area.top)..frame.bottom.min(area.bottom) {
-                        for x in frame.left.max(area.left)..frame.right.min(area.right) {
-                            let from = (((y - outer.top) * ww + (x - outer.left)) * 4) as usize;
-                            let to = (((y - area.top) * width + (x - area.left)) * 4) as usize;
-                            bgra[to..to + 4].copy_from_slice(&painted[from..from + 4]);
-                        }
-                    }
+                    lay(
+                        painted,
+                        edges(&outer),
+                        edges(frame),
+                        edges(&area),
+                        &mut bgra,
+                    );
                 }
                 SelectObject(memory, old);
                 let _ = DeleteObject(bitmap.into());
@@ -155,6 +158,49 @@ pub fn draw(window: &WebviewWindow) -> Result<Behind, String> {
         height,
         bgra,
     })
+}
+
+#[cfg(windows)]
+fn edges(rect: &windows::Win32::Foundation::RECT) -> Edges {
+    Edges {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+    }
+}
+
+/// A rectangle on the desktop, in physical pixels
+#[cfg(any(windows, test))]
+#[derive(Clone, Copy)]
+struct Edges {
+    left: i32,
+    top: i32,
+    right: i32,
+    bottom: i32,
+}
+
+/// Lays what a window painted (BGRA rows as wide as its `outer` rectangle)
+/// into `bgra` (rows as wide as our `area`), only where it shows: inside its
+/// visible `frame` (no invisible borders) and our area. Never past what it
+/// painted either: a window unaware of the screen's scaling tells a frame
+/// larger than the picture it paints.
+#[cfg(any(windows, test))]
+fn lay(painted: &[u8], outer: Edges, frame: Edges, area: Edges, bgra: &mut [u8]) {
+    let (ww, width) = (outer.right - outer.left, area.right - area.left);
+    let top = frame.top.max(area.top).max(outer.top);
+    let bottom = frame.bottom.min(area.bottom).min(outer.bottom);
+    let left = frame.left.max(area.left).max(outer.left);
+    let right = frame.right.min(area.right).min(outer.right);
+    for y in top..bottom {
+        for x in left..right {
+            let from = (((y - outer.top) * ww + (x - outer.left)) * 4) as usize;
+            let to = (((y - area.top) * width + (x - area.left)) * 4) as usize;
+            if let (Some(px), Some(at)) = (painted.get(from..from + 4), bgra.get_mut(to..to + 4)) {
+                at.copy_from_slice(px);
+            }
+        }
+    }
 }
 
 /// What is behind the top `share` of the window (0-1), every `step`-th pixel
@@ -209,6 +255,76 @@ pub fn look(
 }
 
 #[cfg(not(any(windows, target_os = "linux")))]
-pub fn draw(_window: &WebviewWindow) -> Result<Behind, String> {
+pub fn draw(_window: &WebviewWindow, _share: f64) -> Result<Behind, String> {
     Err("Not available on this system".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{lay, Edges};
+
+    const fn edges(left: i32, top: i32, right: i32, bottom: i32) -> Edges {
+        Edges {
+            left,
+            top,
+            right,
+            bottom,
+        }
+    }
+
+    // A window painted all in one color, `w` by `h` pixels
+    fn painted(w: i32, h: i32, color: u8) -> Vec<u8> {
+        vec![color; (w * h * 4) as usize]
+    }
+
+    #[test]
+    fn only_its_frame_inside_our_area_is_laid() {
+        let area = edges(10, 10, 14, 12);
+        let mut bgra = vec![0; 4 * 2 * 4];
+        // A window from (8, 8) to (20, 20), visible from x 12
+        let outer = edges(8, 8, 20, 20);
+        lay(
+            &painted(12, 12, 9),
+            outer,
+            edges(12, 8, 20, 20),
+            area,
+            &mut bgra,
+        );
+        // Each row of our area: two pixels left alone, two laid
+        for row in bgra.chunks(16) {
+            assert_eq!(row, [[0; 8], [9; 8]].concat());
+        }
+    }
+
+    #[test]
+    fn a_frame_larger_than_its_picture_does_not_panic() {
+        // What panicked: a window told a frame reaching past what it painted
+        let area = edges(0, 0, 10, 10);
+        let mut bgra = vec![0; 10 * 10 * 4];
+        let outer = edges(0, 0, 5, 5);
+        lay(
+            &painted(5, 5, 7),
+            outer,
+            edges(0, 0, 10, 10),
+            area,
+            &mut bgra,
+        );
+        let laid = bgra.chunks(4).filter(|px| px[0] == 7).count();
+        assert_eq!(laid, 5 * 5);
+    }
+
+    #[test]
+    fn a_picture_shorter_than_its_rectangle_does_not_panic() {
+        let area = edges(0, 0, 4, 4);
+        let mut bgra = vec![0; 4 * 4 * 4];
+        // Painted only 4x2 though its rectangle says 4x4
+        lay(
+            &painted(4, 2, 3),
+            edges(0, 0, 4, 4),
+            edges(0, 0, 4, 4),
+            area,
+            &mut bgra,
+        );
+        assert_eq!(bgra.chunks(4).filter(|px| px[0] == 3).count(), 4 * 2);
+    }
 }

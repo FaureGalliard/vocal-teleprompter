@@ -2,7 +2,15 @@
 // over it, away from the thread that draws the interface, so neither the
 // blur nor the per-letter colors can make it stutter.
 
-import { blur, colorMap, cropBackdrop, rgb, settle, type Backdrop } from '../lib/backdrop'
+import {
+    blur,
+    colorMap,
+    cropBackdrop,
+    rgb,
+    samePicture,
+    settle,
+    type Backdrop,
+} from '../lib/backdrop'
 import { paintLetters, type Seen } from '../lib/letterPaint'
 import type { WorkerReply, WorkerRequest } from './backdropMessages'
 
@@ -21,6 +29,8 @@ let lastPixels: Uint8Array | null = null
 let lastAsked = ''
 // Each letter's last luminance and color, kept between rounds
 let picked = new Map<number, number>()
+// The last color map handed to the text, to keep it while it still holds
+let shownMap: Uint8ClampedArray | null = null
 const colors = new Map<number, string>()
 
 const reply = (message: WorkerReply) =>
@@ -37,6 +47,7 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
         seen = null
         monitor = null
         lastPixels = null
+        shownMap = null
         picked = new Map()
         colors.clear()
         return
@@ -87,15 +98,29 @@ self.onmessage = async ({ data }: MessageEvent<WorkerRequest>) => {
     }
 
     // paint: a readable color for every point, then for every letter
-    const { id, letters, textColor, scale } = data
-    if (!seen) return reply({ type: 'paint', id, map: null, cols: 0, rows: 0, step: 1, colors: [] })
+    const { id, letters, textColor, scale, showing } = data
+    if (!seen)
+        return reply({
+            type: 'paint',
+            id,
+            map: null,
+            kept: false,
+            cols: 0,
+            rows: 0,
+            step: 1,
+            colors: [],
+        })
     const { cols, rows, step } = seen
     const image = colorMap(seen.rgb, cols, rows, textColor)
     picked = paintLetters(image, seen, letters, textColor, scale, picked, colors)
+    // Looks the same as the map showing: keep that one, nothing to swap
+    const kept = showing && samePicture(shownMap, image)
+    if (!kept) shownMap = image
     reply({
         type: 'paint',
         id,
-        map: await picture(image, cols, rows),
+        map: kept ? null : await picture(image, cols, rows),
+        kept,
         cols,
         rows,
         step,

@@ -26,7 +26,15 @@ export type WorkerRequest =
           soften: number
       }
     // The text's colors over the last look, for the letters now in view
-    | { type: 'paint'; id: number; letters: Letter[]; textColor: string; scale: number }
+    | {
+          type: 'paint'
+          id: number
+          letters: Letter[]
+          textColor: string
+          scale: number
+          // The text still shows the last map handed to it
+          showing: boolean
+      }
 
 // And what it answers
 export type WorkerReply =
@@ -39,8 +47,10 @@ export type WorkerReply =
     | {
           type: 'paint'
           id: number
-          // The text color for every sample, null before the first look
+          // The text color for every sample, null before the first look or
+          // when the map showing still holds (`kept`)
           map: Blob | null
+          kept: boolean
           cols: number
           rows: number
           step: number

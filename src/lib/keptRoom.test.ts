@@ -3,6 +3,7 @@ import {
     draggedHeight,
     frameShare,
     inputRegion,
+    shownRegion,
     keptWindowSize,
     MIN_FRAME_HEIGHT,
     withoutRoom,
@@ -77,5 +78,24 @@ describe('keptWindowSize', () => {
         expect(keptWindowSize({ width: 0, height: 0 }, 496)).toBeNull()
         expect(keptWindowSize({ width: 1080, height: 0 }, 496)).toBeNull()
         expect(keptWindowSize({ width: NaN, height: 165 }, 496)).toBeNull()
+    })
+})
+
+describe('shownRegion', () => {
+    it('shows only the teleprompter on Windows while the toolbar is closed', () => {
+        // The window keeps the toolbar's room instead of growing for it, as
+        // growing made the glass flicker: the empty room must neither show
+        // nor take clicks then
+        expect(shownRegion(frame, false)).toEqual([[0, 0, 1080, 165]])
+    })
+
+    it('shows all of the window while the toolbar is open in the room', () => {
+        expect(shownRegion(frame, true)).toBeNull()
+    })
+
+    it('never hides the window in click-through mode, which Windows does otherwise', () => {
+        // Cutting the window down to nothing would make it vanish
+        expect(shownRegion(frame, false)).not.toEqual([])
+        expect(shownRegion(null, false)).toBeNull()
     })
 })

@@ -10,7 +10,7 @@ import {
 import { loadPersistent, savePersistent } from './usePersistentState'
 import { keptRoom } from './useWindowExpansion'
 import { withoutRoom } from '../lib/keptRoom'
-import { IS_LINUX } from '../lib/platform'
+import { KEEPS_ROOM } from '../lib/platform'
 
 // A strip a few lines tall, wide enough for a comfortable line length
 const DEFAULT_SIZE = { width: 1080, height: 165 }
@@ -36,12 +36,12 @@ export const whenPlaced = () => placed
 // It starts hidden and shows once in place, so it never appears somewhere
 // else first.
 // While `paused` the window is not at its own size (it grew for the
-// toolbar), so moves and resizes are not remembered. On Linux the window
-// keeps that room all the time instead, and the size remembered is the
-// teleprompter's, without it.
+// toolbar), so moves and resizes are not remembered. On Linux and Windows
+// the window keeps that room all the time instead, and the size remembered
+// is the teleprompter's, without it.
 export function useWindowPlacement(paused: boolean) {
     const pausedRef = useRef(paused)
-    pausedRef.current = paused && !IS_LINUX
+    pausedRef.current = paused && !KEEPS_ROOM
 
     useEffect(() => {
         const win = getCurrentWindow()
