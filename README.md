@@ -63,7 +63,7 @@ prompter, split into slides and sized to your time. Connect Claude Desktop, Clau
 Cursor or VS Code in one click from **Settings → AI connector**.
 [How it works →](docs/mcp.md)
 
-https://github.com/user-attachments/assets/5312b16a-3dc5-4533-b50f-fe2cc388f4d4
+https://github.com/user-attachments/assets/16c250e0-2322-4cf2-8dda-fe923bcd73d8
 
 ## 🧰 Everything else a speaker needs
 
