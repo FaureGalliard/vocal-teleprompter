@@ -92,11 +92,18 @@ page.
 > **Windows SmartScreen** may warn you because the installer is not code-signed yet:
 > **More info → Run anyway**. The source is all here.
 
-Linux and macOS are next, see the roadmap.
+**Linux:** the [AppImage](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest/download/VocalTeleprompter.AppImage),
+or the `.deb` or `.rpm` from the
+[Releases](https://github.com/FaureGalliard/vocal-teleprompter/releases/latest) page. On
+GNOME, also install the extension from the same release, which lets the prompter see
+behind its window and hide from screen sharing; the
+[extension's README](linux/gnome-shell-extension/README.md) says how.
+
+macOS is next, see the roadmap.
 
 ## 🗺️ Roadmap
 
-- 🐧 **Linux** (AppImage, `.deb`, `.rpm`, then the AUR and Flathub) and 🍎 **macOS**
+- 🐧 **Linux** on the AUR and Flathub, and 🍎 **macOS**
 - 🪟 **Microsoft Store and winget**
 
 Have an idea? [Open an issue](https://github.com/FaureGalliard/vocal-teleprompter/issues).
