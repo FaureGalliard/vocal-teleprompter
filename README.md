@@ -116,6 +116,7 @@ macOS is next, see the roadmap. What's new in each version: the [changelog](CHAN
 
 ## 🗺️ Roadmap
 
+- ⏱️ **Classic mode**: a steady scroll at the speed you set, no microphone needed
 - 🍎 **macOS**
 - 🐧 **Linux** on the AUR and Flathub
 - 🪟 **winget** and the **Microsoft Store**
