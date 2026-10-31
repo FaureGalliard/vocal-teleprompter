@@ -31,7 +31,7 @@ No fixed speed, no foot pedal. Speech recognition finds where you are in the scr
 scrolls there, word by word. Pause, slow down or ad-lib, and it waits for you. Works with
 any microphone, in 9 languages, entirely on your computer.
 
-https://github.com/user-attachments/assets/0620d961-fcf3-4c5d-8243-a8b373366173
+https://github.com/user-attachments/assets/71362a17-314d-4cc9-adc7-4c4963baec0d
 
 ## 🎨 It reads over anything
 
