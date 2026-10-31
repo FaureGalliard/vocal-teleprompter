@@ -41,7 +41,14 @@ through the window is frosted like glass, live, so a video or a window you drag 
 behind the text, and every letter takes the color that stands out most from what is right
 behind it. You never pick a color or hunt for an empty corner.
 
-![Dragged across a busy slide, the text stays readable](docs/media/demo-anywhere.gif)
+![Slide after slide behind it, the text stays readable](docs/media/auto-contrast.gif)
+
+<details>
+<summary>Dragged across photos, the glass follows live</summary>
+
+![The frosted glass following the window across photos](docs/media/live-glass.gif)
+
+</details>
 
 ## 🕶️ Your audience never sees it
 
