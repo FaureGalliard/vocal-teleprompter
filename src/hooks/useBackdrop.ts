@@ -41,6 +41,8 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
     // the window was: it counts as moving until a new look lands, so the
     // glass from the old spot does not show at the new one
     const staleRef = useRef(false)
+    const shownRef = useRef(shown)
+    shownRef.current = shown
 
     // Where the window is, kept up to date as it moves and resizes
     useEffect(() => {
@@ -50,11 +52,21 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
             setPlace({ x: p.x, y: p.y, width: s.width, height: frameHeight(s.height) }),
         )
         let still: ReturnType<typeof setTimeout>
+        // Shown in screen captures, each look covers only where the window
+        // is, so as on Linux it does not look while moved, and looks right
+        // away once it holds still
         const moved = win.onMoved(({ payload }) => {
             setPlace((p) => p && { ...p, x: payload.x, y: payload.y })
             setMoving(true)
+            const held = shownRef.current && !IS_LINUX
+            if (held) draggedRef.current = true
             clearTimeout(still)
-            still = setTimeout(() => setMoving(false), STILL_MS)
+            still = setTimeout(() => {
+                setMoving(false)
+                if (!held) return
+                draggedRef.current = false
+                soonRef.current('dropped')
+            }, STILL_MS)
         })
         const resized = win.onResized(({ payload }) =>
             setPlace(
