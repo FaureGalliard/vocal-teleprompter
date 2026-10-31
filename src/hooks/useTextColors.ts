@@ -16,7 +16,7 @@ const EDITING_SOFTEN = 100
 // background turns see-through, the app looks at what is behind the window:
 // it can soften it like frosted glass, and color the text, point by point,
 // so it reads over it.
-export function useTextColors(settings: Settings, editing: boolean, toolbarOpen: boolean) {
+export function useTextColors(settings: Settings, editing: boolean) {
     const { autoContrast, textColor, bgColor, hiddenFromCapture } = settings
     const backdropSoften = editing ? EDITING_SOFTEN : settings.backdropSoften
     const { bgOpacity } = settings
@@ -37,7 +37,7 @@ export function useTextColors(settings: Settings, editing: boolean, toolbarOpen:
         if (version) hurry()
     }, [version, hurry])
     // Drawn live by the desktop where it can, instead of from the looks
-    const shellGlass = useShellGlass(seeThrough, backdropSoften, toolbarOpen)
+    const shellGlass = useShellGlass(seeThrough, backdropSoften)
     return {
         display,
         // Counts the looks behind the window, for coloring the text over them

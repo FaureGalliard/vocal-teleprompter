@@ -1,9 +1,9 @@
 mod backdrop;
 mod behind;
-#[cfg(windows)]
-mod blur;
 #[cfg(target_os = "linux")]
 mod desktop_entry;
+#[cfg(windows)]
+mod glass;
 #[cfg(target_os = "linux")]
 mod gnome_shell;
 mod input;
@@ -63,11 +63,12 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
         .map_err(|e| e.to_string())
 }
 
-/// Frosted glass blurred by the desktop itself behind the window, live, but
-/// for `room` pixels at its bottom; a `radius` of 0 takes it away. The
-/// GNOME Shell extension blurs by `radius`; Windows blurs as much as it
-/// always does, over the whole window. Elsewhere this says false and the
-/// app draws its own glass from what it sees behind the window.
+/// Frosted glass blurred live behind the window by `radius`, but for `room`
+/// pixels at its bottom; a `radius` of 0 takes it away. The GNOME Shell
+/// extension draws it on Linux, the window itself on Windows 11 (see
+/// `glass`); Windows 10 blurs as much as it always does, and only while no
+/// room is kept. Elsewhere this says false and the app draws its own glass
+/// from what it sees behind the window.
 #[tauri::command]
 async fn set_glass(window: tauri::WebviewWindow, radius: i32, room: i32) -> bool {
     #[cfg(target_os = "linux")]
@@ -77,8 +78,7 @@ async fn set_glass(window: tauri::WebviewWindow, radius: i32, room: i32) -> bool
     }
     #[cfg(windows)]
     {
-        let _ = room;
-        blur::set(&window, radius > 0)
+        glass::set(&window, radius, room)
     }
     #[cfg(not(any(windows, target_os = "linux")))]
     {

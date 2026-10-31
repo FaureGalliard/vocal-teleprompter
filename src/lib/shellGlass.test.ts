@@ -1,31 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { MAX_RADIUS, shellGlass } from './shellGlass'
 
-const glass = (over: Partial<Parameters<typeof shellGlass>[0]> = {}) =>
-    shellGlass({
-        enabled: true,
-        soften: 100,
-        toolbarOpen: false,
-        linux: false,
-        ...over,
-    })
-
 describe('shellGlass', () => {
     it('softens as much as asked', () => {
-        expect(glass()).toBe(MAX_RADIUS)
-        expect(glass({ soften: 50 })).toBe(MAX_RADIUS / 2)
-        expect(glass({ soften: 0 })).toBe(0)
+        expect(shellGlass(true, 100)).toBe(MAX_RADIUS)
+        expect(shellGlass(true, 50)).toBe(MAX_RADIUS / 2)
+        expect(shellGlass(true, 0)).toBe(0)
     })
 
     it('asks for none while the background is not see-through', () => {
-        expect(glass({ enabled: false })).toBe(0)
+        expect(shellGlass(false, 100)).toBe(0)
     })
 
-    it('gives way to the app glass while the toolbar grows the window on Windows', () => {
-        expect(glass({ toolbarOpen: true })).toBe(0)
-    })
-
-    it('keeps it with the toolbar open on Linux, where the room is left out', () => {
-        expect(glass({ toolbarOpen: true, linux: true })).toBe(MAX_RADIUS)
+    it('never asks for a negative blur', () => {
+        expect(shellGlass(true, -20)).toBe(0)
     })
 })

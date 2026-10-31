@@ -47,7 +47,7 @@ xcap = "0.9"
 [target.'cfg(windows)'.dependencies]
 # When the user last clicked, typed or scrolled, to look behind the window right then,
 # the windows behind it painting themselves, so recordings never see it blink, and
-# the blur Windows draws behind the window, and the monitor streamed as it changes
+# the glass drawn behind the window, and the monitor streamed as it changes
 windows = { version = "0.62", features = [
     "Foundation",
     "Foundation_Metadata",
@@ -55,6 +55,11 @@ windows = { version = "0.62", features = [
     "Graphics_Capture",
     "Graphics_DirectX",
     "Graphics_DirectX_Direct3D11",
+    "Graphics_Effects",
+    "System",
+    "UI",
+    "UI_Composition",
+    "UI_Composition_Desktop",
     "Wdk_System_SystemServices",
     "Win32_Foundation",
     "Win32_Graphics_Direct3D",
@@ -68,10 +73,15 @@ windows = { version = "0.62", features = [
     "Win32_System_SystemInformation",
     "Win32_System_WinRT",
     "Win32_System_WinRT_Direct3D11",
+    "Win32_System_WinRT_Composition",
     "Win32_System_WinRT_Graphics_Capture",
+    "Win32_System_WinRT_Graphics_Direct2D",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
 ] }
+# The glass's composition: sizes, and the blur effect it implements
+windows-numerics = "0.3"
+windows-core = "0.62"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # Whether the desktop shows tray icons at all

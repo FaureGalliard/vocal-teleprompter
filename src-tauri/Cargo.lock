@@ -5809,6 +5809,8 @@ dependencies = [
  "uuid",
  "vosk",
  "windows",
+ "windows-core",
+ "windows-numerics",
  "xcap",
  "zbus",
  "zip",
