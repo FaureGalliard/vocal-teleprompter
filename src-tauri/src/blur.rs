@@ -49,20 +49,43 @@ pub fn set(window: &WebviewWindow, on: bool) -> bool {
     drawn && on
 }
 
+#[repr(C)]
+#[derive(Debug, PartialEq)]
+struct AccentPolicy {
+    state: u32,
+    flags: u32,
+    // ABGR, Windows' tint over the blur
+    color: u32,
+    animation: u32,
+}
+
+const ACCENT_DISABLED: u32 = 0;
+const ACCENT_ENABLE_BLURBEHIND: u32 = 3;
+/// Tint the blur with `color`, rather than solid black
+const ACCENT_TINTED: u32 = 2;
+
+/// What to ask Windows for: the blur, tinted with nothing (the frame draws
+/// its own tint over it), or no blur
+fn policy(on: bool) -> AccentPolicy {
+    AccentPolicy {
+        state: if on {
+            ACCENT_ENABLE_BLURBEHIND
+        } else {
+            ACCENT_DISABLED
+        },
+        flags: if on { ACCENT_TINTED } else { 0 },
+        color: 0,
+        animation: 0,
+    }
+}
+
 /// Turns the blur behind the window on or off, through the undocumented
-/// call the taskbar uses. The frame draws its tint over it.
+/// call the taskbar uses
 unsafe fn blur(hwnd: HWND, on: bool) -> bool {
     use std::ffi::c_void;
     use windows::core::{s, w, BOOL};
     use windows::Win32::System::LibraryLoader::{GetModuleHandleW, GetProcAddress};
 
-    #[repr(C)]
-    struct AccentPolicy {
-        state: u32,
-        flags: u32,
-        color: u32,
-        animation: u32,
-    }
     #[repr(C)]
     struct Data {
         attribute: u32,
@@ -71,8 +94,6 @@ unsafe fn blur(hwnd: HWND, on: bool) -> bool {
     }
     type SetWindowCompositionAttribute = unsafe extern "system" fn(HWND, *mut Data) -> BOOL;
     const WCA_ACCENT_POLICY: u32 = 19;
-    const ACCENT_DISABLED: u32 = 0;
-    const ACCENT_ENABLE_BLURBEHIND: u32 = 3;
 
     let Ok(user32) = GetModuleHandleW(w!("user32.dll")) else {
         return false;
@@ -81,16 +102,7 @@ unsafe fn blur(hwnd: HWND, on: bool) -> bool {
         return false;
     };
     let call: SetWindowCompositionAttribute = std::mem::transmute(call);
-    let mut policy = AccentPolicy {
-        state: if on {
-            ACCENT_ENABLE_BLURBEHIND
-        } else {
-            ACCENT_DISABLED
-        },
-        flags: 0,
-        color: 0,
-        animation: 0,
-    };
+    let mut policy = policy(on);
     let mut data = Data {
         attribute: WCA_ACCENT_POLICY,
         data: &mut policy as *mut AccentPolicy as *mut c_void,
@@ -101,7 +113,21 @@ unsafe fn blur(hwnd: HWND, on: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::blurs;
+    use super::*;
+
+    #[test]
+    fn the_blur_is_tinted_with_nothing_not_solid_black() {
+        // Without the tint flag, Windows filled the window with black
+        let on = policy(true);
+        assert_eq!(on.state, ACCENT_ENABLE_BLURBEHIND);
+        assert_eq!(on.flags, ACCENT_TINTED);
+        assert_eq!(on.color >> 24, 0, "the tint must be fully transparent");
+    }
+
+    #[test]
+    fn turning_it_off_asks_for_no_accent() {
+        assert_eq!(policy(false).state, ACCENT_DISABLED);
+    }
 
     #[test]
     fn windows_11_blurs_too_not_only_windows_10() {
