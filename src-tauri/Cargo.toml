@@ -47,14 +47,27 @@ xcap = "0.9"
 [target.'cfg(windows)'.dependencies]
 # When the user last clicked, typed or scrolled, to look behind the window right then,
 # the windows behind it painting themselves, so recordings never see it blink, and
-# the glass Windows 11 draws behind the window
+# the glass Windows 11 draws behind the window, and the monitor streamed as it changes
 windows = { version = "0.62", features = [
+    "Foundation",
+    "Foundation_Metadata",
+    "Graphics",
+    "Graphics_Capture",
+    "Graphics_DirectX",
+    "Graphics_DirectX_Direct3D11",
     "Wdk_System_SystemServices",
     "Win32_Foundation",
+    "Win32_Graphics_Direct3D",
+    "Win32_Graphics_Direct3D11",
     "Win32_Graphics_Dwm",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
     "Win32_Graphics_Gdi",
     "Win32_Storage_Xps",
     "Win32_System_SystemInformation",
+    "Win32_System_WinRT",
+    "Win32_System_WinRT_Direct3D11",
+    "Win32_System_WinRT_Graphics_Capture",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_Shell",
     "Win32_UI_WindowsAndMessaging",

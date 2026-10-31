@@ -15,8 +15,10 @@ use tauri::WebviewWindow;
 /// y place the area on the desktop, in physical pixels): the whole monitor
 /// when hidden from capture, the window's own area when `shown` in screen
 /// captures. Picking single pixels rather than averaging keeps letters and
-/// background apart. Async, so it runs off the main thread, which is busy
-/// while the window is dragged. On Linux only the top `share` of the window
+/// background apart. Empty when the monitor is streamed (see
+/// `screen_stream`) and nothing changed since the last look. Async, so it
+/// runs off the main thread, which is busy while the window is dragged. On
+/// Linux only the top `share` of the window
 /// is looked behind, where the text is (the rest is room for the toolbar).
 #[tauri::command]
 pub async fn capture_backdrop(
@@ -41,10 +43,23 @@ pub async fn capture_backdrop(
     {
         let _ = share;
         if !shown {
+            // Streamed by Windows as it changes, where it can: an empty
+            // answer then says nothing changed since the last look
+            #[cfg(windows)]
+            if let Some(out) = crate::screen_stream::look(&window, step) {
+                return Ok(Response::new(out));
+            }
             return capture(&window, step);
         }
         shown_capture(&window, step)
     }
+}
+
+/// Stops looking behind the window until the next `capture_backdrop`
+#[tauri::command]
+pub fn stop_backdrop() {
+    #[cfg(windows)]
+    crate::screen_stream::stop();
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -65,7 +80,7 @@ fn shown_capture(window: &WebviewWindow, step: u32) -> Result<Response, String> 
     Ok(Response::new(out))
 }
 
-fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
+pub(crate) fn header(cols: u32, rows: u32, x: i32, y: i32) -> Vec<u8> {
     let mut out = Vec::with_capacity(16 + (cols * rows * 3) as usize);
     out.extend_from_slice(&cols.to_le_bytes());
     out.extend_from_slice(&rows.to_le_bytes());

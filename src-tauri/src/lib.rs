@@ -8,6 +8,8 @@ mod desktop_entry;
 mod gnome_shell;
 mod input;
 mod mcp;
+#[cfg(windows)]
+mod screen_stream;
 #[cfg(target_os = "linux")]
 mod screencast_portal;
 pub mod speech;
@@ -184,6 +186,7 @@ pub fn run() {
             set_input_region,
             set_glass,
             backdrop::capture_backdrop,
+            backdrop::stop_backdrop,
             speech::list_microphones,
             speech::speech_start,
             speech::speech_stop,

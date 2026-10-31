@@ -25,7 +25,8 @@ const frameHeight = (height: number) =>
 // or resizing the window needs no new look: `place` says where it now is, to
 // cut that part out. `shown` in screen captures, each look covers just the
 // window, painted by the windows behind it so the prompter never blinks in a
-// recording, and a move brings a new one. Looks come at a steady pace, right
+// recording, and a move brings a new one. Where Windows streams the monitor,
+// a look only brings something when it changed, and Windows says when. Looks come at a steady pace, right
 // after a click or a key, and closely after a change (`hurry`), at the pace
 // lookPace sets for each system.
 export function useBackdrop(enabled: boolean, shown: boolean) {
@@ -109,7 +110,8 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
                     shown,
                     share,
                 })
-                if (!stopped) setBackdrop(parseBackdrop(buffer, STEP))
+                // Empty when Windows streams the monitor and nothing changed
+                if (!stopped && buffer.byteLength) setBackdrop(parseBackdrop(buffer, STEP))
             } catch (e) {
                 // Unavailable: the text keeps its last colors
                 console.warn('Could not see behind the window:', e)
@@ -129,10 +131,15 @@ export function useBackdrop(enabled: boolean, shown: boolean) {
         }
         // Clicked, typed or scrolled somewhere: the screen is likely changing
         const input = listen('user-input', () => soonRef.current('input'))
+        // Windows streams the monitor and says when it changed, once until
+        // the next look
+        const changed = listen('backdrop-changed', () => soonRef.current('changed'))
         return () => {
             stopped = true
             clearTimeout(timer)
             input.then((off) => off())
+            changed.then((off) => off())
+            invoke('stop_backdrop').catch(() => {})
         }
     }, [enabled, shown])
 
