@@ -6,7 +6,7 @@
 //! Terminal keeps its acrylic while unfocused: unlike the system's own
 //! backdrops, a brush inside the window has no idea of the focus.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use tauri::WebviewWindow;
 use windows::core::{Interface, Result, HSTRING};
 use windows::System::{DispatcherQueue, DispatcherQueueController};
@@ -25,6 +25,18 @@ const SOURCE: &str = "behind";
 thread_local! {
     // Composition objects belong to the window's thread, so they stay there
     static LAYER: RefCell<Option<Layer>> = const { RefCell::new(None) };
+    static SHAPE: Cell<Shape> = const { Cell::new(Shape { room: 0, pinned: None }) };
+}
+
+/// Which part of the window the glass covers
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct Shape {
+    /// Logical pixels kept below the text for the toolbar, left out
+    room: i32,
+    /// The text's height in logical pixels, while the window grows or
+    /// shrinks around it for the toolbar. Following the window then, the
+    /// glass covered the toolbar's room for a moment each time: a flicker.
+    pinned: Option<f64>,
 }
 
 /// The glass under the page, kept for as long as the window lives
@@ -45,12 +57,61 @@ fn deviation(radius: i32, scale: f64) -> f32 {
     (radius.max(0) as f64 * scale / 2.0) as f32
 }
 
-/// The glass's size over the window's: as wide, and short of the `room` (in
-/// logical pixels) kept below the text, in physical pixels
-fn size(room: i32, scale: f64) -> Vector2 {
-    Vector2 {
-        X: 0.0,
-        Y: -(room.max(0) as f64 * scale) as f32,
+/// The glass's size, in physical pixels, as a share of the window's size
+/// and pixels added to it: as wide as the window, and as tall as the
+/// pinned height, or as the window short of the room
+fn layout(shape: Shape, scale: f64) -> (Vector2, Vector2) {
+    let pixels = |logical: f64| (logical * scale) as f32;
+    match shape.pinned {
+        Some(height) => (
+            Vector2 { X: 1.0, Y: 0.0 },
+            Vector2 {
+                X: 0.0,
+                Y: pixels(height.max(0.0)),
+            },
+        ),
+        None => (
+            Vector2 { X: 1.0, Y: 1.0 },
+            Vector2 {
+                X: 0.0,
+                Y: -pixels(shape.room.max(0) as f64),
+            },
+        ),
+    }
+}
+
+impl Layer {
+    fn fit(&self, shape: Shape, scale: f64) -> Result<()> {
+        let (share, pixels) = layout(shape, scale);
+        self.sprite.SetRelativeSizeAdjustment(share)?;
+        self.sprite.SetSize(pixels)
+    }
+}
+
+/// Holds the glass at the text's `height` (logical pixels) while the
+/// window is about to grow or shrink around it, or lets it follow the
+/// window again with None. Returns once the glass is held or let go, for
+/// the window to change size only then.
+pub fn pin(window: &WebviewWindow, height: Option<f64>) {
+    let scale = window.scale_factor().unwrap_or(1.0);
+    let (done, held) = std::sync::mpsc::channel();
+    let asked = window.run_on_main_thread(move || {
+        let shape = Shape {
+            pinned: height,
+            ..SHAPE.get()
+        };
+        SHAPE.set(shape);
+        let fitted = LAYER.with(|layer| match &*layer.borrow() {
+            Some(layer) => layer.fit(shape, scale),
+            None => Ok(()),
+        });
+        if let Err(e) = fitted {
+            eprintln!("Could not fit the glass to the window: {e}");
+        }
+        let _ = done.send(());
+    });
+    if asked.is_ok() {
+        let _ = held.recv();
     }
 }
 
@@ -101,7 +162,12 @@ fn show(layer: &mut Option<Layer>, hwnd: HWND, radius: i32, room: i32, scale: f6
         layer.sprite.SetBrush(&brush)?;
         layer.blur = Some((strength, brush));
     }
-    layer.sprite.SetSize(size(room, scale))?;
+    let shape = Shape {
+        room,
+        ..SHAPE.get()
+    };
+    SHAPE.set(shape);
+    layer.fit(shape, scale)?;
     layer.sprite.SetIsVisible(true)?;
     Ok(true)
 }
@@ -269,11 +335,33 @@ mod tests {
         assert_eq!(deviation(-3, 1.0), 0.0);
     }
 
+    const WHOLE: Vector2 = Vector2 { X: 1.0, Y: 1.0 };
+    const NOTHING: Vector2 = Vector2 { X: 0.0, Y: 0.0 };
+
     #[test]
-    fn the_glass_leaves_out_the_room_kept_for_the_toolbar() {
-        // As wide as the window, and as tall less the room
-        assert_eq!(size(0, 1.25), Vector2 { X: 0.0, Y: 0.0 });
-        assert_eq!(size(496, 1.25), Vector2 { X: 0.0, Y: -620.0 });
+    fn the_glass_follows_the_window_short_of_the_room_kept_for_the_toolbar() {
+        let shape = |room| Shape { room, pinned: None };
+        assert_eq!(layout(shape(0), 1.25), (WHOLE, NOTHING));
+        assert_eq!(
+            layout(shape(496), 1.25),
+            (WHOLE, Vector2 { X: 0.0, Y: -620.0 })
+        );
+    }
+
+    #[test]
+    fn a_pinned_glass_keeps_its_height_whatever_the_window_does() {
+        // Following the window as it grew for the toolbar, the glass covered
+        // the toolbar's room for a moment: a flicker each time it opened
+        let shape = Shape {
+            room: 0,
+            pinned: Some(165.0),
+        };
+        let (share, pixels) = layout(shape, 1.5);
+        assert_eq!(share, Vector2 { X: 1.0, Y: 0.0 }, "no share of its height");
+        assert_eq!(pixels, Vector2 { X: 0.0, Y: 247.5 });
+        // Pinned wins over the room, which only arrives once grown
+        let late = Shape { room: 496, ..shape };
+        assert_eq!(layout(late, 1.5), (share, pixels));
     }
 
     #[test]

@@ -29,6 +29,13 @@ interface State {
     ready: boolean
 }
 
+// Holds the live glass at the teleprompter's `height` while the window
+// changes size around it, or lets it follow the window again (null).
+// Following the window, it covered the toolbar's room for a moment each time
+// the toolbar opened or closed: a flicker.
+const pinGlass = (height: number | null) =>
+    invoke('pin_glass', { height }).catch((e) => console.error('Could not hold the glass:', e))
+
 // Lets the browser paint the pinned frame before the window changes size
 const nextPaint = () =>
     new Promise<void>((resolve) =>
@@ -95,6 +102,7 @@ function useGrowingRoom(open: boolean) {
             setState({ expansion: { frame, room }, ready: false })
             await nextPaint()
             grownRoom = room
+            await pinGlass(frame.height)
             await win.setResizable(false)
             await win.setSize(new LogicalSize(size.width, size.height + room))
             if (!cancelled) setState({ expansion: { frame, room }, ready: true })
@@ -105,6 +113,7 @@ function useGrowingRoom(open: boolean) {
                 grownRoom = 0
                 await win.setSize(new LogicalSize(own.width, own.height))
                 await win.setResizable(true)
+                await pinGlass(null)
             }
         }
         const growing = grow().catch((e) =>
@@ -139,6 +148,7 @@ function useGrowingRoom(open: boolean) {
         if (frame) {
             const resized = { width: frame.width, height: frame.height + delta }
             frameRef.current = resized
+            await pinGlass(resized.height)
             setState((s) =>
                 s.expansion ? { ...s, expansion: { ...s.expansion, frame: resized } } : s,
             )
