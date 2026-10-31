@@ -144,6 +144,8 @@ impl ScreenCast {
         (OK, Results::new())
     }
 
+    // The portal's Start call, whose arguments the D-Bus interface sets
+    #[allow(clippy::too_many_arguments)]
     async fn start(
         &self,
         _handle: OwnedObjectPath,
