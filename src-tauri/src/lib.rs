@@ -65,7 +65,10 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
 /// toolbar below the teleprompter instead of growing for it, which is slow
 /// there, and that room takes no clicks while nothing is drawn in it.
 #[tauri::command]
-fn set_input_region(window: tauri::WebviewWindow, rects: Option<Vec<[f64; 4]>>) -> Result<(), String> {
+fn set_input_region(
+    window: tauri::WebviewWindow,
+    rects: Option<Vec<[f64; 4]>>,
+) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         let target = window.clone();
