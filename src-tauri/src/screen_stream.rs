@@ -482,7 +482,12 @@ fn read(latest: &mut Latest, step: u32, x: i32, y: i32) -> windows::core::Result
 fn sample(bgra: &[u8], pitch: usize, width: u32, height: u32, step: u32, out: &mut Vec<u8>) {
     let step = step as usize;
     for line in bgra.chunks(pitch).take(height as usize).step_by(step) {
-        for px in line[..width as usize * 4].chunks_exact(4).step_by(step) {
+        for px in line[..width as usize * 4]
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .step_by(step)
+        {
             out.extend_from_slice(&[px[2], px[1], px[0]]);
         }
     }
