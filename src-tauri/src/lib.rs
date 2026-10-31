@@ -59,6 +59,21 @@ fn set_hidden_from_capture(window: tauri::WebviewWindow, hidden: bool) -> Result
         .map_err(|e| e.to_string())
 }
 
+/// Frosted glass blurred by the desktop itself behind the window, live, but
+/// for `room` pixels at its bottom; a `radius` of 0 takes it away. Only the
+/// GNOME Shell extension can, so elsewhere this says false and the app
+/// draws its own glass from what it sees behind the window.
+#[tauri::command]
+async fn set_glass(radius: i32, room: i32) -> bool {
+    #[cfg(target_os = "linux")]
+    return gnome_shell::set_glass(radius, room);
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = (radius, room);
+        false
+    }
+}
+
 /// Lets clicks reach the window only inside `rects` (x, y, width and height
 /// in CSS pixels) and go through to what is behind everywhere else, or
 /// reach all of it when None. On Linux the window keeps room for the
@@ -150,6 +165,7 @@ pub fn run() {
             set_tray_labels,
             set_hidden_from_capture,
             set_input_region,
+            set_glass,
             backdrop::capture_backdrop,
             speech::list_microphones,
             speech::speech_start,

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { ensureContrast } from '../lib/contrast'
 import { useBackdrop } from './useBackdrop'
 import { useBackdropView } from './useBackdropView'
+import { useShellGlass } from './useShellGlass'
 import type { Settings } from './useSettings'
 
 // Below this background opacity the backdrop shows through enough to matter
@@ -35,11 +36,13 @@ export function useTextColors(settings: Settings, editing: boolean) {
     useEffect(() => {
         if (version) hurry()
     }, [version, hurry])
+    // Drawn live by the desktop where it can, instead of from the looks
+    const shellGlass = useShellGlass(seeThrough, backdropSoften)
     return {
         display,
         // Counts the looks behind the window, for coloring the text over them
         seen: autoContrast ? (view?.version ?? null) : null,
-        glass: view?.glass ?? null,
+        glass: shellGlass ? null : (view?.glass ?? null),
         // Out of date while the window moves: faded out until it settles
         glassShown: !moving,
         opacity: bgOpacity,

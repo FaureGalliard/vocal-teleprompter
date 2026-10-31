@@ -4,7 +4,7 @@
 //! being moved.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
 use tauri::Runtime;
 use zbus::blocking::Connection;
 use zbus::message::Body;
@@ -45,6 +45,26 @@ pub fn set_hidden_from_capture(hidden: bool) {
     });
 }
 
+// The frosted glass asked for, as (radius, room), applied again with the rest
+static GLASS: Mutex<(i32, i32)> = Mutex::new((0, 0));
+
+fn apply_glass() -> Result<(), String> {
+    let glass = *GLASS.lock().unwrap();
+    call("SetGlass", &glass).map(drop)
+}
+
+/// Frosted glass blurred by GNOME Shell behind the window, but for the `room`
+/// pixels at its bottom kept for the toolbar; a `radius` of 0 takes it away.
+/// False when the extension has no glass, so the app draws its own. Applied
+/// again once the window is on screen, in case it was not yet.
+pub fn set_glass(radius: i32, room: i32) -> bool {
+    *GLASS.lock().unwrap() = (radius, room);
+    match apply_glass() {
+        Err(e) if e.contains("UnknownMethod") || e.contains("ServiceUnknown") => false,
+        _ => true,
+    }
+}
+
 // The window is on screen, so the extension can find it
 static SHOWN: AtomicBool = AtomicBool::new(false);
 
@@ -57,6 +77,11 @@ fn apply_all() {
     }
     if let Err(e) = apply_hidden() {
         eprintln!("Could not hide the window from capture: {e}");
+    }
+    if GLASS.lock().unwrap().0 > 0 {
+        if let Err(e) = apply_glass() {
+            eprintln!("Could not put the frosted glass behind the window: {e}");
+        }
     }
 }
 
