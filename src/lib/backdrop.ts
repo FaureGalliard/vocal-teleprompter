@@ -1,4 +1,4 @@
-import { ensureContrast } from './contrast'
+import { ensureContrastRgb } from './contrast'
 
 // Every `step`-th physical pixel of the monitor the window is on, which sits
 // at `x`, `y` on the desktop (physical pixels)
@@ -52,15 +52,13 @@ export function cropBackdrop(backdrop: Backdrop, place: Place) {
     const w = Math.ceil(place.width / step)
     const h = Math.ceil(place.height / step)
     const out = new Uint8Array(w * h * 3)
+    // The columns of each row that are on the monitor, copied in one go
+    const [c0, c1] = [Math.max(0, -left), Math.min(w, cols - left)]
     for (let r = 0; r < h; r++) {
         const sr = top + r
-        if (sr < 0 || sr >= rows) continue
-        for (let c = 0; c < w; c++) {
-            const sc = left + c
-            if (sc < 0 || sc >= cols) continue
-            const from = (sr * cols + sc) * 3
-            out.set(pixels.subarray(from, from + 3), (r * w + c) * 3)
-        }
+        if (sr < 0 || sr >= rows || c0 >= c1) continue
+        const from = (sr * cols + left + c0) * 3
+        out.set(pixels.subarray(from, from + (c1 - c0) * 3), (r * w + c0) * 3)
     }
     return { cols: w, rows: h, pixels: out }
 }
@@ -125,18 +123,25 @@ export function complement(r: number, g: number, b: number): string | null {
 // Scaled up smoothly, it shades across where the backdrop changes.
 export function colorMap(background: Background, cols: number, rows: number, textColor: string) {
     const image = new Uint8ClampedArray(cols * rows * 4)
-    // Backdrops repeat a lot of nearly equal colors: work each out once
-    const known = new Map<number, number[]>()
+    // Backdrops repeat a lot of nearly equal colors: work each out once,
+    // kept as 0xRRGGBB
+    const known = new Map<number, number>()
     for (let i = 0; i < cols * rows; i++) {
-        const [r, g, b] = [background[i * 3], background[i * 3 + 1], background[i * 3 + 2]]
+        const r = background[i * 3]
+        const g = background[i * 3 + 1]
+        const b = background[i * 3 + 2]
         const key = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2)
         let color = known.get(key)
-        if (!color) {
+        if (color === undefined) {
             const base = complement(r, g, b) ?? textColor
-            color = [...rgb(ensureContrast(base, hex(r, g, b), TARGET_CONTRAST)), 255]
+            const [cr, cg, cb] = ensureContrastRgb(base, [r, g, b], TARGET_CONTRAST)
+            color = (cr << 16) | (cg << 8) | cb
             known.set(key, color)
         }
-        image.set(color, i * 4)
+        image[i * 4] = color >> 16
+        image[i * 4 + 1] = (color >> 8) & 255
+        image[i * 4 + 2] = color & 255
+        image[i * 4 + 3] = 255
     }
     return image
 }
@@ -145,19 +150,30 @@ export function colorMap(background: Background, cols: number, rows: number, tex
 // text color shifts gradually instead of jumping from letter to letter over
 // a busy picture
 export function blur(background: Background, cols: number, rows: number, radius = 2) {
+    // Plain numbers and loops only: an array made per sample is what made
+    // this slow in WebKit, whose engine keeps every one of them
     const pass = (from: Float32Array, dc: number, dr: number) => {
         const to = new Float32Array(from.length)
         for (let r = 0; r < rows; r++)
             for (let c = 0; c < cols; c++) {
                 let n = 0
-                const sum = [0, 0, 0]
+                let sr = 0
+                let sg = 0
+                let sb = 0
                 for (let d = -radius; d <= radius; d++) {
-                    const [cc, rr] = [c + d * dc, r + d * dr]
+                    const cc = c + d * dc
+                    const rr = r + d * dr
                     if (cc < 0 || cc >= cols || rr < 0 || rr >= rows) continue
-                    for (let k = 0; k < 3; k++) sum[k] += from[(rr * cols + cc) * 3 + k]
+                    const i = (rr * cols + cc) * 3
+                    sr += from[i]
+                    sg += from[i + 1]
+                    sb += from[i + 2]
                     n++
                 }
-                for (let k = 0; k < 3; k++) to[(r * cols + c) * 3 + k] = sum[k] / n
+                const o = (r * cols + c) * 3
+                to[o] = sr / n
+                to[o + 1] = sg / n
+                to[o + 2] = sb / n
             }
         return to
     }
