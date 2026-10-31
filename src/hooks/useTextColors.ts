@@ -37,7 +37,7 @@ export function useTextColors(settings: Settings, editing: boolean, toolbarOpen:
         if (version) hurry()
     }, [version, hurry])
     // Drawn live by the desktop where it can, instead of from the looks
-    const shellGlass = useShellGlass(seeThrough, backdropSoften, bgColor, toolbarOpen)
+    const shellGlass = useShellGlass(seeThrough, backdropSoften, toolbarOpen)
     return {
         display,
         // Counts the looks behind the window, for coloring the text over them
