@@ -223,6 +223,7 @@ pub fn run() {
             if let Err(e) = mcp::bridge::start(app.handle()) {
                 eprintln!("AI connector bridge unavailable: {e}");
             }
+            std::thread::spawn(mcp::clients::repair_stale_entries);
             let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
             let hide = MenuItem::with_id(app, "hide", "Hide", true, None::<&str>)?;
             // Way back out of click-through mode, since the window takes no clicks then
